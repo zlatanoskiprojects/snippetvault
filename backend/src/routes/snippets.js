@@ -1,49 +1,11 @@
 import {Router} from 'express'
 import pool from '../lib/db.js';
-import authMiddleware from './middlewares/auth.js';
-import {body,param,validationResult} from "express-validator";
+import authMiddleware from '../middleware/auth.js';
+import {validationResult} from "express-validator";
+import { snippetIdValidation, createSnippetValidation, updateSnippetValidation } from '../validators/snippets.js';
 
 const router = Router()
 
-
-const updateSnippetValidation = [
-    param('id')
-        .isInt({ min: 1 })
-        .withMessage('Invalid snippet id'),
-
-    body('title')
-        .optional()
-        .isString()
-        .trim()
-        .notEmpty().withMessage('Title cannot be empty')
-        .isLength({ max: 255 }).withMessage('Title cannot exceed 255 characters'),
-
-    body('language')
-        .optional()
-        .isString()
-        .trim()
-        .notEmpty().withMessage('Language cannot be empty')
-        .isLength({ max: 50 }).withMessage('Language cannot exceed 50 characters'),
-
-    body('description')
-        .optional({ nullable: true })
-        .isLength({ max: 5000 }).withMessage('Description cannot exceed 5000 characters'),
-
-    body('code')
-        .optional()
-        .isString()
-        .trim()
-        .notEmpty().withMessage('Code cannot be empty')
-        .isLength({ max: 65000 }).withMessage('Code too large'),
-
-    body('visibility')
-        .optional()
-        .isIn(['public', 'private']).withMessage('Visibility must be public or private'),
-
-    body('collection_id')
-        .optional({ nullable: true })
-        .isInt({ min: 1 }).withMessage('Invalid collection_id'),
-];
 
 
 
@@ -63,7 +25,11 @@ router.get('/',authMiddleware,async(req,res)=>{
 
 })
 //get a single snippet by id
-router.get('/:id',authMiddleware,async(req,res)=>{
+router.get('/:id',authMiddleware,snippetIdValidation,async(req,res)=>{
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
     try{
         //this query fetches in db the snippet with the specific id of that specific user_id
         const [rows] = await pool.query('SELECT * FROM snippet WHERE id = ? AND user_id = ?',[req.params.id,req.userId]);
@@ -78,12 +44,15 @@ router.get('/:id',authMiddleware,async(req,res)=>{
 
 });
 
-router.post('/',authMiddleware,async(req,res)=>{
+router.post('/',authMiddleware,createSnippetValidation,async(req,res)=>{
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
+
     const {title,description,code,language,visibility,collection_id} = req.body;
 
-    if(!title || !code || !language){
-        return res.status(400).json({error:'Title, code and language are required'})
-    }
+
 
     try{
         const [result] = await pool.query('INSERT INTO snippet (user_id,title,description,code,language,visibility,collection_id) VALUES (?,?,?,?,?,?,?)',[
@@ -105,7 +74,11 @@ router.post('/',authMiddleware,async(req,res)=>{
 });
 
 //delete a snippet
-router.delete('/:id',authMiddleware,async(req   ,res)=>{
+router.delete('/:id',authMiddleware,snippetIdValidation,async(req   ,res)=>{
+    const err = validationResult(req);
+    if(!err.isEmpty()){
+        return res.status(400).json({errors:err.array()})
+    }
 
     try{
 
@@ -180,3 +153,4 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
 });
 
 
+export default router;
