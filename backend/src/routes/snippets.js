@@ -1,8 +1,53 @@
 import {Router} from 'express'
 import pool from '../lib/db.js';
-import authMiddleware from '../middlewares/auth.js';
+import authMiddleware from './middlewares/auth.js';
+import {body,param,validationResult} from "express-validator";
 
-const router = Router();
+const router = Router()
+
+
+const updateSnippetValidation = [
+    param('id')
+        .isInt({ min: 1 })
+        .withMessage('Invalid snippet id'),
+
+    body('title')
+        .optional()
+        .isString()
+        .trim()
+        .notEmpty().withMessage('Title cannot be empty')
+        .isLength({ max: 255 }).withMessage('Title cannot exceed 255 characters'),
+
+    body('language')
+        .optional()
+        .isString()
+        .trim()
+        .notEmpty().withMessage('Language cannot be empty')
+        .isLength({ max: 50 }).withMessage('Language cannot exceed 50 characters'),
+
+    body('description')
+        .optional({ nullable: true })
+        .isLength({ max: 5000 }).withMessage('Description cannot exceed 5000 characters'),
+
+    body('code')
+        .optional()
+        .isString()
+        .trim()
+        .notEmpty().withMessage('Code cannot be empty')
+        .isLength({ max: 65000 }).withMessage('Code too large'),
+
+    body('visibility')
+        .optional()
+        .isIn(['public', 'private']).withMessage('Visibility must be public or private'),
+
+    body('collection_id')
+        .optional({ nullable: true })
+        .isInt({ min: 1 }).withMessage('Invalid collection_id'),
+];
+
+
+
+
 
 //GET api - get all snippets for a specific user id
 router.get('/',authMiddleware,async(req,res)=>{
@@ -43,12 +88,13 @@ router.post('/',authMiddleware,async(req,res)=>{
     try{
         const [result] = await pool.query('INSERT INTO snippet (user_id,title,description,code,language,visibility,collection_id) VALUES (?,?,?,?,?,?,?)',[
             req.userId,
-            collection_id || null,
             title,
             description || null,
             code,
             language,
-            visibility || "private"
+            visibility || "private",
+            collection_id || null,
+
         ])
         //we send to frontend the id of the newly created snippet.  THIS HAS TO BE ADDRESSED AND BETTER HANDLED, MAYBE SENT ALL INFO ABOUT THE NEW SNIPPET BACK TO FRONTEND SO IT CAN DISPLAY IT.
         return res.status(201).json({id:result.insertId,message:'Snippet created successfully'})
@@ -59,7 +105,7 @@ router.post('/',authMiddleware,async(req,res)=>{
 });
 
 //delete a snippet
-router.delete('/:id',authMiddleware,async(req,res)=>{
+router.delete('/:id',authMiddleware,async(req   ,res)=>{
 
     try{
 
@@ -77,23 +123,60 @@ router.delete('/:id',authMiddleware,async(req,res)=>{
 
 //update a snippet
 
-router.put('/:id',authMiddleware,async(req,res)=>{
-    const {title,description,code,language,visibility,collection_id} = req.body;
-
-    if(!title || !code || !language){
-        return res.status(400).json({error:'Title, code and language are required'})
+router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
-    try{
-        const [result] = await pool.query('UPDATE snippet SET title = ?, description = ?, code = ?, language = ?, visibility = ?, collection_id = ? WHERE id = ? AND user_id = ?',[title,description,code,language,visibility,collection_id || null,req.params.id,req.userId]);
-        if(result.affectedRows === 0){
-            return res.status(404).json({error:'Snippet not found'})
+    // req.params.id and req.body values are already validated and sanitized here
+    const snippetId = parseInt(req.params.id);
+
+    const allowedFields = ['title', 'description', 'code', 'language', 'visibility', 'collection_id'];
+    const updates = {};
+    for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+            updates[field] = req.body[field];
         }
-        return res.status(200).json({message:'Snippet updated successfully'})
-
-    }catch(error){
-        console.log("Error updating snippet",error);
-        return res.status(500).json({error:'Internal server error'})
     }
 
-})
+    if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ error: 'No valid fields provided' });
+    }
+
+
+
+    const keys = Object.keys(updates);
+    const setClauses = keys.map(field => `${field} = ?`).join(', ');
+    const values = [...keys.map(k => updates[k]), snippetId, req.userId];
+
+    try {
+        // collection_id ownership check — still manual, no library can do this
+        if (updates.collection_id !== undefined && updates.collection_id !== null) {
+            const [cols] = await pool.query(
+                'SELECT id FROM collection WHERE id = ? AND user_id = ?',
+                [updates.collection_id, req.userId]
+            );
+            if (cols.length === 0) {
+                return res.status(403).json({ error: 'Collection not found or not yours' });
+            }
+        }
+
+        const [result] = await pool.query(
+            `UPDATE snippet SET ${setClauses} WHERE id = ? AND user_id = ?`,
+            values
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Snippet not found' });
+        }
+
+        return res.status(200).json({ message: 'Snippet updated successfully' });
+
+    } catch (error) {
+        console.error('Error updating snippet:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
