@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import pool from '../lib/db.js';
-import authMiddleware from '../middleware/auth.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 import {validationResult} from "express-validator";
 import { snippetIdValidation, createSnippetValidation, updateSnippetValidation } from '../validators/snippets.js';
 
