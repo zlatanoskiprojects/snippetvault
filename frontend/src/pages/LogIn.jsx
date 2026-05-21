@@ -1,4 +1,42 @@
+import {useState} from "react";
+import {login} from "../api/auth";
+import {useNavigate} from "react-router-dom";
+
+
 function LogIn() {
+
+
+    const[email,setEmail] = useState("");
+    const[password,setPassword] = useState("");
+
+
+    //navigate object so we can change the page after authentication is successful
+    const navigate = useNavigate();
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        if (!email || !password) {
+            return;
+        }
+
+        try {
+            const response = await login(email, password);
+            if (response.error) {
+                alert(response.error);
+            } else {
+                //store the token in local storage for future use
+                localStorage.setItem('token', response.token);
+                //navigate to the home page after successful login
+                navigate('/');
+            }
+        }catch (error) {
+            console.error('Error during login:', error);
+        }
+    }
+
+
+
     return (
         <div className="d-flex justify-content-center align-items-center vh-100">
             <div style={{ width: '400px' }}>
@@ -18,12 +56,16 @@ function LogIn() {
                             Continue with GitHub
                         </button>
                         <div className="divider my-4"></div>
+
+                        <form onSubmit={handleSubmit}>
                         <div className="mb-3">
                             <label className="form-label small">Email</label>
                             <input
                                 type="email"
                                 className="form-control"
                                 placeholder="name@example.com"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
                             />
                         </div>
                         <div className="mb-3">
@@ -32,11 +74,14 @@ function LogIn() {
                                 type="password"
                                 className="form-control"
                                 placeholder="Enter your password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
                             />
                         </div>
                         <button className="btn btn-indigo w-100 mb-3">
                             Sign In
                         </button>
+                        </form>
                         <button className="btn btn-link w-100 text-muted text-decoration-none small">
                             Continue as guest
                         </button>
