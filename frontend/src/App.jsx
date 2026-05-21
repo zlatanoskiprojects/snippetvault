@@ -1,121 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+
+
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div style={{ width: '400px' }}>
+          <div className="text-center mb-4">
+            <div className="logo-icon mx-auto mb-3">
+              &lt;/&gt;
+            </div>
+            <h4 className="fw-bold mb-1">Snippet Vault</h4>
+            <p className="text-muted small mb-0">Sign in to your account</p>
+          </div>
+          <div className="card">
+            <div className="card-body p-4">
+              <button className="btn btn-dark w-100 mb-2 oauth-btn">
+                Continue with Google
+              </button>
+              <button className="btn btn-dark w-100 oauth-btn">
+                Continue with GitHub
+              </button>
+              <div className="divider my-4"></div>
+              <div className="mb-3">
+                <label className="form-label small">Email</label>
+                <input
+                    type="email"
+                    className="form-control"
+                    placeholder="name@example.com"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label small">Password</label>
+                <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Enter your password"
+                />
+              </div>
+              <button className="btn btn-indigo w-100 mb-3">
+                Sign In
+              </button>
+              <button className="btn btn-link w-100 text-muted text-decoration-none small">
+                Continue as guest
+              </button>
+            </div>
+          </div>
+          <p className="text-center text-muted small mt-3">
+            Don't have an account?{' '}
+            <a href="#" className="link-indigo">Sign up</a>
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
   )
 }
 
