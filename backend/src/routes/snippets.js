@@ -79,9 +79,7 @@ router.delete('/:id',authMiddleware,snippetIdValidation,async(req   ,res)=>{
     if(!err.isEmpty()){
         return res.status(400).json({errors:err.array()})
     }
-
     try{
-
 
         const [result] = await pool.query('DELETE FROM snippet WHERE id = ? AND user_id = ?',[req.params.id,req.userId]); // params id is the one in the url that is to be deleted, other one is the yser that deletes it
         if(result.affectedRows === 0){
@@ -102,7 +100,7 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
         return res.status(400).json({ errors: errors.array() });
     }
 
-    // req.params.id and req.body values are already validated and sanitized here
+    // req.params.id and req.body values are already validated
     const snippetId = parseInt(req.params.id);
 
     const allowedFields = ['title', 'description', 'code', 'language', 'visibility', 'collection_id'];
@@ -116,8 +114,6 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
     if (Object.keys(updates).length === 0) {
         return res.status(400).json({ error: 'No valid fields provided' });
     }
-
-
 
     const keys = Object.keys(updates);
     const setClauses = keys.map(field => `${field} = ?`).join(', ');
