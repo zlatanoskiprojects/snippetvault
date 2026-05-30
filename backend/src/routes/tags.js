@@ -32,6 +32,27 @@ router.get('/:id', authMiddleware, tagIdValidation, async (req, res) => {
     }
 });
 
+
+router.get('/:id/snippets', authMiddleware, tagIdValidation, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+        const [rows] = await pool.query(
+            `SELECT s.* FROM snippet s
+             JOIN snippet_tag st ON st.snippet_id = s.id
+             WHERE st.tag_id = ? AND s.user_id = ?`,
+            [req.params.id, req.userId]
+        );
+        return res.status(200).json(rows);
+    } catch (err) {
+        console.log('Error fetching snippets by tag:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 router.post('/', authMiddleware, createTagValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

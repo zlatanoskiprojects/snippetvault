@@ -16,7 +16,21 @@ router.get('/',authMiddleware,async(req,res)=>{
 
     try {
         const userId = req.userId;
-        const [snippets] = await pool.query('SELECT * FROM snippet WHERE user_id = ?',[userId]);
+        const q = req.query.q;
+
+        let snippets;
+
+        if(q){
+            const searchterm =  `%${q}%`;
+            [snippets] = await pool.query(
+                'SELECT * FROM snippet WHERE user_id = ? AND (title LIKE ? OR language LIKE ?)',
+                [userId, searchTerm, searchTerm]
+            );
+        }else{
+            [snippets] = await pool.query('SELECT * FROM snippet WHERE user_id = ?',[userId]);
+
+        }
+
         return res.status(200).json(snippets);
     }catch(error){
         console.log("Error fetching snippets:",error);
