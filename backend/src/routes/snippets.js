@@ -21,7 +21,7 @@ router.get('/',authMiddleware,async(req,res)=>{
         let snippets;
 
         if(q){
-            const searchterm =  `%${q}%`;
+            const searchTerm =  `%${q}%`;
             [snippets] = await pool.query(
                 'SELECT * FROM snippet WHERE user_id = ? AND (title LIKE ? OR language LIKE ?)',
                 [userId, searchTerm, searchTerm]
@@ -79,8 +79,8 @@ router.post('/',authMiddleware,createSnippetValidation,async(req,res)=>{
             collection_id || null,
 
         ])
-        //we send to frontend the id of the newly created snippet.  THIS HAS TO BE ADDRESSED AND BETTER HANDLED, MAYBE SENT ALL INFO ABOUT THE NEW SNIPPET BACK TO FRONTEND SO IT CAN DISPLAY IT.
-        return res.status(201).json({id:result.insertId,message:'Snippet created successfully'})
+        const [rows] = await pool.query('SELECT * FROM snippet WHERE id = ?', [result.insertId]);
+        return res.status(201).json(rows[0]);
     }catch(error){
         console.log("Error creating snippet",error);
         return res.status(500).json({error:'Internal server error'})
