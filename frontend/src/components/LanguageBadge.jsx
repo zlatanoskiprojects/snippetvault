@@ -1,4 +1,4 @@
-const LANG_COLORS = {
+  const LANG_COLORS = {
   TS:  { bg: '#0b152d', color: '#3d77fc' },
   PY:  { bg: '#062311', color: '#22c55e' },
   SH:  { bg: '#19102c', color: '#8c5af3' },
