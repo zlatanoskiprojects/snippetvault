@@ -18,7 +18,6 @@ export async function getSnippetById(id) {
     });
     return response.json();
 }
-//data in this case will be an object containing the fields needed for creating a snippet
 export async function createSnippet(data) {
     const response = await fetch(`${BASE_URL}`, {
         method: 'POST',

@@ -6,7 +6,7 @@ function LogIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
-//basic validation
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!email || !password) return
