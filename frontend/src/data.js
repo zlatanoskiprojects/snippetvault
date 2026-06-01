@@ -1,0 +1,42 @@
+export const snippets = [
+  {
+    id: 1,
+    title: 'useDebounce hook',
+    description: 'Debounces a value by delay ms — useful for search inputs.',
+    language: 'TS',
+    tags: ['#react', '#hooks', '#utils'],
+    timestamp: '2d ago',
+  },
+  {
+    id: 2,
+    title: 'Flatten nested dict',
+    description: 'Recursively flattens a nested dict with dot-separated keys.',
+    language: 'PY',
+    tags: ['#python', '#utils'],
+    timestamp: '5d ago',
+  },
+  {
+    id: 3,
+    title: 'Docker cleanup all',
+    description: 'Prunes all stopped containers, images, and volumes.',
+    language: 'SH',
+    tags: ['#docker', '#devops'],
+    timestamp: '1w ago',
+  },
+  {
+    id: 4,
+    title: 'Paginate with offset',
+    description: 'Cursor-style pagination using LIMIT/OFFSET params.',
+    language: 'SQL',
+    tags: ['#db', '#postgres'],
+    timestamp: '3d ago',
+  },
+  {
+    id: 5,
+    title: 'JWT verify middleware',
+    description: 'Hono middleware that validates Bearer JWT on each request.',
+    language: 'TS',
+    tags: ['#auth', '#hono'],
+    timestamp: '1d ago',
+  },
+]
