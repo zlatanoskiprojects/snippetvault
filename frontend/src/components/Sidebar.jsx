@@ -22,8 +22,7 @@ const tagItems = [
 export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange }) {
   return (
     <aside className="w-48 bg-[#161616] border-r border-[#2a2a2a] flex flex-col h-full shrink-0">
-      {/* Logo row */}
-      <div className="flex items-center gap-2 px-3 py-3.5">
+      <div className="flex items-center gap-2 px-3 py-3">
         <div className="rounded-lg bg-[#6366f1] w-7 h-7 flex items-center justify-center shrink-0">
           <span className="text-white font-bold font-mono text-[11px]">&lt;/&gt;</span>
         </div>
@@ -31,8 +30,7 @@ export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocu
         <span className="text-[#9ba3af] text-[10px] shrink-0">∨</span>
       </div>
 
-      {/* Search bar */}
-      <div className="mx-3 mt-1">
+      <div className="mx-3 mt-2">
         <div className="bg-[#222] border border-[#2a2a2a] rounded-md h-[30px] flex items-center gap-2 px-2">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-[#595e69]">
             <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2" />
@@ -50,8 +48,7 @@ export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocu
         </div>
       </div>
 
-      {/* LIBRARY section */}
-      <div className="mt-4 px-3">
+      <div className="mt-5 px-3">
         <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Library</p>
         {libraryItems.map((item) => {
           const isActive = activeView === item.view
@@ -74,8 +71,7 @@ export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocu
         })}
       </div>
 
-      {/* TAGS section */}
-      <div className="mt-4 px-3">
+      <div className="mt-5 px-3">
         <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Tags</p>
         {tagItems.map((tag) => (
           <div
@@ -94,9 +90,26 @@ export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocu
         ))}
       </div>
 
-      {/* Footer */}
-      <div className="mt-auto px-4 py-4">
-        <span className="text-xs text-[#595e69]">☀ Light mode</span>
+      <div className="mt-auto">
+        <div
+          onClick={() => onViewChange?.('profile')}
+          className={`flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-colors duration-150 border-t border-[#2a2a2a] ${
+            activeView === 'profile' ? 'bg-white/5' : 'hover:bg-white/5'
+          }`}
+        >
+          <div className="w-6 h-6 rounded-full bg-[#2e2457] flex items-center justify-center shrink-0">
+            <span className="text-[#6366f1] text-[10px] font-bold">D</span>
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className={`text-[12px] font-medium truncate ${activeView === 'profile' ? 'text-white' : 'text-[#9ba3af]'}`}>
+              Zlatanoski
+            </span>
+            <span className="text-[10px] text-[#595e69] truncate">Profile &amp; Settings</span>
+          </div>
+        </div>
+        <div className="px-4 py-3">
+          <span className="text-xs text-[#595e69]">☀ Light mode</span>
+        </div>
       </div>
     </aside>
   )

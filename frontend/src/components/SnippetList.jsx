@@ -1,6 +1,6 @@
 import SnippetRow from './SnippetRow'
 
-export default function SnippetList({ snippets = [] }) {
+export default function SnippetList({ snippets = [], selectedSnippetId, onSelectSnippet }) {
   if (snippets.length === 0) {
     return (
       <div className="px-6 py-12 text-center text-sm text-[#595e69]">
@@ -12,7 +12,12 @@ export default function SnippetList({ snippets = [] }) {
   return (
     <div>
       {snippets.map((snippet) => (
-        <SnippetRow key={snippet.id} snippet={snippet} />
+        <SnippetRow
+          key={snippet.id}
+          snippet={snippet}
+          isSelected={snippet.id === selectedSnippetId}
+          onSelect={onSelectSnippet}
+        />
       ))}
     </div>
   )
