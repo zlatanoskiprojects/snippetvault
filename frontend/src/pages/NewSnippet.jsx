@@ -1,0 +1,183 @@
+import { useState } from 'react'
+import CodeEditor from '../components/CodeEditor'
+
+const LANGUAGES = ['TypeScript', 'JavaScript', 'Python', 'Shell', 'SQL', 'Go', 'Rust']
+const COLLECTIONS = ['React Hooks', 'Python Utils', 'DevOps Scripts']
+
+const inputBase =
+  'w-full bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white placeholder-[#595e69] px-3 focus:outline-none focus:border-[#6366f1] transition-colors duration-150'
+
+const selectBase =
+  'w-full h-[38px] bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white px-3 appearance-none cursor-pointer focus:outline-none focus:border-[#6366f1] transition-colors duration-150'
+
+function SelectWrapper({ label, children }) {
+  return (
+    <div className="flex-1">
+      <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">{label}</label>
+      <div className="relative">
+        {children}
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#595e69] text-xs pointer-events-none">
+          ∨
+        </span>
+      </div>
+    </div>
+  )
+}
+
+export default function NewSnippet({ onCancel }) {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [language, setLanguage] = useState('TypeScript')
+  const [visibility, setVisibility] = useState('Private')
+  const [tags, setTags] = useState(['#react', '#hooks'])
+  const [tagInput, setTagInput] = useState('')
+  const [collection, setCollection] = useState('')
+  const [code, setCode] = useState('')
+
+  function handleTagKeyDown(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      const val = tagInput.replace(/,$/, '').trim()
+      if (!val) return
+      e.preventDefault()
+      setTags(prev => [...prev, val])
+      setTagInput('')
+    }
+  }
+
+  function removeTag(i) {
+    setTags(prev => prev.filter((_, idx) => idx !== i))
+  }
+
+  function handleSave() {
+    console.log({ title, description, language, visibility, tags, collection, code })
+  }
+
+  return (
+    <div className="flex flex-col h-full min-w-0">
+      <div className="flex items-center px-6 py-4 border-b border-[#2a2a2a] shrink-0">
+        <h1 className="text-lg font-semibold text-white">Create new snippet</h1>
+      </div>
+
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
+
+        <div className="flex flex-col flex-1 min-w-0 px-6 py-5 gap-4 overflow-y-auto">
+
+          <div>
+            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="e.g. useDebounce hook"
+              className={`${inputBase} h-[38px]`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Description</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Optional description..."
+              className={`${inputBase} h-[60px] py-2 resize-none`}
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <SelectWrapper label="Language">
+              <select
+                value={language}
+                onChange={e => setLanguage(e.target.value)}
+                className={selectBase}
+              >
+                {LANGUAGES.map(l => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+            </SelectWrapper>
+
+            <SelectWrapper label="Visibility">
+              <select
+                value={visibility}
+                onChange={e => setVisibility(e.target.value)}
+                className={selectBase}
+              >
+                <option value="Private">Private</option>
+                <option value="Public">Public</option>
+              </select>
+            </SelectWrapper>
+          </div>
+
+          <div>
+            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Tags</label>
+            <div className="min-h-[38px] bg-[#222] border border-[#2a2a2a] rounded-md px-2 py-1.5 flex flex-wrap gap-1.5 items-center focus-within:border-[#6366f1] transition-colors duration-150">
+              {tags.map((tag, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-1 bg-[#242424] text-[#595e69] text-[10px] px-2 py-0.5 rounded"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(i)}
+                    className="text-[#595e69] hover:text-white leading-none ml-0.5"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                placeholder="Add tag…"
+                className="bg-transparent text-sm text-white placeholder-[#595e69] outline-none flex-1 min-w-[80px]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Collection</label>
+            <div className="relative">
+              <select
+                value={collection}
+                onChange={e => setCollection(e.target.value)}
+                className={selectBase}
+              >
+                <option value="">Select a collection</option>
+                {COLLECTIONS.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#595e69] text-xs pointer-events-none">
+                ∨
+              </span>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-auto pt-5">
+            <button
+              type="button"
+              onClick={handleSave}
+              className="bg-[#6366f1] hover:bg-indigo-500 text-white text-sm font-medium px-5 h-[36px] rounded-md transition-colors duration-150"
+            >
+              Save snippet
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:bg-[#222] text-sm px-5 h-[36px] rounded-md transition-colors duration-150"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <div className="flex lg:w-[55%] min-h-[300px] min-w-0 px-6 pb-6 pt-5 lg:pt-5">
+          <CodeEditor language={language} code={code} onChange={setCode} />
+        </div>
+      </div>
+    </div>
+  )
+}

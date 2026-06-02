@@ -9,6 +9,11 @@ export async function getAllSnippets() {
     const response = await fetch(`${BASE_URL}`, {
         headers: getAuthHeaders()
     });
+    if (!response.ok) {
+        const err = new Error(response.status === 401 ? 'Unauthorized' : `Server error: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
     return response.json();
 }
 
@@ -18,7 +23,6 @@ export async function getSnippetById(id) {
     });
     return response.json();
 }
-//data in this case will be an object containing the fields needed for creating a snippet
 export async function createSnippet(data) {
     const response = await fetch(`${BASE_URL}`, {
         method: 'POST',
