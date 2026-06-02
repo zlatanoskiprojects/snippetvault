@@ -9,6 +9,11 @@ export async function getAllSnippets() {
     const response = await fetch(`${BASE_URL}`, {
         headers: getAuthHeaders()
     });
+    if (!response.ok) {
+        const err = new Error(response.status === 401 ? 'Unauthorized' : `Server error: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
     return response.json();
 }
 
