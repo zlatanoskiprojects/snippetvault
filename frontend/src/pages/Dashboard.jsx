@@ -19,10 +19,11 @@ export default function Dashboard() {
   const { snippets, setSnippets, loading, error } = useSnippets()
   const [selectedSnippet, setSelectedSnippet] = useState(null)
   const [editingSnippet, setEditingSnippet] = useState(null)
+  const [activeCollection, setActiveCollection] = useState(null)
   const toast = useToast()
 
   function onSelectSnippet(snippet) {
-    setSelectedSnippet(snippet)
+    setSelectedSnippet(prev => prev?.id === snippet.id ? null : snippet)
   }
 
   function onCloseDetail() {
@@ -59,6 +60,17 @@ export default function Dashboard() {
   function onCancelForm() {
     setEditingSnippet(null)
     setView('list')
+  }
+
+  function handleSelectCollection(collection) {
+    setActiveCollection(collection)
+    setSelectedSnippet(null)
+    setView('list')
+  }
+
+  function handleClearCollection() {
+    setActiveCollection(null)
+    setSelectedSnippet(null)
   }
 
   return (
@@ -100,9 +112,12 @@ export default function Dashboard() {
         ) : view === 'profile' ? (
           <ProfileView />
         ) : view === 'collections' ? (
-          <CollectionsView />
-        ) : view === 'list' ? (
-          loading ? (
+          <CollectionsView onSelectCollection={handleSelectCollection} />
+        ) : view === 'list' ? (() => {
+          const displayedSnippets = activeCollection
+            ? snippets.filter(s => s.collection_id === activeCollection.id)
+            : snippets
+          return loading ? (
             <div className="flex flex-1 items-center justify-center">
               <div className="spinner-border text-light" role="status">
                 <span className="visually-hidden">Loading...</span>
@@ -118,7 +133,7 @@ export default function Dashboard() {
             <>
               <div className="flex-1 min-w-0 overflow-y-auto border-r border-[#2a2a2a]">
                 <SnippetList
-                  snippets={snippets}
+                  snippets={displayedSnippets}
                   selectedSnippetId={selectedSnippet.id}
                   onSelectSnippet={onSelectSnippet}
                 />
@@ -145,20 +160,22 @@ export default function Dashboard() {
           ) : (
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
               <TopBar
-                snippetCount={snippets.length}
+                snippetCount={displayedSnippets.length}
+                title={activeCollection ? activeCollection.name : 'All snippets'}
+                onBack={activeCollection ? handleClearCollection : undefined}
                 onMenuClick={() => setSidebarOpen(true)}
                 onNewSnippet={() => setView('new')}
               />
               <div className="flex-1 overflow-y-auto">
                 <SnippetList
-                  snippets={snippets}
+                  snippets={displayedSnippets}
                   selectedSnippetId={null}
                   onSelectSnippet={onSelectSnippet}
                 />
               </div>
             </div>
           )
-        ) : (
+        })() : (
           <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
             <NewSnippet
               snippet={editingSnippet}

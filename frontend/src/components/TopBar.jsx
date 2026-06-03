@@ -1,9 +1,20 @@
-export default function TopBar({ snippetCount, onMenuClick, onNewSnippet }) {
+export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, title = 'All snippets', onBack }) {
   return (
     <header className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a]">
-      <div>
-        <h1 className="text-lg font-semibold text-white leading-tight">All snippets</h1>
-        <p className="text-xs text-[#595e69] mt-0.5">{snippetCount} snippets</p>
+      <div className="flex items-center gap-2 min-w-0">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-[#9ba3af] hover:text-white transition-colors duration-150 shrink-0 leading-none"
+          >
+            ←
+          </button>
+        )}
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold text-white leading-tight truncate">{title}</h1>
+          <p className="text-xs text-[#595e69] mt-0.5">{snippetCount} snippets</p>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

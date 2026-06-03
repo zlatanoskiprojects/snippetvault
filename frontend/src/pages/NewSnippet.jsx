@@ -2,9 +2,9 @@ import { useState } from 'react'
 import CodeEditor from '../components/CodeEditor'
 import { createSnippet, updateSnippet } from '../api/snippets'
 import { useToast } from '../hooks/useToast'
+import { useCollections } from '../hooks/useCollections'
 
 const LANGUAGES = ['TypeScript', 'JavaScript', 'Python', 'Shell', 'SQL', 'Go', 'Rust']
-const COLLECTIONS = ['React Hooks', 'Python Utils', 'DevOps Scripts']
 
 const inputBase =
   'w-full bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white placeholder-[#595e69] px-3 focus:outline-none focus:border-[#6366f1] transition-colors duration-150'
@@ -29,6 +29,7 @@ function SelectWrapper({ label, children }) {
 export default function NewSnippet({ snippet, onCancel, onSaved }) {
   const isEditing = Boolean(snippet)
   const toast = useToast()
+  const { collections } = useCollections()
 
   const [title, setTitle] = useState(snippet?.title ?? '')
   const [description, setDescription] = useState(snippet?.description ?? '')
@@ -38,7 +39,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
   )
   const [tags, setTags] = useState(['#react', '#hooks'])
   const [tagInput, setTagInput] = useState('')
-  const [collection, setCollection] = useState('')
+  const [collectionId, setCollectionId] = useState(snippet?.collection_id ?? '')
   const [code, setCode] = useState(snippet?.code ?? '')
   const [saving, setSaving] = useState(false)
 
@@ -67,6 +68,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
       code,
       language,
       visibility: visibility.toLowerCase(),
+      collection_id: collectionId || null,
     }
     setSaving(true)
     try {
@@ -177,13 +179,13 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
             <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Collection</label>
             <div className="relative">
               <select
-                value={collection}
-                onChange={e => setCollection(e.target.value)}
+                value={collectionId}
+                onChange={e => setCollectionId(e.target.value ? Number(e.target.value) : '')}
                 className={selectBase}
               >
-                <option value="">Select a collection</option>
-                {COLLECTIONS.map(c => (
-                  <option key={c} value={c}>{c}</option>
+                <option value="">No collection</option>
+                {collections.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#595e69] text-xs pointer-events-none">

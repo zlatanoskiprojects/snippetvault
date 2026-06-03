@@ -1,17 +1,12 @@
-const BASE_URL = 'http://localhost:3000/api/collections';
+import { getAuthHeaders, throwIfNotOk } from './utils';
 
-function getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    };
-}
+const BASE_URL = `${import.meta.env.VITE_API_URL}/collections`;
 
 export async function getAllCollections() {
     const response = await fetch(BASE_URL, {
         headers: getAuthHeaders(),
     });
+    await throwIfNotOk(response);
     return response.json();
 }
 
@@ -21,6 +16,7 @@ export async function createCollection(data) {
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
+    await throwIfNotOk(response);
     return response.json();
 }
 
@@ -30,6 +26,7 @@ export async function updateCollection(id, data) {
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
+    await throwIfNotOk(response);
     return response.json();
 }
 
@@ -38,13 +35,6 @@ export async function deleteCollection(id) {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
-    return response.json();
-}
-
-export async function assignSnippetToCollection(collectionId, snippetId) {
-    const response = await fetch(`${BASE_URL}/${collectionId}/snippets/${snippetId}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-    });
+    await throwIfNotOk(response);
     return response.json();
 }
