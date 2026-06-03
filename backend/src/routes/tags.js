@@ -153,6 +153,7 @@ router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Tag not assigned to this snippet' });
         }
+        await pool.query('DELETE FROM tag WHERE id NOT IN (SELECT tag_id FROM snippet_tag)');
         return res.status(200).json({ message: 'Tag removed from snippet successfully' });
     } catch (error) {
         console.log('Error removing tag from snippet:', error);

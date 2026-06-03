@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSnippets } from '../hooks/useSnippets'
+import { getAllTags } from '../api/tags'
 import SnippetRow from '../components/SnippetRow'
 
 const LANG_MAP = { ts: 'TS', js: 'JS', py: 'PY', rs: 'RS', sql: 'SQL' }
@@ -13,7 +14,6 @@ const LANG_CHIPS = [
   { label: 'SQL',        value: 'sql' },
 ]
 
-const TAG_CHIPS = ['#react', '#utils', '#auth', '#db', '#docker', '#hono']
 
 const SORT_CHIPS = [
   { label: 'Date modified', value: 'modified' },
@@ -21,11 +21,16 @@ const SORT_CHIPS = [
   { label: 'Title A–Z',     value: 'alpha'    },
 ]
 
-export default function SearchView({ query, onQueryChange, onClose }) {
+export default function SearchView({ query, onQueryChange, onClose, onSelectSnippet }) {
   const { snippets, loading, error } = useSnippets()
   const [activeLang, setActiveLang] = useState('all')
   const [activeTags, setActiveTags] = useState([])
   const [activeSort, setActiveSort] = useState('modified')
+  const [tagChips, setTagChips] = useState([])
+
+  useEffect(() => {
+    getAllTags().then(tags => setTagChips(tags.map(t => t.name))).catch(() => {})
+  }, [])
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -113,7 +118,7 @@ export default function SearchView({ query, onQueryChange, onClose }) {
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-[#595e69] shrink-0 w-[60px]">Tags:</span>
-          {TAG_CHIPS.map(tag => (
+          {tagChips.map(tag => (
             <button
               key={tag}
               type="button"
@@ -171,7 +176,7 @@ export default function SearchView({ query, onQueryChange, onClose }) {
           </div>
         ) : (
           filtered.map(snippet => (
-            <SnippetRow key={snippet.id} snippet={snippet} />
+            <SnippetRow key={snippet.id} snippet={snippet} onSelect={onSelectSnippet} />
           ))
         )}
       </div>

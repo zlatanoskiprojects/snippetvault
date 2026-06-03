@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [selectedSnippet, setSelectedSnippet] = useState(null)
   const [editingSnippet, setEditingSnippet] = useState(null)
   const [activeCollection, setActiveCollection] = useState(null)
+  const [activeTag, setActiveTag] = useState(null)
   const toast = useToast()
 
   function onSelectSnippet(snippet) {
@@ -64,6 +65,7 @@ export default function Dashboard() {
 
   function handleSelectCollection(collection) {
     setActiveCollection(collection)
+    setActiveTag(null)
     setSelectedSnippet(null)
     setView('list')
   }
@@ -73,10 +75,23 @@ export default function Dashboard() {
     setSelectedSnippet(null)
   }
 
+  function handleSelectTag(tag) {
+    setActiveTag(tag)
+    setActiveCollection(null)
+    setSelectedSnippet(null)
+    setView('list')
+  }
+
+  function handleClearTag() {
+    setActiveTag(null)
+    setSelectedSnippet(null)
+  }
+
   return (
     <div className="flex h-full bg-[#0f0f0f] text-white overflow-hidden">
       <div className="hidden lg:flex">
         <Sidebar
+          snippets={snippets}
           searchQuery={searchQuery}
           onSearchChange={q => { setSearchQuery(q); if (q) setIsSearching(true) }}
           onSearchFocus={() => setIsSearching(true)}
@@ -84,6 +99,8 @@ export default function Dashboard() {
           isSearchActive={isSearching}
           activeView={view}
           onViewChange={setView}
+          activeTag={activeTag}
+          onTagChange={handleSelectTag}
         />
       </div>
 
@@ -95,8 +112,11 @@ export default function Dashboard() {
           />
           <div className="absolute left-0 top-0 h-full z-50">
             <Sidebar
+              snippets={snippets}
               activeView={view}
               onViewChange={v => { setView(v); setSidebarOpen(false) }}
+              activeTag={activeTag}
+              onTagChange={tag => { handleSelectTag(tag); setSidebarOpen(false) }}
             />
           </div>
         </div>
@@ -108,15 +128,16 @@ export default function Dashboard() {
             query={searchQuery}
             onQueryChange={setSearchQuery}
             onClose={() => { setSearchQuery(''); setIsSearching(false) }}
+            onSelectSnippet={snippet => { setSearchQuery(''); setIsSearching(false); onSelectSnippet(snippet) }}
           />
         ) : view === 'profile' ? (
           <ProfileView />
         ) : view === 'collections' ? (
           <CollectionsView onSelectCollection={handleSelectCollection} />
         ) : view === 'list' ? (() => {
-          const displayedSnippets = activeCollection
-            ? snippets.filter(s => s.collection_id === activeCollection.id)
-            : snippets
+          const displayedSnippets = snippets
+            .filter(s => !activeCollection || s.collection_id === activeCollection.id)
+            .filter(s => !activeTag || (s.tags || []).includes(activeTag))
           return loading ? (
             <div className="flex flex-1 items-center justify-center">
               <div className="spinner-border text-light" role="status">
@@ -161,8 +182,8 @@ export default function Dashboard() {
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
               <TopBar
                 snippetCount={displayedSnippets.length}
-                title={activeCollection ? activeCollection.name : 'All snippets'}
-                onBack={activeCollection ? handleClearCollection : undefined}
+                title={activeCollection ? activeCollection.name : activeTag ? `#${activeTag}` : 'All snippets'}
+                onBack={activeCollection ? handleClearCollection : activeTag ? handleClearTag : undefined}
                 onMenuClick={() => setSidebarOpen(true)}
                 onNewSnippet={() => setView('new')}
               />

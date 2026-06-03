@@ -20,16 +20,28 @@ router.get('/',authMiddleware,async(req,res)=>{
 
         let snippets;
 
+        const baseQuery = `
+            SELECT s.*, GROUP_CONCAT(t.name) AS tags
+            FROM snippet s
+            LEFT JOIN snippet_tag st ON st.snippet_id = s.id
+            LEFT JOIN tag t ON t.id = st.tag_id
+            WHERE s.user_id = ?
+        `;
+
         if(q){
-            const searchTerm =  `%${q}%`;
+            const searchTerm = `%${q}%`;
             [snippets] = await pool.query(
-                'SELECT * FROM snippet WHERE user_id = ? AND (title LIKE ? OR language LIKE ?)',
-                [userId, searchTerm, searchTerm]
+                baseQuery + ' AND (s.title LIKE ? OR s.language LIKE ? OR s.description LIKE ? OR t.name LIKE ?) GROUP BY s.id ORDER BY s.created_at DESC',
+                [userId, searchTerm, searchTerm, searchTerm, searchTerm]
             );
         }else{
-            [snippets] = await pool.query('SELECT * FROM snippet WHERE user_id = ?',[userId]);
-
+            [snippets] = await pool.query(
+                baseQuery + ' GROUP BY s.id ORDER BY s.created_at DESC',
+                [userId]
+            );
         }
+
+        snippets = snippets.map(s => ({ ...s, tags: s.tags ? s.tags.split(',') : [] }));
 
         return res.status(200).json(snippets);
     }catch(error){
@@ -39,18 +51,28 @@ router.get('/',authMiddleware,async(req,res)=>{
 
 })
 //get a single snippet by id
-router.get('/:id',authMiddleware,snippetIdValidation,async(req,res)=>{
+router.get('/:id',authMiddleware,snippetIdValidation,async(req
+                                                           ,res)=>{
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
     }
     try{
         //this query fetches in db the snippet with the specific id of that specific user_id
-        const [rows] = await pool.query('SELECT * FROM snippet WHERE id = ? AND user_id = ?',[req.params.id,req.userId]);
+        const [rows] = await pool.query(
+            `SELECT s.*, GROUP_CONCAT(t.name) AS tags
+             FROM snippet s
+             LEFT JOIN snippet_tag st ON st.snippet_id = s.id
+             LEFT JOIN tag t ON t.id = st.tag_id
+             WHERE s.id = ? AND s.user_id = ?
+             GROUP BY s.id`,
+            [req.params.id, req.userId]
+        );
         if(rows.length === 0){
             return res.status(404).json({error:'Snippet not found'})
         }
-        return res.status(200).json(rows[0]);
+        const snippet = { ...rows[0], tags: rows[0].tags ? rows[0].tags.split(',') : [] };
+        return res.status(200).json(snippet);
     }catch(error){
         console.log("Error fetching snippet",error);
         return res.status(500).json({error:'Internal server error'})
@@ -99,6 +121,7 @@ router.delete('/:id',authMiddleware,snippetIdValidation,async(req   ,res)=>{
         if(result.affectedRows === 0){
             return res.status(404).json({error:'Snippet not found'})
         }
+        await pool.query('DELETE FROM tag WHERE id NOT IN (SELECT tag_id FROM snippet_tag)');
         return res.status(200).json({message:'Snippet deleted successfully'})
     }catch(error){
         console.log("Error deleting snippet",error);

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import CodeEditor from '../components/CodeEditor'
 import { createSnippet, updateSnippet } from '../api/snippets'
+import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } from '../api/tags'
 import { useToast } from '../hooks/useToast'
 import { useCollections } from '../hooks/useCollections'
 
@@ -37,7 +38,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
   const [visibility, setVisibility] = useState(
     snippet?.visibility ? snippet.visibility.charAt(0).toUpperCase() + snippet.visibility.slice(1) : 'Private'
   )
-  const [tags, setTags] = useState(['#react', '#hooks'])
+  const [tags, setTags] = useState(snippet?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
   const [collectionId, setCollectionId] = useState(snippet?.collection_id ?? '')
   const [code, setCode] = useState(snippet?.code ?? '')
@@ -62,6 +63,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
       toast.error('Title is required.')
       return
     }
+    const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
@@ -74,12 +76,30 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
     try {
       if (isEditing) {
         await updateSnippet(snippet.id, payload)
+        const existingTags = snippet.tags || []
+        const toAdd = finalTags.filter(t => !existingTags.includes(t))
+        const toRemove = existingTags.filter(t => !finalTags.includes(t))
+        if (toAdd.length || toRemove.length) {
+          const allTags = await getAllTags()
+          for (const name of toAdd) {
+            const tag = await getOrCreateTag(name)
+            await assignTagToSnippet(tag.id, snippet.id)
+          }
+          for (const name of toRemove) {
+            const tag = allTags.find(t => t.name === name)
+            if (tag) await removeTagFromSnippet(tag.id, snippet.id)
+          }
+        }
         toast.success('Snippet updated.')
-        onSaved({ ...snippet, ...payload })
+        onSaved({ ...snippet, ...payload, tags: finalTags })
       } else {
         const created = await createSnippet(payload)
+        for (const name of finalTags) {
+          const tag = await getOrCreateTag(name)
+          await assignTagToSnippet(tag.id, created.id)
+        }
         toast.success('Snippet created.')
-        onSaved(created)
+        onSaved({ ...created, tags: finalTags })
       }
     } catch (err) {
       toast.error(err.message || 'Something went wrong.')

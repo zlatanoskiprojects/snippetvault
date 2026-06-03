@@ -1,25 +1,18 @@
-const TAG_COLORS = {
-  react: '#3d77fc',
-  utils: '#22c55e',
-  auth:  '#8c5af3',
-  db:    '#fba528',
-}
+const TAG_DOT_COLORS = ['#3d77fc', '#22c55e', '#8c5af3', '#fba528', '#ef4444', '#6366f1']
 
 const libraryItems = [
-  { label: 'All Snippets', view: 'list',        count: 24 },
-  { label: 'Favourites',   view: 'favourites',  count: 6  },
-  { label: 'Private',      view: 'private',     count: 3  },
-  { label: 'Collections',  view: 'collections', count: 6  },
+  { label: 'All Snippets', view: 'list'        },
+  { label: 'Collections',  view: 'collections' },
 ]
 
-const tagItems = [
-  { label: 'react', count: 8 },
-  { label: 'utils', count: 5 },
-  { label: 'auth',  count: 4 },
-  { label: 'db',    count: 7 },
-]
-
-export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange }) {
+export default function Sidebar({ snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }) {
+  const tagItems = snippets
+    .flatMap(s => s.tags || [])
+    .reduce((acc, tag) => {
+      acc[tag] = (acc[tag] || 0) + 1
+      return acc
+    }, {})
+  const tagList = Object.entries(tagItems).map(([label, count]) => ({ label, count }))
   return (
     <aside className="w-48 bg-[#161616] border-r border-[#2a2a2a] flex flex-col h-full shrink-0">
       <div className="flex items-center gap-2 px-3 py-3">
@@ -63,9 +56,6 @@ export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocu
               <span className={`text-[13px] ${isActive ? 'text-white' : 'text-[#9ba3af]'}`}>
                 {item.label}
               </span>
-              <span className={`text-[11px] font-medium ${isActive ? 'text-white' : 'text-[#595e69]'}`}>
-                {item.count}
-              </span>
             </div>
           )
         })}
@@ -73,21 +63,27 @@ export default function Sidebar({ searchQuery = '', onSearchChange, onSearchFocu
 
       <div className="mt-5 px-3">
         <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Tags</p>
-        {tagItems.map((tag) => (
-          <div
-            key={tag.label}
-            className="flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer hover:bg-white/5 transition-colors duration-150"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span
-                className="w-2 h-2 rounded-sm inline-block shrink-0"
-                style={{ backgroundColor: TAG_COLORS[tag.label] ?? '#9ba3af' }}
-              />
-              <span className="text-[13px] text-[#9ba3af] truncate">{tag.label}</span>
+        {tagList.map((tag, i) => {
+          const isActive = activeTag === tag.label
+          return (
+            <div
+              key={tag.label}
+              onClick={() => onTagChange?.(tag.label)}
+              className={`flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition-colors duration-150 ${
+                isActive ? 'bg-[#6366f1]' : 'hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="w-2 h-2 rounded-sm inline-block shrink-0"
+                  style={{ backgroundColor: TAG_DOT_COLORS[i % TAG_DOT_COLORS.length] }}
+                />
+                <span className={`text-[13px] truncate ${isActive ? 'text-white' : 'text-[#9ba3af]'}`}>{tag.label}</span>
+              </div>
+              <span className={`text-[11px] font-medium ml-2 shrink-0 ${isActive ? 'text-white/70' : 'text-[#595e69]'}`}>{tag.count}</span>
             </div>
-            <span className="text-[11px] text-[#595e69] font-medium ml-2 shrink-0">{tag.count}</span>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="mt-auto">
