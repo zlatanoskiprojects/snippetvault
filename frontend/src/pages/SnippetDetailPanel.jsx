@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import LanguageBadge from '../components/LanguageBadge'
 import TagPill from '../components/TagPill'
+import CodeEditor from '../components/CodeEditor'
 
 const LANG_NAMES = {
   TS: 'TypeScript',
@@ -27,8 +28,6 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
     setTimeout(() => setCopied(false), 1500)
   }
 
-  const lines = snippet.code.split('\n')
-
   return (
     <div className="flex flex-col h-full bg-[#101010]">
       <div className="flex items-center justify-between px-4 h-[56px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
@@ -41,9 +40,18 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
           </button>
           <span className="text-[13px] font-medium text-[#9ba3af]">Editor 1</span>
         </div>
-        <div className="bg-[#222] border border-[#2a2a2a] rounded-md text-xs text-white px-3 h-[28px] flex items-center gap-1 select-none">
-          {LANG_NAMES[snippet.language] ?? snippet.language}
-          <span className="text-[#9ba3af]">∨</span>
+        <div className="flex items-center gap-2">
+          <div className="bg-[#222] border border-[#2a2a2a] rounded-md text-xs text-white px-3 h-[28px] flex items-center gap-1 select-none">
+            {LANG_NAMES[snippet.language] ?? snippet.language}
+            <span className="text-[#9ba3af]">∨</span>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="hidden lg:flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
@@ -73,20 +81,8 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
         <div className="border-t border-[#2a2a2a] mt-4" />
       </div>
 
-      <div className="flex flex-1 overflow-hidden bg-[#0d0d0d] mx-3 my-3 rounded-lg">
-        <div className="flex flex-col items-end pr-3 pt-3 select-none w-[42px] shrink-0 overflow-hidden">
-          {lines.map((_, i) => (
-            <span key={i} className="text-[11px] text-[#595e69] leading-[20px] font-mono">
-              {i + 1}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-auto pt-3 pr-4 pl-2">
-          <pre className="text-[12px] font-mono leading-[20px] text-[#9ba3af] whitespace-pre">
-            {snippet.code}
-          </pre>
-        </div>
+      <div className="flex flex-col flex-1 overflow-hidden mx-3 my-3 min-h-0">
+        <CodeEditor language={snippet.language} code={snippet.code} editable={false} label={null} />
       </div>
 
       <div className="flex items-center justify-between px-5 h-[56px] border-t border-[#2a2a2a] shrink-0 bg-[#101010]">

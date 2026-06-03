@@ -1,8 +1,8 @@
 import { getAuthHeaders, throwIfNotOk } from './utils';
 
-const BASE_URL = `${import.meta.env.VITE_API_URL}/collections`;
+const BASE_URL = import.meta.env.VITE_API_URL;
 
-export async function getAllCollections() {
+export async function getAiSettings() {
     const response = await fetch(BASE_URL, {
         headers: getAuthHeaders(),
     });
@@ -10,7 +10,7 @@ export async function getAllCollections() {
     return response.json();
 }
 
-export async function createCollection(data) {
+export async function saveAiSettings(data) {
     const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -20,21 +20,12 @@ export async function createCollection(data) {
     return response.json();
 }
 
-export async function updateCollection(id, data) {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(data),
-    });
-    await throwIfNotOk(response);
-    return response.json();
-}
-
-export async function deleteCollection(id) {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+export async function deleteAiSettings() {
+    const response = await fetch(BASE_URL, {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
     await throwIfNotOk(response);
+    if (response.status === 204) return null;
     return response.json();
 }

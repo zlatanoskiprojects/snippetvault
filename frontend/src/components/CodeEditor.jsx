@@ -1,15 +1,29 @@
-import { useRef, useEffect } from 'react'
+import { useMemo } from 'react'
+import CodeMirror from '@uiw/react-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
+import { python } from '@codemirror/lang-python'
+import { css } from '@codemirror/lang-css'
+import { html } from '@codemirror/lang-html'
+import { sql } from '@codemirror/lang-sql'
+import { oneDark } from '@codemirror/theme-one-dark'
 
-export default function CodeEditor({ language, code, onChange }) {
-  const textareaRef = useRef(null)
-  const lines = code.split('\n')
+const LANG_MAP = {
+  javascript: javascript(),
+  js: javascript(),
+  typescript: javascript({ typescript: true }),
+  ts: javascript({ typescript: true }),
+  python: python(),
+  py: python(),
+  css: css(),
+  html: html(),
+  sql: sql(),
+}
 
-  useEffect(() => {
-    const ta = textareaRef.current
-    if (!ta) return
-    ta.style.height = 'auto'
-    ta.style.height = ta.scrollHeight + 'px'
-  }, [code])
+export default function CodeEditor({ language, code, onChange, editable = true, label = 'Code' }) {
+  const extensions = useMemo(() => {
+    const ext = LANG_MAP[(language || '').toLowerCase()]
+    return ext ? [ext] : []
+  }, [language])
 
   function handleCopy() {
     navigator.clipboard.writeText(code)
@@ -17,7 +31,7 @@ export default function CodeEditor({ language, code, onChange }) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <p className="text-xs text-[#9ba3af] mb-2">Code</p>
+      {label && <p className="text-xs text-[#9ba3af] mb-2">{label}</p>}
       <div className="flex flex-col bg-[#0d0d0d] rounded-lg overflow-hidden flex-1 min-h-[300px]">
         <div className="flex items-center justify-between px-3 h-[40px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
           <span className="text-xs text-[#595e69] font-medium">{language || 'TypeScript'}</span>
@@ -30,24 +44,23 @@ export default function CodeEditor({ language, code, onChange }) {
           </button>
         </div>
 
-        <div className="flex flex-1 overflow-auto">
-          <div className="flex flex-col items-end pr-3 pt-2 select-none w-[42px] shrink-0">
-            {lines.map((_, i) => (
-              <span key={i} className="text-[11px] text-[#595e69] leading-[20px]">
-                {i + 1}
-              </span>
-            ))}
-          </div>
-
-          <textarea
-            ref={textareaRef}
-            value={code}
-            onChange={e => onChange(e.target.value)}
-            placeholder="// Start typing your code here..."
-            spellCheck={false}
-            className="flex-1 bg-transparent resize-none overflow-hidden outline-none text-sm text-white font-mono leading-[20px] pt-2 pr-4 pl-2 placeholder-[#668066] min-w-0"
-          />
-        </div>
+        <CodeMirror
+          value={code}
+          onChange={onChange}
+          extensions={extensions}
+          theme={oneDark}
+          editable={editable}
+          basicSetup={{
+            lineNumbers: true,
+            bracketMatching: true,
+            closeBrackets: true,
+            indentOnInput: true,
+            syntaxHighlighting: true,
+            highlightActiveLine: editable,
+            foldGutter: false,
+          }}
+          style={{ fontSize: 13, flex: 1 }}
+        />
       </div>
     </div>
   )

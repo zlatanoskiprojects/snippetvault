@@ -8,6 +8,8 @@ import CollectionsView from './CollectionsView'
 import SnippetDetailPanel from './SnippetDetailPanel'
 import ProfileView from './ProfileView'
 import { useSnippets } from '../hooks/useSnippets'
+import { deleteSnippet } from '../api/snippets'
+import { useToast } from '../hooks/useToast'
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -16,9 +18,12 @@ export default function Dashboard() {
   const [isSearching, setIsSearching] = useState(false)
   const { snippets, setSnippets, loading, error } = useSnippets()
   const [selectedSnippet, setSelectedSnippet] = useState(null)
+  const [editingSnippet, setEditingSnippet] = useState(null)
+  const [activeCollection, setActiveCollection] = useState(null)
+  const toast = useToast()
 
   function onSelectSnippet(snippet) {
-    setSelectedSnippet(snippet)
+    setSelectedSnippet(prev => prev?.id === snippet.id ? null : snippet)
   }
 
   function onCloseDetail() {
@@ -26,13 +31,46 @@ export default function Dashboard() {
   }
 
   function onEdit(snippet) {
-    console.log('edit', snippet)
+    setEditingSnippet(snippet)
     setView('new')
   }
 
-  function onDelete(id) {
-    setSnippets(prev => prev.filter(s => s.id !== id))
-    if (selectedSnippet?.id === id) setSelectedSnippet(null)
+  async function onDelete(id) {
+    try {
+      await deleteSnippet(id)
+      setSnippets(prev => prev.filter(s => s.id !== id))
+      if (selectedSnippet?.id === id) setSelectedSnippet(null)
+      toast.success('Snippet deleted.')
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete snippet.')
+    }
+  }
+
+  function onSaved(saved) {
+    setSnippets(prev => {
+      const exists = prev.some(s => s.id === saved.id)
+      if (exists) return prev.map(s => s.id === saved.id ? saved : s)
+      return [saved, ...prev]
+    })
+    if (selectedSnippet?.id === saved.id) setSelectedSnippet(saved)
+    setEditingSnippet(null)
+    setView('list')
+  }
+
+  function onCancelForm() {
+    setEditingSnippet(null)
+    setView('list')
+  }
+
+  function handleSelectCollection(collection) {
+    setActiveCollection(collection)
+    setSelectedSnippet(null)
+    setView('list')
+  }
+
+  function handleClearCollection() {
+    setActiveCollection(null)
+    setSelectedSnippet(null)
   }
 
   return (
@@ -74,9 +112,12 @@ export default function Dashboard() {
         ) : view === 'profile' ? (
           <ProfileView />
         ) : view === 'collections' ? (
-          <CollectionsView />
-        ) : view === 'list' ? (
-          loading ? (
+          <CollectionsView onSelectCollection={handleSelectCollection} />
+        ) : view === 'list' ? (() => {
+          const displayedSnippets = activeCollection
+            ? snippets.filter(s => s.collection_id === activeCollection.id)
+            : snippets
+          return loading ? (
             <div className="flex flex-1 items-center justify-center">
               <div className="spinner-border text-light" role="status">
                 <span className="visually-hidden">Loading...</span>
@@ -92,7 +133,7 @@ export default function Dashboard() {
             <>
               <div className="flex-1 min-w-0 overflow-y-auto border-r border-[#2a2a2a]">
                 <SnippetList
-                  snippets={snippets}
+                  snippets={displayedSnippets}
                   selectedSnippetId={selectedSnippet.id}
                   onSelectSnippet={onSelectSnippet}
                 />
@@ -119,22 +160,28 @@ export default function Dashboard() {
           ) : (
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
               <TopBar
-                snippetCount={snippets.length}
+                snippetCount={displayedSnippets.length}
+                title={activeCollection ? activeCollection.name : 'All snippets'}
+                onBack={activeCollection ? handleClearCollection : undefined}
                 onMenuClick={() => setSidebarOpen(true)}
                 onNewSnippet={() => setView('new')}
               />
               <div className="flex-1 overflow-y-auto">
                 <SnippetList
-                  snippets={snippets}
+                  snippets={displayedSnippets}
                   selectedSnippetId={null}
                   onSelectSnippet={onSelectSnippet}
                 />
               </div>
             </div>
           )
-        ) : (
+        })() : (
           <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-            <NewSnippet onCancel={() => setView('list')} />
+            <NewSnippet
+              snippet={editingSnippet}
+              onCancel={onCancelForm}
+              onSaved={onSaved}
+            />
           </div>
         )}
       </div>
