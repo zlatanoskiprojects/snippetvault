@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import CodeEditor from '../components/CodeEditor'
+import { createSnippet, updateSnippet } from '../api/snippets'
+import { useToast } from '../hooks/useToast'
 
 const LANGUAGES = ['TypeScript', 'JavaScript', 'Python', 'Shell', 'SQL', 'Go', 'Rust']
 const COLLECTIONS = ['React Hooks', 'Python Utils', 'DevOps Scripts']
@@ -24,15 +26,21 @@ function SelectWrapper({ label, children }) {
   )
 }
 
-export default function NewSnippet({ onCancel }) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [language, setLanguage] = useState('TypeScript')
-  const [visibility, setVisibility] = useState('Private')
+export default function NewSnippet({ snippet, onCancel, onSaved }) {
+  const isEditing = Boolean(snippet)
+  const toast = useToast()
+
+  const [title, setTitle] = useState(snippet?.title ?? '')
+  const [description, setDescription] = useState(snippet?.description ?? '')
+  const [language, setLanguage] = useState(snippet?.language ?? 'TypeScript')
+  const [visibility, setVisibility] = useState(
+    snippet?.visibility ? snippet.visibility.charAt(0).toUpperCase() + snippet.visibility.slice(1) : 'Private'
+  )
   const [tags, setTags] = useState(['#react', '#hooks'])
   const [tagInput, setTagInput] = useState('')
   const [collection, setCollection] = useState('')
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState(snippet?.code ?? '')
+  const [saving, setSaving] = useState(false)
 
   function handleTagKeyDown(e) {
     if (e.key === 'Enter' || e.key === ',') {
@@ -48,14 +56,42 @@ export default function NewSnippet({ onCancel }) {
     setTags(prev => prev.filter((_, idx) => idx !== i))
   }
 
-  function handleSave() {
-    console.log({ title, description, language, visibility, tags, collection, code })
+  async function handleSave() {
+    if (!title.trim()) {
+      toast.error('Title is required.')
+      return
+    }
+    const payload = {
+      title: title.trim(),
+      description: description.trim() || null,
+      code,
+      language,
+      visibility: visibility.toLowerCase(),
+    }
+    setSaving(true)
+    try {
+      if (isEditing) {
+        await updateSnippet(snippet.id, payload)
+        toast.success('Snippet updated.')
+        onSaved({ ...snippet, ...payload })
+      } else {
+        const created = await createSnippet(payload)
+        toast.success('Snippet created.')
+        onSaved(created)
+      }
+    } catch (err) {
+      toast.error(err.message || 'Something went wrong.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <div className="flex flex-col h-full min-w-0">
       <div className="flex items-center px-6 py-4 border-b border-[#2a2a2a] shrink-0">
-        <h1 className="text-lg font-semibold text-white">Create new snippet</h1>
+        <h1 className="text-lg font-semibold text-white">
+          {isEditing ? 'Edit snippet' : 'Create new snippet'}
+        </h1>
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
@@ -160,9 +196,10 @@ export default function NewSnippet({ onCancel }) {
             <button
               type="button"
               onClick={handleSave}
-              className="bg-[#6366f1] hover:bg-indigo-500 text-white text-sm font-medium px-5 h-[36px] rounded-md transition-colors duration-150"
+              disabled={saving}
+              className="bg-[#6366f1] hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-5 h-[36px] rounded-md transition-colors duration-150"
             >
-              Save snippet
+              {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save snippet'}
             </button>
             <button
               type="button"

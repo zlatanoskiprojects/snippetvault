@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import LanguageBadge from '../components/LanguageBadge'
 import TagPill from '../components/TagPill'
+import CodeEditor from '../components/CodeEditor'
 
 const LANG_NAMES = {
   TS: 'TypeScript',
@@ -26,8 +27,6 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
-
-  const lines = snippet.code.split('\n')
 
   return (
     <div className="flex flex-col h-full bg-[#101010]">
@@ -73,20 +72,8 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
         <div className="border-t border-[#2a2a2a] mt-4" />
       </div>
 
-      <div className="flex flex-1 overflow-hidden bg-[#0d0d0d] mx-3 my-3 rounded-lg">
-        <div className="flex flex-col items-end pr-3 pt-3 select-none w-[42px] shrink-0 overflow-hidden">
-          {lines.map((_, i) => (
-            <span key={i} className="text-[11px] text-[#595e69] leading-[20px] font-mono">
-              {i + 1}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-auto pt-3 pr-4 pl-2">
-          <pre className="text-[12px] font-mono leading-[20px] text-[#9ba3af] whitespace-pre">
-            {snippet.code}
-          </pre>
-        </div>
+      <div className="flex flex-col flex-1 overflow-hidden mx-3 my-3 min-h-0">
+        <CodeEditor language={snippet.language} code={snippet.code} editable={false} label={null} />
       </div>
 
       <div className="flex items-center justify-between px-5 h-[56px] border-t border-[#2a2a2a] shrink-0 bg-[#101010]">

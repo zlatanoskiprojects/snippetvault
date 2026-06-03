@@ -1,6 +1,10 @@
 export function getAuthHeaders() {
     const token = localStorage.getItem('token');
-    if (!token) throw new Error('No auth token found. Please log in.');
+    if (!token) {
+        const err = new Error('No auth token found. Please log in.');
+        err.status = 401;
+        throw err;
+    }
     return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
