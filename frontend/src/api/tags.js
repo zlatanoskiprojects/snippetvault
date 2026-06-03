@@ -64,3 +64,15 @@ export async function removeTagFromSnippet(id, snippetId) {
     if (response.status === 204) return null;
     return response.json();
 }
+
+export async function getOrCreateTag(name) {
+    try {
+        return await createTag({ name });
+    } catch (err) {
+        if (err.status === 409) {
+            const all = await getAllTags();
+            return all.find(t => t.name === name);
+        }
+        throw err;
+    }
+}
