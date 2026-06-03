@@ -40,9 +40,18 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
           </button>
           <span className="text-[13px] font-medium text-[#9ba3af]">Editor 1</span>
         </div>
-        <div className="bg-[#222] border border-[#2a2a2a] rounded-md text-xs text-white px-3 h-[28px] flex items-center gap-1 select-none">
-          {LANG_NAMES[snippet.language] ?? snippet.language}
-          <span className="text-[#9ba3af]">∨</span>
+        <div className="flex items-center gap-2">
+          <div className="bg-[#222] border border-[#2a2a2a] rounded-md text-xs text-white px-3 h-[28px] flex items-center gap-1 select-none">
+            {LANG_NAMES[snippet.language] ?? snippet.language}
+            <span className="text-[#9ba3af]">∨</span>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="hidden lg:flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
