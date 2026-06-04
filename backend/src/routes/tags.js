@@ -68,26 +68,9 @@ router.post('/', authMiddleware, createTagValidation, async (req, res) => {
         }
 
         const [result] = await pool.query('INSERT INTO tag (name) VALUES (?)', [name]);
-        return res.status(201).json({ id: result.insertId, message: 'Tag created successfully' });
+        return res.status(201).json({ id: result.insertId, name, message: 'Tag created successfully' });
     } catch (error) {
         console.log('Error creating tag:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-router.delete('/:id', authMiddleware, tagIdValidation, async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    try {
-        const [result] = await pool.query('DELETE FROM tag WHERE id = ?', [req.params.id]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Tag not found' });
-        }
-        return res.status(200).json({ message: 'Tag deleted successfully' });
-    } catch (error) {
-        console.log('Error deleting tag:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

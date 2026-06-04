@@ -36,16 +36,6 @@ export async function createTag(data) {
     return response.json();
 }
 
-export async function deleteTag(id) {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-    });
-    await throwIfNotOk(response);
-    if (response.status === 204) return null;
-    return response.json();
-}
-
 export async function assignTagToSnippet(id, snippetId) {
     const response = await fetch(`${BASE_URL}/${id}/snippets/${snippetId}`, {
         method: 'POST',
