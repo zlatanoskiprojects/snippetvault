@@ -78,8 +78,15 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
 
-      <div className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
         <h1 className="text-lg font-semibold text-white">Search snippets</h1>
+        <button
+          onClick={() => { onQueryChange(''); onClose() }}
+          aria-label="Close search"
+          className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+        >
+          ✕
+        </button>
       </div>
 
       <div className="px-6 pt-4 pb-3 flex flex-col gap-3 shrink-0">

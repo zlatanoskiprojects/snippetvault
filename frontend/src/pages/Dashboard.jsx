@@ -10,6 +10,7 @@ import ProfileView from './ProfileView'
 import { useSnippets } from '../hooks/useSnippets'
 import { deleteSnippet } from '../api/snippets'
 import { useToast } from '../hooks/useToast'
+import { UserProvider } from '../contexts/UserContext.jsx'
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -70,12 +71,23 @@ export default function Dashboard() {
     setView('list')
   }
 
+  function exitSearch() {
+    setSearchQuery('')
+    setIsSearching(false)
+  }
+
+  function handleViewChange(v) {
+    exitSearch()
+    setView(v)
+  }
+
   function handleClearCollection() {
     setActiveCollection(null)
     setSelectedSnippet(null)
   }
 
   function handleSelectTag(tag) {
+    exitSearch()
     setActiveTag(tag)
     setActiveCollection(null)
     setSelectedSnippet(null)
@@ -88,6 +100,7 @@ export default function Dashboard() {
   }
 
   return (
+    <UserProvider>
     <div className="flex h-full bg-[#0f0f0f] text-white overflow-hidden">
       <div className="hidden lg:flex">
         <Sidebar
@@ -98,7 +111,7 @@ export default function Dashboard() {
           onSearchBlur={() => setIsSearching(false)}
           isSearchActive={isSearching}
           activeView={view}
-          onViewChange={setView}
+          onViewChange={handleViewChange}
           activeTag={activeTag}
           onTagChange={handleSelectTag}
         />
@@ -114,7 +127,7 @@ export default function Dashboard() {
             <Sidebar
               snippets={snippets}
               activeView={view}
-              onViewChange={v => { setView(v); setSidebarOpen(false) }}
+              onViewChange={v => { handleViewChange(v); setSidebarOpen(false) }}
               activeTag={activeTag}
               onTagChange={tag => { handleSelectTag(tag); setSidebarOpen(false) }}
             />
@@ -131,7 +144,7 @@ export default function Dashboard() {
             onSelectSnippet={snippet => { setSearchQuery(''); setIsSearching(false); onSelectSnippet(snippet) }}
           />
         ) : view === 'profile' ? (
-          <ProfileView />
+          <ProfileView snippets={snippets} />
         ) : view === 'collections' ? (
           <CollectionsView onSelectCollection={handleSelectCollection} />
         ) : view === 'list' ? (() => {
@@ -207,5 +220,6 @@ export default function Dashboard() {
         )}
       </div>
     </div>
+    </UserProvider>
   )
 }
