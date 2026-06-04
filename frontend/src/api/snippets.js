@@ -49,3 +49,36 @@ export async function updateSnippet(id, data) {
     await throwIfNotOk(response);
     return response.json();
 }
+
+export async function getSnippetVersions(snippetId) {
+    const response = await fetch(`${BASE_URL}/${snippetId}/versions`, {
+        credentials: 'include',
+    });
+    await throwIfNotOk(response);
+    return response.json();
+}
+
+export async function getSnippetVersion(snippetId, versionId) {
+    const response = await fetch(`${BASE_URL}/${snippetId}/versions/${versionId}`, {
+        credentials: 'include',
+    });
+    await throwIfNotOk(response);
+    return response.json();
+}
+
+export async function deleteSnippetVersion(snippetId, versionId) {
+    const response = await fetch(`${BASE_URL}/${snippetId}/versions/${versionId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    await throwIfNotOk(response);
+}
+
+export async function restoreSnippetVersion(snippetId, versionId) {
+    const response = await fetch(`${BASE_URL}/${snippetId}/versions/${versionId}/restore`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    await throwIfNotOk(response);
+    return response.json();
+}
