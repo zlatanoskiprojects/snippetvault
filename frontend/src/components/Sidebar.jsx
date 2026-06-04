@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../api/auth'
+import { useUser } from '../hooks/useUser'
 
 const TAG_DOT_COLORS = ['#3d77fc', '#22c55e', '#8c5af3', '#fba528', '#ef4444', '#6366f1']
 
@@ -10,6 +11,10 @@ const libraryItems = [
 
 export default function Sidebar({ snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }) {
   const navigate = useNavigate()
+  const { user } = useUser()
+
+  const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
+  const displayName = user?.display_name || user?.username || '…'
 
   async function handleLogout() {
     try {
@@ -107,11 +112,11 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
           }`}
         >
           <div className="w-6 h-6 rounded-full bg-[#2e2457] flex items-center justify-center shrink-0">
-            <span className="text-[#6366f1] text-[10px] font-bold">D</span>
+            <span className="text-[#6366f1] text-[10px] font-bold">{avatarLetter}</span>
           </div>
           <div className="flex flex-col min-w-0">
             <span className={`text-[12px] font-medium truncate ${activeView === 'profile' ? 'text-white' : 'text-[#9ba3af]'}`}>
-              Zlatanoski
+              {displayName}
             </span>
             <span className="text-[10px] text-[#595e69] truncate">Profile &amp; Settings</span>
           </div>
