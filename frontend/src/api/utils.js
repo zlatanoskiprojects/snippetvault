@@ -1,12 +1,4 @@
-export function getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        const err = new Error('No auth token found. Please log in.');
-        err.status = 401;
-        throw err;
-    }
-    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-}
+export const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 export async function throwIfNotOk(response) {
     if (!response.ok) {
@@ -23,6 +15,3 @@ export async function throwIfNotOk(response) {
         throw err;
     }
 }
-
-
-

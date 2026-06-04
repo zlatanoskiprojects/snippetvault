@@ -1,21 +1,22 @@
 import { useState } from 'react'
 import { register } from '../api/auth'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
 
 function Register() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
+  const toast = useToast()
 
   async function handleSubmit(e) {
     e.preventDefault()
     try {
-      const response = await register(username, email, password)
-      localStorage.setItem('token', response.token)
-      navigate('/')
+      await register(username, email, password)
+      navigate('/login')
     } catch (err) {
-      console.error('Registration failed:', err)
+      toast.error(err.message || 'Registration failed.')
     }
   }
 

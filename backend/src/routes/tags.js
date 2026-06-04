@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import pool from '../lib/db.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import { validationResult } from 'express-validator';
-import { tagIdValidation, createTagValidation, tagSnippetValidation } from '../validators/tags.js';
+const { Router } = require('express');
+const pool = require('../lib/db.js');
+const authMiddleware = require('../middleware/authMiddleware.js');
+const { validationResult } = require('express-validator');
+const { tagIdValidation, createTagValidation, tagSnippetValidation } = require('../validators/tags.js');
 
 const router = Router();
 
@@ -15,6 +15,7 @@ router.get('/', authMiddleware, async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 router.get('/:id', authMiddleware, tagIdValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -31,7 +32,6 @@ router.get('/:id', authMiddleware, tagIdValidation, async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
 
 router.get('/:id/snippets', authMiddleware, tagIdValidation, async (req, res) => {
     const errors = validationResult(req);
@@ -51,7 +51,6 @@ router.get('/:id/snippets', authMiddleware, tagIdValidation, async (req, res) =>
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
 
 router.post('/', authMiddleware, createTagValidation, async (req, res) => {
     const errors = validationResult(req);
@@ -78,7 +77,6 @@ router.post('/', authMiddleware, createTagValidation, async (req, res) => {
 router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, async (req, res) => {
     const errors = validationResult(req);
 
-
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -104,7 +102,6 @@ router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, as
             'INSERT INTO snippet_tag (snippet_id, tag_id) VALUES (?, ?)', [snippetId, id]
         );
 
-
         return res.status(201).json({ message: 'Tag assigned to snippet successfully' });
     } catch (error) {
         console.log('Error assigning tag to snippet:', error);
@@ -112,7 +109,6 @@ router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, as
     }
 });
 
-// DELETE remove a tag from a snippet
 router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -144,4 +140,4 @@ router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, 
     }
 });
 
-export default router;
+module.exports = router;

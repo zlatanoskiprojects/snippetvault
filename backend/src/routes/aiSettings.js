@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import pool from '../lib/db.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import { validationResult } from 'express-validator';
-import { createAiSettingsValidation, updateAiSettingsValidation, deleteAiSettingsValidation } from '../validators/aiSettings.js';
+const { Router } = require('express');
+const pool = require('../lib/db.js');
+const authMiddleware = require('../middleware/authMiddleware.js');
+const { validationResult } = require('express-validator');
+const { createAiSettingsValidation, updateAiSettingsValidation, deleteAiSettingsValidation } = require('../validators/aiSettings.js');
 
 const router = Router();
 
@@ -30,7 +30,6 @@ router.post('/', authMiddleware, createAiSettingsValidation, async (req, res) =>
 
     const { api_key, provider_type, model_name, base_url, is_configured } = req.body;
 
-    //  encrypt before storing - HAS TO BE DONE !!!!!!!
     const api_key_enc = api_key;
 
     try {
@@ -78,4 +77,4 @@ router.delete('/', authMiddleware, deleteAiSettingsValidation, async (req, res) 
     }
 });
 
-export default router;
+module.exports = router;

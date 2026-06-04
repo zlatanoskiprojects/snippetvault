@@ -1,18 +1,12 @@
-import {Router} from 'express'
-import pool from '../lib/db.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import {validationResult} from "express-validator";
-import { snippetIdValidation, createSnippetValidation, updateSnippetValidation } from '../validators/snippets.js';
+const { Router } = require('express');
+const pool = require('../lib/db.js');
+const authMiddleware = require('../middleware/authMiddleware.js');
+const { validationResult } = require('express-validator');
+const { snippetIdValidation, createSnippetValidation, updateSnippetValidation } = require('../validators/snippets.js');
 
-const router = Router()
+const router = Router();
 
-
-
-
-
-
-//GET api - get all snippets for a specific user id
-router.get('/',authMiddleware,async(req,res)=>{
+router.get('/', authMiddleware, async (req, res) => {
 
     try {
         const userId = req.userId;
@@ -28,13 +22,13 @@ router.get('/',authMiddleware,async(req,res)=>{
             WHERE s.user_id = ?
         `;
 
-        if(q){
+        if (q) {
             const searchTerm = `%${q}%`;
             [snippets] = await pool.query(
                 baseQuery + ' AND (s.title LIKE ? OR s.language LIKE ? OR s.description LIKE ? OR t.name LIKE ?) GROUP BY s.id ORDER BY s.created_at DESC',
                 [userId, searchTerm, searchTerm, searchTerm, searchTerm]
             );
-        }else{
+        } else {
             [snippets] = await pool.query(
                 baseQuery + ' GROUP BY s.id ORDER BY s.created_at DESC',
                 [userId]
@@ -44,21 +38,18 @@ router.get('/',authMiddleware,async(req,res)=>{
         snippets = snippets.map(s => ({ ...s, tags: s.tags ? s.tags.split(',') : [] }));
 
         return res.status(200).json(snippets);
-    }catch(error){
-        console.log("Error fetching snippets:",error);
-        return res.status(500).json({error:'Internal server error'})
+    } catch (error) {
+        console.log("Error fetching snippets:", error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
+});
 
-})
-//get a single snippet by id
-router.get('/:id',authMiddleware,snippetIdValidation,async(req
-                                                           ,res)=>{
+router.get('/:id', authMiddleware, snippetIdValidation, async (req, res) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
-    try{
-        //this query fetches in db the snippet with the specific id of that specific user_id
+    try {
         const [rows] = await pool.query(
             `SELECT s.*, GROUP_CONCAT(t.name) AS tags
              FROM snippet s
@@ -68,30 +59,27 @@ router.get('/:id',authMiddleware,snippetIdValidation,async(req
              GROUP BY s.id`,
             [req.params.id, req.userId]
         );
-        if(rows.length === 0){
-            return res.status(404).json({error:'Snippet not found'})
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Snippet not found' });
         }
         const snippet = { ...rows[0], tags: rows[0].tags ? rows[0].tags.split(',') : [] };
         return res.status(200).json(snippet);
-    }catch(error){
-        console.log("Error fetching snippet",error);
-        return res.status(500).json({error:'Internal server error'})
+    } catch (error) {
+        console.log("Error fetching snippet", error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
-
 });
 
-router.post('/',authMiddleware,createSnippetValidation,async(req,res)=>{
+router.post('/', authMiddleware, createSnippetValidation, async (req, res) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
-    const {title,description,code,language,visibility,collection_id} = req.body;
+    const { title, description, code, language, visibility, collection_id } = req.body;
 
-
-
-    try{
-        const [result] = await pool.query('INSERT INTO snippet (user_id,title,description,code,language,visibility,collection_id) VALUES (?,?,?,?,?,?,?)',[
+    try {
+        const [result] = await pool.query('INSERT INTO snippet (user_id,title,description,code,language,visibility,collection_id) VALUES (?,?,?,?,?,?,?)', [
             req.userId,
             title,
             description || null,
@@ -99,37 +87,32 @@ router.post('/',authMiddleware,createSnippetValidation,async(req,res)=>{
             language,
             visibility || "private",
             collection_id || null,
-
-        ])
+        ]);
         const [rows] = await pool.query('SELECT * FROM snippet WHERE id = ?', [result.insertId]);
         return res.status(201).json(rows[0]);
-    }catch(error){
-        console.log("Error creating snippet",error);
-        return res.status(500).json({error:'Internal server error'})
+    } catch (error) {
+        console.log("Error creating snippet", error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-//delete a snippet
-router.delete('/:id',authMiddleware,snippetIdValidation,async(req   ,res)=>{
+router.delete('/:id', authMiddleware, snippetIdValidation, async (req, res) => {
     const err = validationResult(req);
-    if(!err.isEmpty()){
-        return res.status(400).json({errors:err.array()})
+    if (!err.isEmpty()) {
+        return res.status(400).json({ errors: err.array() });
     }
-    try{
-
-        const [result] = await pool.query('DELETE FROM snippet WHERE id = ? AND user_id = ?',[req.params.id,req.userId]); // params id is the one in the url that is to be deleted, other one is the yser that deletes it
-        if(result.affectedRows === 0){
-            return res.status(404).json({error:'Snippet not found'})
+    try {
+        const [result] = await pool.query('DELETE FROM snippet WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Snippet not found' });
         }
         await pool.query('DELETE FROM tag WHERE id NOT IN (SELECT tag_id FROM snippet_tag)');
-        return res.status(200).json({message:'Snippet deleted successfully'})
-    }catch(error){
-        console.log("Error deleting snippet",error);
-        return res.status(500).json({error:'Internal server error'})
+        return res.status(200).json({ message: 'Snippet deleted successfully' });
+    } catch (error) {
+        console.log("Error deleting snippet", error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-//update a snippet
 
 router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) => {
     const errors = validationResult(req);
@@ -137,7 +120,6 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
         return res.status(400).json({ errors: errors.array() });
     }
 
-    // req.params.id and req.body values are already validated
     const snippetId = parseInt(req.params.id);
 
     const allowedFields = ['title', 'description', 'code', 'language', 'visibility', 'collection_id'];
@@ -157,7 +139,6 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
     const values = [...keys.map(k => updates[k]), snippetId, req.userId];
 
     try {
-        // collection_id ownership check — still manual, no library can do this
         if (updates.collection_id !== undefined && updates.collection_id !== null) {
             const [cols] = await pool.query(
                 'SELECT id FROM collection WHERE id = ? AND user_id = ?',
@@ -185,5 +166,4 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
     }
 });
 
-
-export default router;
+module.exports = router;

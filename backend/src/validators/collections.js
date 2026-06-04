@@ -1,12 +1,12 @@
-import { body, param } from 'express-validator';
+const { body, param } = require('express-validator');
 
-export const collectionIdValidation = [
+const collectionIdValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid collection id'),
 ];
 
-export const createCollectionValidation = [
+const createCollectionValidation = [
     body('name')
         .isString().trim()
         .notEmpty().withMessage('Name is required')
@@ -17,7 +17,7 @@ export const createCollectionValidation = [
         .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
 ];
 
-export const updateCollectionValidation = [
+const updateCollectionValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid collection id'),
@@ -33,7 +33,7 @@ export const updateCollectionValidation = [
         .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
 ];
 
-export const assignSnippetValidation = [
+const assignSnippetValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid collection id'),
@@ -42,3 +42,5 @@ export const assignSnippetValidation = [
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
 ];
+
+module.exports = { collectionIdValidation, createCollectionValidation, updateCollectionValidation, assignSnippetValidation };

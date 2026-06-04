@@ -1,10 +1,10 @@
-import { getAuthHeaders, throwIfNotOk } from './utils';
+import { JSON_HEADERS, throwIfNotOk } from './utils';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/collections`;
 
 export async function getAllCollections() {
     const response = await fetch(BASE_URL, {
-        headers: getAuthHeaders(),
+        credentials: 'include',
     });
     await throwIfNotOk(response);
     return response.json();
@@ -13,7 +13,8 @@ export async function getAllCollections() {
 export async function createCollection(data) {
     const response = await fetch(BASE_URL, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: JSON_HEADERS,
+        credentials: 'include',
         body: JSON.stringify(data),
     });
     await throwIfNotOk(response);
@@ -23,7 +24,8 @@ export async function createCollection(data) {
 export async function updateCollection(id, data) {
     const response = await fetch(`${BASE_URL}/${id}`, {
         method: 'PATCH',
-        headers: getAuthHeaders(),
+        headers: JSON_HEADERS,
+        credentials: 'include',
         body: JSON.stringify(data),
     });
     await throwIfNotOk(response);
@@ -33,7 +35,7 @@ export async function updateCollection(id, data) {
 export async function deleteCollection(id) {
     const response = await fetch(`${BASE_URL}/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        credentials: 'include',
     });
     await throwIfNotOk(response);
     return response.json();

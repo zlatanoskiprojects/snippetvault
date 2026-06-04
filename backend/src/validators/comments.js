@@ -1,11 +1,11 @@
-import { body, param } from 'express-validator';
+const { body, param } = require('express-validator');
 
-export const commentIdValidation = [
+const commentIdValidation = [
     param('id')
         .isInt({ min: 1 }).withMessage('Invalid comment id'),
 ];
 
-export const createCommentValidation = [
+const createCommentValidation = [
     param('snippetId')
         .isInt({ min: 1 }).withMessage('Invalid snippet id'),
 
@@ -16,7 +16,7 @@ export const createCommentValidation = [
         .isLength({ max: 2000 }).withMessage('Content cannot exceed 2000 characters'),
 ];
 
-export const updateCommentValidation = [
+const updateCommentValidation = [
     param('id')
         .isInt({ min: 1 }).withMessage('Invalid comment id'),
 
@@ -27,3 +27,5 @@ export const updateCommentValidation = [
         .notEmpty().withMessage('Content cannot be empty')
         .isLength({ max: 2000 }).withMessage('Content cannot exceed 2000 characters'),
 ];
+
+module.exports = { commentIdValidation, createCommentValidation, updateCommentValidation };

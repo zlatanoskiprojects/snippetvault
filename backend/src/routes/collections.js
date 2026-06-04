@@ -1,13 +1,13 @@
-import { Router } from 'express';
-import { validationResult } from 'express-validator';
-import pool from '../lib/db.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-import {
+const { Router } = require('express');
+const { validationResult } = require('express-validator');
+const pool = require('../lib/db.js');
+const authMiddleware = require('../middleware/authMiddleware.js');
+const {
     collectionIdValidation,
     createCollectionValidation,
     updateCollectionValidation,
     assignSnippetValidation,
-} from '../validators/collections.js';
+} = require('../validators/collections.js');
 
 const router = Router();
 
@@ -24,7 +24,6 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-// POST /api/collections create a collection
 router.post('/', authMiddleware, createCollectionValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -85,6 +84,7 @@ router.patch('/:id', authMiddleware, updateCollectionValidation, async (req, res
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 router.delete('/:id', authMiddleware, collectionIdValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -135,11 +135,11 @@ router.patch('/:id/snippets/:snippetId', authMiddleware, assignSnippetValidation
             'UPDATE snippet SET collection_id = ? WHERE id = ?',
             [id, snippetId]
         );
-            return res.status(200).json({ message: 'Snippet assigned to collection' });
+        return res.status(200).json({ message: 'Snippet assigned to collection' });
     } catch (error) {
-             console.error('Error assigning snippet to collection:', error);
-            return res.status(500).json({ error: 'Internal server error' });
+        console.error('Error assigning snippet to collection:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-export default router;
+module.exports = router;

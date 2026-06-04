@@ -1,10 +1,10 @@
-import { getAuthHeaders, throwIfNotOk } from './utils';
+import { JSON_HEADERS, throwIfNotOk } from './utils';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/snippets`;
 
 export async function getAllSnippets() {
     const response = await fetch(BASE_URL, {
-        headers: getAuthHeaders(),
+        credentials: 'include',
     });
     await throwIfNotOk(response);
     return response.json();
@@ -12,7 +12,7 @@ export async function getAllSnippets() {
 
 export async function getSnippetById(id) {
     const response = await fetch(`${BASE_URL}/${id}`, {
-        headers: getAuthHeaders(),
+        credentials: 'include',
     });
     await throwIfNotOk(response);
     return response.json();
@@ -21,7 +21,8 @@ export async function getSnippetById(id) {
 export async function createSnippet(data) {
     const response = await fetch(BASE_URL, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: JSON_HEADERS,
+        credentials: 'include',
         body: JSON.stringify(data),
     });
     await throwIfNotOk(response);
@@ -31,7 +32,7 @@ export async function createSnippet(data) {
 export async function deleteSnippet(id) {
     const response = await fetch(`${BASE_URL}/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        credentials: 'include',
     });
     await throwIfNotOk(response);
     if (response.status === 204) return null;
@@ -41,7 +42,8 @@ export async function deleteSnippet(id) {
 export async function updateSnippet(id, data) {
     const response = await fetch(`${BASE_URL}/${id}`, {
         method: 'PATCH',
-        headers: getAuthHeaders(),
+        headers: JSON_HEADERS,
+        credentials: 'include',
         body: JSON.stringify(data),
     });
     await throwIfNotOk(response);

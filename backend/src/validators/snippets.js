@@ -1,12 +1,12 @@
-import { body, param } from 'express-validator';
+const { body, param } = require('express-validator');
 
-export const snippetIdValidation = [
+const snippetIdValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
 ];
 
-export const createSnippetValidation = [
+const createSnippetValidation = [
     body('title')
         .isString().trim()
         .notEmpty().withMessage('Title is required')
@@ -35,7 +35,7 @@ export const createSnippetValidation = [
         .isInt({ min: 1 }).withMessage('Invalid collection_id'),
 ];
 
-export const updateSnippetValidation = [
+const updateSnippetValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
@@ -70,3 +70,5 @@ export const updateSnippetValidation = [
         .optional({ nullable: true })
         .isInt({ min: 1 }).withMessage('Invalid collection_id'),
 ];
+
+module.exports = { snippetIdValidation, createSnippetValidation, updateSnippetValidation };

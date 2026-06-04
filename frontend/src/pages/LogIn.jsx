@@ -1,25 +1,22 @@
 import { useState } from 'react'
 import { login } from '../api/auth'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../hooks/useToast'
 
 function LogIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
+  const toast = useToast()
 
   async function handleSubmit(e) {
     e.preventDefault()
     if (!email || !password) return
     try {
-      const response = await login(email, password)
-      if (response.error) {
-        alert(response.error)
-      } else {
-        localStorage.setItem('token', response.token)
-        navigate('/')
-      }
-    } catch (error) {
-      console.error('Error during login:', error)
+      await login(email, password)
+      navigate('/')
+    } catch (err) {
+      toast.error(err.message || 'Login failed.')
     }
   }
 

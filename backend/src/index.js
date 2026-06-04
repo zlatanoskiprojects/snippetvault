@@ -1,31 +1,39 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth.js';
-import snippetRoutes from './routes/snippets.js';
-import collectionRoutes from './routes/collections.js';
-import tagRoutes from './routes/tags.js';
-import commentRoutes from './routes/comments.js';
-import aiSettingsRoutes from './routes/aiSettings.js';
-dotenv.config();
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const session = require('express-session');
+const authRoutes = require('./routes/auth.js');
+const snippetRoutes = require('./routes/snippets.js');
+const collectionRoutes = require('./routes/collections.js');
+const tagRoutes = require('./routes/tags.js');
+const commentRoutes = require('./routes/comments.js');
+const aiSettingsRoutes = require('./routes/aiSettings.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
-app.use(cors());
-
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
+}));
 
 app.use(express.json());
 
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60,
+    },
+}));
+
 app.use('/api/auth', authRoutes);
-
 app.use('/api/snippets', snippetRoutes);
-
 app.use('/api/collections', collectionRoutes);
-
 app.use('/api/tags', tagRoutes);
-
 app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
 
