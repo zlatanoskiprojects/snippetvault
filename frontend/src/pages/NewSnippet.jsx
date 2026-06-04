@@ -42,6 +42,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
   const [tagInput, setTagInput] = useState('')
   const [collectionId, setCollectionId] = useState(snippet?.collection_id ?? '')
   const [code, setCode] = useState(snippet?.code ?? '')
+  const [changeNote, setChangeNote] = useState('')
   const [saving, setSaving] = useState(false)
 
   function handleTagKeyDown(e) {
@@ -71,6 +72,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
       language,
       visibility: visibility.toLowerCase(),
       collection_id: collectionId || null,
+      ...(isEditing && changeNote.trim() ? { change_note: changeNote.trim() } : {}),
     }
     setSaving(true)
     try {
@@ -140,6 +142,19 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
               className={`${inputBase} h-[60px] py-2 resize-none`}
             />
           </div>
+
+          {isEditing && (
+            <div>
+              <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Change note <span className="text-[#595e69]">(optional)</span></label>
+              <input
+                type="text"
+                value={changeNote}
+                onChange={e => setChangeNote(e.target.value)}
+                placeholder="e.g. Fixed off-by-one error"
+                className={`${inputBase} h-[38px]`}
+              />
+            </div>
+          )}
 
           <div className="flex gap-3">
             <SelectWrapper label="Language">

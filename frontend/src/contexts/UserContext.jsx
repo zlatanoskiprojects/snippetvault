@@ -6,6 +6,7 @@ import {
     changePassword as apiChangePassword,
     deleteAccount as apiDeleteAccount,
 } from '../api/profile'
+import { logout as apiLogout } from '../api/auth'
 import { useToast } from '../hooks/useToast'
 
 export const UserContext = createContext(null)
@@ -50,7 +51,8 @@ export function UserProvider({ children }) {
     const changePassword = useCallback(async (data) => {
         try {
             await apiChangePassword(data)
-            toast.success('Password changed.')
+            await apiLogout()
+            navigate('/login')
         } catch (err) {
             if (err.status === 401) navigate('/login')
             else toast.error(err.message)
