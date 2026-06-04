@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import LanguageBadge from '../components/LanguageBadge'
 import TagPill from '../components/TagPill'
 import CodeEditor from '../components/CodeEditor'
+import VersionHistoryPanel from '../components/VersionHistoryPanel'
 
 const LANG_NAMES = {
   TS: 'TypeScript',
@@ -11,8 +12,9 @@ const LANG_NAMES = {
   SQL: 'SQL',
 }
 
-export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete }) {
+export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete, onRestore }) {
   const [copied, setCopied] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -26,6 +28,20 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
     navigator.clipboard.writeText(snippet.code)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  if (showHistory) {
+    return (
+      <VersionHistoryPanel
+        snippet={snippet}
+        language={snippet.language}
+        onBack={() => setShowHistory(false)}
+        onRestore={updated => {
+          setShowHistory(false)
+          onRestore(updated)
+        }}
+      />
+    )
   }
 
   return (
@@ -92,6 +108,12 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete 
             onClick={() => onEdit(snippet)}
           >
             ✏ Edit
+          </button>
+          <button
+            className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:text-white hover:bg-[#222] text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"
+            onClick={() => setShowHistory(true)}
+          >
+            ⏱ History
           </button>
           <button
             className="bg-[#331212] hover:bg-[#3d1515] text-[#ef4444] text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"

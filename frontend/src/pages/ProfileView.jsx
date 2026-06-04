@@ -13,7 +13,7 @@ const TABS = [
 const EMPTY_FORM = { username: '', displayName: '', email: '', bio: '' }
 const EMPTY_PW = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
-export default function ProfileView({ snippets = [] }) {
+export default function ProfileView({ snippets = [], onBack }) {
   const { user, loading, error, saveProfile, changePassword, deleteAccount } = useUser()
   const toast = useToast()
   const { collections } = useCollections()
@@ -69,6 +69,10 @@ export default function ProfileView({ snippets = [] }) {
       toast.error('New passwords do not match.')
       return
     }
+    if (pwForm.newPassword.trim().length < 8) {
+      toast.error('New password must be at least 8 characters.')
+      return
+    }
     setPwSaving(true)
     await changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
     setPwSaving(false)
@@ -106,7 +110,16 @@ export default function ProfileView({ snippets = [] }) {
 
   return (
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-[#0f0f0f]">
-      <div className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
+      <div className="flex items-center gap-3 px-6 py-3 border-b border-[#2a2a2a] shrink-0">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+            aria-label="Go back"
+          >
+            ←
+          </button>
+        )}
         <span className="text-lg font-semibold text-white">Profile &amp; Settings</span>
       </div>
 
@@ -144,9 +157,6 @@ export default function ProfileView({ snippets = [] }) {
                 <div className="flex flex-col gap-1 pt-1">
                   <span className="text-[15px] font-medium text-white">@{user?.username}</span>
                   <span className="text-xs text-[#595e69]">{user?.email}</span>
-                  <span className="inline-flex items-center gap-1 bg-[#1a381a] text-[#22c55e] text-[11px] px-2 h-[22px] rounded mt-1">
-                    ● Active
-                  </span>
                 </div>
               </div>
 
