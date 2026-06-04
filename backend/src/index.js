@@ -8,6 +8,7 @@ const collectionRoutes = require('./routes/collections.js');
 const tagRoutes = require('./routes/tags.js');
 const commentRoutes = require('./routes/comments.js');
 const aiSettingsRoutes = require('./routes/aiSettings.js');
+const profileRoutes = require('./routes/profile.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/snippets', snippetRoutes);
 app.use('/api/collections', collectionRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/profile', profileRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
 

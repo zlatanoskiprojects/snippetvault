@@ -1,18 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import StatCard from '../components/StatCard'
-
-const INITIAL = {
-  displayName: 'Zlatanoski',
-  email: 'david@example.com',
-  bio: 'CS student @ University of Primorska',
-}
-
-const stats = [
-  { value: 24, label: 'Total snippets',  accentColor: '#3d77fc' },
-  { value: 18, label: 'Public snippets', accentColor: '#22c55e' },
-  { value: 5,  label: 'Collections',     accentColor: '#8c5af3' },
-  { value: 6,  label: 'Favourites',      accentColor: '#fba528' },
-]
+import { useUser } from '../hooks/useUser'
+import { useToast } from '../hooks/useToast'
+import { useCollections } from '../hooks/useCollections'
 
 const TABS = [
   { key: 'profile',     label: 'Profile'      },
@@ -20,26 +10,98 @@ const TABS = [
   { key: 'preferences', label: 'Preferences'  },
 ]
 
-export default function ProfileView() {
-  const [activeTab, setActiveTab] = useState('profile')
-  const [form, setForm] = useState(INITIAL)
+const EMPTY_FORM = { username: '', displayName: '', email: '', bio: '' }
+const EMPTY_PW = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
-  const isDirty = JSON.stringify(form) !== JSON.stringify(INITIAL)
+export default function ProfileView({ snippets = [] }) {
+  const { user, loading, error, saveProfile, changePassword, deleteAccount } = useUser()
+  const toast = useToast()
+  const { collections } = useCollections()
+
+  const stats = useMemo(() => [
+    { value: snippets.length,                                                    label: 'Total snippets',  accentColor: '#3d77fc' },
+    { value: snippets.filter(s => s.visibility === 'public').length,             label: 'Public snippets', accentColor: '#22c55e' },
+    { value: collections.length,                                                  label: 'Collections',     accentColor: '#8c5af3' },
+    { value: new Set(snippets.flatMap(s => s.tags || [])).size,                  label: 'Tags used',       accentColor: '#fba528' },
+  ], [snippets, collections])
+
+  const [activeTab, setActiveTab] = useState('profile')
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [pwForm, setPwForm] = useState(EMPTY_PW)
+  const [pwSaving, setPwSaving] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        username: user.username || '',
+        displayName: user.display_name || '',
+        email: user.email || '',
+        bio: user.bio || '',
+      })
+    }
+  }, [user])
+
+  const baseline = user
+    ? { username: user.username || '', displayName: user.display_name || '', email: user.email || '', bio: user.bio || '' }
+    : null
+
+  const isDirty = baseline !== null && JSON.stringify(form) !== JSON.stringify(baseline)
 
   const handleChange = (field) => (e) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }))
 
-  const handleDiscard = () => setForm(INITIAL)
-
-  const handleSave = () => {
-    console.log('saved', form)
-    setForm(form)
+  const handleDiscard = () => {
+    if (baseline) setForm(baseline)
   }
 
-  const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure? This action cannot be undone.')) {
-      console.log('account deleted')
+  const handleSave = async () => {
+    setSaving(true)
+    await saveProfile({ username: form.username, display_name: form.displayName, bio: form.bio, email: form.email })
+    setSaving(false)
+  }
+
+  const handlePwChange = (field) => (e) =>
+    setPwForm(prev => ({ ...prev, [field]: e.target.value }))
+
+  const handlePasswordChange = async () => {
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      toast.error('New passwords do not match.')
+      return
     }
+    setPwSaving(true)
+    await changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
+    setPwSaving(false)
+    setPwForm(EMPTY_PW)
+  }
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure? This action cannot be undone.')) {
+      await deleteAccount()
+    }
+  }
+
+  const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
+  const pwReady = pwForm.currentPassword && pwForm.newPassword && pwForm.confirmPassword
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-[#0f0f0f]">
+        <div className="spinner-border text-light" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-1 flex-col min-w-0 p-6 bg-[#0f0f0f]">
+        <div className="alert alert-danger" role="alert">
+          Failed to load profile: {error}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -66,17 +128,13 @@ export default function ProfileView() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {activeTab !== 'profile' ? (
-          <div className="flex items-center justify-center h-48 text-[#595e69] text-sm">
-            This section is coming soon.
-          </div>
-        ) : (
+        {activeTab === 'profile' ? (
           <div className="flex flex-col lg:flex-row gap-8 px-6 py-6">
             <div className="flex-1 max-w-[480px] flex flex-col gap-6">
               <div className="flex items-start gap-4">
                 <div className="relative w-[80px] h-[80px] shrink-0">
                   <div className="w-[80px] h-[80px] rounded-full bg-[#2e2457] flex items-center justify-center">
-                    <span className="text-[#6366f1] text-[22px] font-bold">D</span>
+                    <span className="text-[#6366f1] text-[22px] font-bold">{avatarLetter}</span>
                   </div>
                   <button className="absolute bottom-0 right-0 w-[30px] h-[30px] rounded-full bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors duration-150">
                     <span className="text-[#9ba3af] text-[11px]">✏</span>
@@ -84,8 +142,8 @@ export default function ProfileView() {
                 </div>
 
                 <div className="flex flex-col gap-1 pt-1">
-                  <span className="text-[15px] font-medium text-white">@Zlatanoski</span>
-                  <span className="text-xs text-[#595e69]">david@example.com</span>
+                  <span className="text-[15px] font-medium text-white">@{user?.username}</span>
+                  <span className="text-xs text-[#595e69]">{user?.email}</span>
                   <span className="inline-flex items-center gap-1 bg-[#1a381a] text-[#22c55e] text-[11px] px-2 h-[22px] rounded mt-1">
                     ● Active
                   </span>
@@ -93,6 +151,16 @@ export default function ProfileView() {
               </div>
 
               <div className="flex flex-col gap-4">
+                <div>
+                  <label className="text-xs text-[#9ba3af] mb-1.5 block">Username</label>
+                  <input
+                    type="text"
+                    value={form.username}
+                    onChange={handleChange('username')}
+                    className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                  />
+                </div>
+
                 <div>
                   <label className="text-xs text-[#9ba3af] mb-1.5 block">Display name</label>
                   <input
@@ -125,13 +193,13 @@ export default function ProfileView() {
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={isDirty ? handleSave : undefined}
-                  disabled={!isDirty}
+                  onClick={isDirty && !saving ? handleSave : undefined}
+                  disabled={!isDirty || saving}
                   className={`bg-[#6366f1] text-white text-[13px] font-medium px-5 h-[38px] rounded-md transition-colors duration-150 ${
-                    isDirty ? 'hover:bg-indigo-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                    isDirty && !saving ? 'hover:bg-indigo-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  Save changes
+                  {saving ? 'Saving…' : 'Save changes'}
                 </button>
                 <button
                   onClick={handleDiscard}
@@ -170,6 +238,54 @@ export default function ProfileView() {
                 ))}
               </div>
             </div>
+          </div>
+        ) : activeTab === 'security' ? (
+          <div className="flex flex-col gap-6 px-6 py-6 max-w-[480px]">
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs text-[#9ba3af] mb-1.5 block">Current password</label>
+                <input
+                  type="password"
+                  value={pwForm.currentPassword}
+                  onChange={handlePwChange('currentPassword')}
+                  className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9ba3af] mb-1.5 block">New password</label>
+                <input
+                  type="password"
+                  value={pwForm.newPassword}
+                  onChange={handlePwChange('newPassword')}
+                  className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#9ba3af] mb-1.5 block">Confirm new password</label>
+                <input
+                  type="password"
+                  value={pwForm.confirmPassword}
+                  onChange={handlePwChange('confirmPassword')}
+                  className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={pwReady && !pwSaving ? handlePasswordChange : undefined}
+              disabled={!pwReady || pwSaving}
+              className={`bg-[#6366f1] text-white text-[13px] font-medium px-5 h-[38px] rounded-md transition-colors duration-150 self-start ${
+                pwReady && !pwSaving ? 'hover:bg-indigo-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+              }`}
+            >
+              {pwSaving ? 'Updating…' : 'Update password'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-48 text-[#595e69] text-sm">
+            This section is coming soon.
           </div>
         )}
       </div>
