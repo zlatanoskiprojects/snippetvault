@@ -6,7 +6,7 @@ export async function throwIfNotOk(response) {
         let message;
         try {
             const body = await response.json();
-            message = body.message || body.error || generic;
+            message = body.message || body.error || (Array.isArray(body.errors) && body.errors[0]?.msg) || generic;
         } catch {
             message = generic;
         }
