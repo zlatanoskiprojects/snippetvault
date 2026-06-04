@@ -150,10 +150,12 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
         }
 
         let shouldSaveVersion = false;
+        let oldCode = null;
         if (updates.code !== undefined) {
             const [current] = await pool.query('SELECT code FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
             if (current.length > 0 && current[0].code !== updates.code) {
                 shouldSaveVersion = true;
+                oldCode = current[0].code;
             }
         }
 
@@ -167,12 +169,15 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
         }
 
         if (shouldSaveVersion) {
-            const [[{ maxVer }]] = await pool.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
-            const nextVersion = (maxVer || 0) + 1;
-            await pool.query(
-                'INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)',
-                [snippetId, updates.code, nextVersion, req.body.change_note || null]
-            );
+            const [existing] = await pool.query('SELECT id FROM snippet_version WHERE snippet_id = ? AND code = ?', [snippetId, oldCode]);
+            if (existing.length === 0) {
+                const [[{ maxVer }]] = await pool.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
+                const nextVersion = (maxVer || 0) + 1;
+                await pool.query(
+                    'INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)',
+                    [snippetId, oldCode, nextVersion, req.body.change_note || null]
+                );
+            }
         }
 
         return res.status(200).json({ message: 'Snippet updated successfully' });
@@ -263,12 +268,15 @@ router.post('/:id/versions/:versionId/restore', authMiddleware, [...snippetIdVal
         const targetVersion = versions[0];
 
         if (currentSnippet.code !== targetVersion.code) {
-            const [[{ maxVer }]] = await pool.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
-            const nextVersion = (maxVer || 0) + 1;
-            await pool.query(
-                'INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)',
-                [snippetId, currentSnippet.code, nextVersion, `Auto-save before restore to v${targetVersion.version_number}`]
-            );
+            const [existing] = await pool.query('SELECT id FROM snippet_version WHERE snippet_id = ? AND code = ?', [snippetId, currentSnippet.code]);
+            if (existing.length === 0) {
+                const [[{ maxVer }]] = await pool.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
+                const nextVersion = (maxVer || 0) + 1;
+                await pool.query(
+                    'INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)',
+                    [snippetId, currentSnippet.code, nextVersion, `Auto-save before restore to v${targetVersion.version_number}`]
+                );
+            }
 
             await pool.query('UPDATE snippet SET code = ? WHERE id = ?', [targetVersion.code, snippetId]);
         }
