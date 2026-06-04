@@ -1,19 +1,19 @@
-import { body, param } from 'express-validator';
+const { body, param } = require('express-validator');
 
-export const tagIdValidation = [
+const tagIdValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid tag id'),
 ];
 
-export const createTagValidation = [
+const createTagValidation = [
     body('name')
         .isString().trim()
         .notEmpty().withMessage('Name is required')
         .isLength({ max: 50 }).withMessage('Name cannot exceed 50 characters'),
 ];
 
-export const tagSnippetValidation = [
+const tagSnippetValidation = [
     param('id')
         .isInt({ min: 1 })
         .withMessage('Invalid tag id'),
@@ -22,3 +22,5 @@ export const tagSnippetValidation = [
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
 ];
+
+module.exports = { tagIdValidation, createTagValidation, tagSnippetValidation };

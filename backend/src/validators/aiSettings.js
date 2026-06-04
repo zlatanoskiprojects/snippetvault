@@ -1,6 +1,6 @@
-import { body } from 'express-validator';
+const { body } = require('express-validator');
 
-export const createAiSettingsValidation = [
+const createAiSettingsValidation = [
     body('provider_type')
         .isString().withMessage('Provider type must be a string')
         .trim()
@@ -28,7 +28,7 @@ export const createAiSettingsValidation = [
         .isBoolean().withMessage('is_configured must be a boolean'),
 ];
 
-export const updateAiSettingsValidation = [
+const updateAiSettingsValidation = [
     body('provider_type')
         .optional()
         .isString().withMessage('Provider type must be a string')
@@ -58,4 +58,6 @@ export const updateAiSettingsValidation = [
         .isBoolean().withMessage('is_configured must be a boolean'),
 ];
 
-export const deleteAiSettingsValidation = [];
+const deleteAiSettingsValidation = [];
+
+module.exports = { createAiSettingsValidation, updateAiSettingsValidation, deleteAiSettingsValidation };

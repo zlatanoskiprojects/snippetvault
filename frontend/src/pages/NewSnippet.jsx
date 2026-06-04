@@ -49,7 +49,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
       const val = tagInput.replace(/,$/, '').trim()
       if (!val) return
       e.preventDefault()
-      setTags(prev => [...prev, val])
+      setTags(prev => prev.includes(val) ? prev : [...prev, val])
       setTagInput('')
     }
   }
@@ -63,7 +63,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved }) {
       toast.error('Title is required.')
       return
     }
-    const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags
+    const finalTags = [...new Set(tagInput.trim() ? [...tags, tagInput.trim()] : tags)]
     const payload = {
       title: title.trim(),
       description: description.trim() || null,

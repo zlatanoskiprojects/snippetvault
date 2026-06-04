@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom'
+import { logout } from '../api/auth'
+
 const TAG_DOT_COLORS = ['#3d77fc', '#22c55e', '#8c5af3', '#fba528', '#ef4444', '#6366f1']
 
 const libraryItems = [
@@ -6,6 +9,16 @@ const libraryItems = [
 ]
 
 export default function Sidebar({ snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }) {
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    try {
+      await logout()
+    } catch {
+    } finally {
+      navigate('/login')
+    }
+  }
   const tagItems = snippets
     .flatMap(s => s.tags || [])
     .reduce((acc, tag) => {
@@ -103,8 +116,14 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
             <span className="text-[10px] text-[#595e69] truncate">Profile &amp; Settings</span>
           </div>
         </div>
-        <div className="px-4 py-3">
+        <div className="px-4 py-3 flex items-center justify-between">
           <span className="text-xs text-[#595e69]">☀ Light mode</span>
+          <button
+            onClick={handleLogout}
+            className="text-xs text-[#595e69] hover:text-[#ef4444] transition-colors duration-150"
+          >
+            Sign out
+          </button>
         </div>
       </div>
     </aside>

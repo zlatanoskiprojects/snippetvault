@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSnippets } from '../hooks/useSnippets'
-import { getAllTags } from '../api/tags'
 import SnippetRow from '../components/SnippetRow'
 
 const LANG_MAP = { ts: 'TS', js: 'JS', py: 'PY', rs: 'RS', sql: 'SQL' }
@@ -26,11 +25,8 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
   const [activeLang, setActiveLang] = useState('all')
   const [activeTags, setActiveTags] = useState([])
   const [activeSort, setActiveSort] = useState('modified')
-  const [tagChips, setTagChips] = useState([])
 
-  useEffect(() => {
-    getAllTags().then(tags => setTagChips(tags.map(t => t.name))).catch(() => {})
-  }, [])
+  const tagChips = [...new Set(snippets.flatMap(s => s.tags || []))]
   const inputRef = useRef(null)
 
   useEffect(() => {
