@@ -59,6 +59,12 @@ export default function Dashboard() {
     setView('list')
   }
 
+  function onRestore(updated) {
+    setSnippets(prev => prev.map(s => s.id === updated.id ? updated : s))
+    setSelectedSnippet(updated)
+    toast.success('Version restored.')
+  }
+
   function onCancelForm() {
     setEditingSnippet(null)
     setView('list')
@@ -78,6 +84,10 @@ export default function Dashboard() {
 
   function handleViewChange(v) {
     exitSearch()
+    if (v !== 'list') {
+      setActiveTag(null)
+      setActiveCollection(null)
+    }
     setView(v)
   }
 
@@ -144,7 +154,7 @@ export default function Dashboard() {
             onSelectSnippet={snippet => { setSearchQuery(''); setIsSearching(false); onSelectSnippet(snippet) }}
           />
         ) : view === 'profile' ? (
-          <ProfileView snippets={snippets} />
+          <ProfileView snippets={snippets} onBack={() => handleViewChange('list')} />
         ) : view === 'collections' ? (
           <CollectionsView onSelectCollection={handleSelectCollection} />
         ) : view === 'list' ? (() => {
@@ -175,19 +185,23 @@ export default function Dashboard() {
 
               <div className="hidden lg:flex w-[44%] lg:w-[520px] xl:w-[656px] shrink-0 flex-col bg-[#101010]">
                 <SnippetDetailPanel
+                  key={selectedSnippet.id}
                   snippet={selectedSnippet}
                   onClose={onCloseDetail}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onRestore={onRestore}
                 />
               </div>
 
               <div className="fixed inset-0 z-40 bg-[#101010] flex flex-col lg:hidden">
                 <SnippetDetailPanel
+                  key={selectedSnippet.id}
                   snippet={selectedSnippet}
                   onClose={onCloseDetail}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onRestore={onRestore}
                 />
               </div>
             </>
