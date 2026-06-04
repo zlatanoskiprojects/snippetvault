@@ -2,7 +2,7 @@ const { Router } = require('express');
 const pool = require('../lib/db.js');
 const authMiddleware = require('../middleware/authMiddleware.js');
 const { validationResult } = require('express-validator');
-const { snippetIdValidation, createSnippetValidation, updateSnippetValidation } = require('../validators/snippets.js');
+const { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation } = require('../validators/snippets.js');
 
 const router = Router();
 
@@ -149,6 +149,14 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
             }
         }
 
+        let shouldSaveVersion = false;
+        if (updates.code !== undefined) {
+            const [current] = await pool.query('SELECT code FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
+            if (current.length > 0 && current[0].code !== updates.code) {
+                shouldSaveVersion = true;
+            }
+        }
+
         const [result] = await pool.query(
             `UPDATE snippet SET ${setClauses} WHERE id = ? AND user_id = ?`,
             values
@@ -158,10 +166,126 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req, res) =
             return res.status(404).json({ error: 'Snippet not found' });
         }
 
+        if (shouldSaveVersion) {
+            const [[{ maxVer }]] = await pool.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
+            const nextVersion = (maxVer || 0) + 1;
+            await pool.query(
+                'INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)',
+                [snippetId, updates.code, nextVersion, req.body.change_note || null]
+            );
+        }
+
         return res.status(200).json({ message: 'Snippet updated successfully' });
 
     } catch (error) {
         console.error('Error updating snippet:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.get('/:id/versions', authMiddleware, snippetIdValidation, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    try {
+        const [snippets] = await pool.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
+        if (snippets.length === 0) return res.status(404).json({ error: 'Snippet not found' });
+
+        const [versions] = await pool.query(
+            'SELECT id, version_number, change_note, created_at FROM snippet_version WHERE snippet_id = ? ORDER BY version_number DESC',
+            [req.params.id]
+        );
+        return res.status(200).json(versions);
+    } catch (error) {
+        console.error('Error fetching versions:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.get('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, ...versionIdValidation], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    try {
+        const [snippets] = await pool.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
+        if (snippets.length === 0) return res.status(404).json({ error: 'Snippet not found' });
+
+        const [versions] = await pool.query(
+            'SELECT * FROM snippet_version WHERE id = ? AND snippet_id = ?',
+            [req.params.versionId, req.params.id]
+        );
+        if (versions.length === 0) return res.status(404).json({ error: 'Version not found' });
+
+        return res.status(200).json(versions[0]);
+    } catch (error) {
+        console.error('Error fetching version:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.delete('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, ...versionIdValidation], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const snippetId = parseInt(req.params.id);
+    const versionId = parseInt(req.params.versionId);
+
+    try {
+        const [snippets] = await pool.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
+        if (snippets.length === 0) return res.status(404).json({ error: 'Snippet not found' });
+
+        const [result] = await pool.query('DELETE FROM snippet_version WHERE id = ? AND snippet_id = ?', [versionId, snippetId]);
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Version not found' });
+
+        return res.status(204).send();
+    } catch (error) {
+        console.error('Error deleting version:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.post('/:id/versions/:versionId/restore', authMiddleware, [...snippetIdValidation, ...versionIdValidation], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const snippetId = parseInt(req.params.id);
+    const versionId = parseInt(req.params.versionId);
+
+    try {
+        const [snippets] = await pool.query('SELECT * FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
+        if (snippets.length === 0) return res.status(404).json({ error: 'Snippet not found' });
+
+        const currentSnippet = snippets[0];
+
+        const [versions] = await pool.query('SELECT * FROM snippet_version WHERE id = ? AND snippet_id = ?', [versionId, snippetId]);
+        if (versions.length === 0) return res.status(404).json({ error: 'Version not found' });
+
+        const targetVersion = versions[0];
+
+        if (currentSnippet.code !== targetVersion.code) {
+            const [[{ maxVer }]] = await pool.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
+            const nextVersion = (maxVer || 0) + 1;
+            await pool.query(
+                'INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)',
+                [snippetId, currentSnippet.code, nextVersion, `Auto-save before restore to v${targetVersion.version_number}`]
+            );
+
+            await pool.query('UPDATE snippet SET code = ? WHERE id = ?', [targetVersion.code, snippetId]);
+        }
+
+        const [updated] = await pool.query(
+            `SELECT s.*, GROUP_CONCAT(t.name) AS tags
+             FROM snippet s
+             LEFT JOIN snippet_tag st ON st.snippet_id = s.id
+             LEFT JOIN tag t ON t.id = st.tag_id
+             WHERE s.id = ?
+             GROUP BY s.id`,
+            [snippetId]
+        );
+        const snippet = { ...updated[0], tags: updated[0].tags ? updated[0].tags.split(',') : [] };
+        return res.status(200).json(snippet);
+    } catch (error) {
+        console.error('Error restoring version:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

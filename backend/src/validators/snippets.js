@@ -1,5 +1,11 @@
 const { body, param } = require('express-validator');
 
+const versionIdValidation = [
+    param('versionId')
+        .isInt({ min: 1 })
+        .withMessage('Invalid version id'),
+];
+
 const snippetIdValidation = [
     param('id')
         .isInt({ min: 1 })
@@ -69,6 +75,11 @@ const updateSnippetValidation = [
     body('collection_id')
         .optional({ nullable: true })
         .isInt({ min: 1 }).withMessage('Invalid collection_id'),
+
+    body('change_note')
+        .optional({ nullable: true })
+        .isString()
+        .isLength({ max: 500 }).withMessage('Change note cannot exceed 500 characters'),
 ];
 
-module.exports = { snippetIdValidation, createSnippetValidation, updateSnippetValidation };
+module.exports = { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation };
