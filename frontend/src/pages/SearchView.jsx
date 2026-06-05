@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useSnippets } from '../hooks/useSnippets'
 import SnippetRow from '../components/SnippetRow'
 
-const LANG_MAP = { ts: 'TS', js: 'JS', py: 'PY', rs: 'RS', sql: 'SQL' }
+const LANG_MAP = { ts: 'TypeScript', js: 'JavaScript', py: 'Python', rs: 'Rust', sql: 'SQL', sh: 'Shell', go: 'Go' }
 
 const LANG_CHIPS = [
   { label: 'All',        value: 'all' },
@@ -11,6 +11,8 @@ const LANG_CHIPS = [
   { label: 'Python',     value: 'py'  },
   { label: 'Rust',       value: 'rs'  },
   { label: 'SQL',        value: 'sql' },
+  { label: 'Shell',      value: 'sh'  },
+  { label: 'Go',         value: 'go'  },
 ]
 
 
