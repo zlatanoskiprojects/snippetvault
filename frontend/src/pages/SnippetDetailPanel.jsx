@@ -81,11 +81,6 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
           </div>
         </div>
 
-        <span className="inline-flex items-center gap-1 bg-[#1a3d1a] text-[#22c55e] text-[10px] px-2 h-[22px] rounded mt-2">
-          <span>●</span>
-          Public
-        </span>
-
         <p className="text-[13px] text-[#595e69] mt-2 leading-relaxed">{snippet.description}</p>
 
         <div className="flex flex-wrap gap-1.5 mt-3">

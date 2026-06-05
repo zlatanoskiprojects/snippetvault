@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const path = require('path');
 const authRoutes = require('./routes/auth.js');
 const snippetRoutes = require('./routes/snippets.js');
 const collectionRoutes = require('./routes/collections.js');
@@ -13,8 +14,20 @@ const profileRoutes = require('./routes/profile.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://88.200.63.148:3000',
+];
+
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 
@@ -38,6 +51,14 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
+
+const frontendBuildPath = path.join(__dirname, '../dist/frontend-build');
+console.log('Serving static files from:', frontendBuildPath);
+app.use(express.static(frontendBuildPath));
+
+app.get('/{*path}', (req, res) => {
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

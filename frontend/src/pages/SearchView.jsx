@@ -58,6 +58,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
         !q ||
         s.title.toLowerCase().includes(q) ||
         (s.description || '').toLowerCase().includes(q) ||
+        (s.code || '').toLowerCase().includes(q) ||
         tags.some(t => t.toLowerCase().includes(q))
 
       const matchesLang =
