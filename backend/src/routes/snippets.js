@@ -25,8 +25,8 @@ router.get('/', authMiddleware, async (req, res) => {
         if (q) {
             const searchTerm = `%${q}%`;
             [snippets] = await pool.query(
-                baseQuery + ' AND (s.title LIKE ? OR s.language LIKE ? OR s.description LIKE ? OR t.name LIKE ?) GROUP BY s.id ORDER BY s.created_at DESC',
-                [userId, searchTerm, searchTerm, searchTerm, searchTerm]
+                baseQuery + ' AND (s.title LIKE ? OR s.language LIKE ? OR s.description LIKE ? OR t.name LIKE ? OR s.code LIKE ?) GROUP BY s.id ORDER BY s.created_at DESC',
+                [userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm]
             );
         } else {
             [snippets] = await pool.query(

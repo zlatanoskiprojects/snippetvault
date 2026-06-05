@@ -1,4 +1,4 @@
-export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, title = 'All snippets', onBack }) {
+export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSearch, title = 'All snippets', onBack }) {
   return (
     <header className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a]">
       <div className="flex items-center gap-2 min-w-0">
@@ -28,6 +28,18 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, title 
             <rect y="2" width="14" height="1.5" rx="0.75" fill="currentColor" />
             <rect y="6.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
             <rect y="10.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          onClick={onSearch}
+          aria-label="Search"
+          className="lg:hidden flex items-center justify-center w-[30px] h-[30px] bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] rounded-md hover:bg-[#222] transition-colors duration-150"
+        >
+          <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
+            <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M7.5 7.5L10 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
         </button>
 
