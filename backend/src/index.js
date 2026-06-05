@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
-    'http://88.200.63.148:3000',
+    'http://88.200.63.148:30162',
 ];
 
 app.use(cors({
