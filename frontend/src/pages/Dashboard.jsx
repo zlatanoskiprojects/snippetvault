@@ -212,6 +212,7 @@ export default function Dashboard() {
                 title={activeCollection ? activeCollection.name : activeTag ? `#${activeTag}` : 'All snippets'}
                 onBack={activeCollection ? handleClearCollection : activeTag ? handleClearTag : undefined}
                 onMenuClick={() => setSidebarOpen(true)}
+                onSearch={() => setIsSearching(true)}
                 onNewSnippet={() => setView('new')}
               />
               <div className="flex-1 overflow-y-auto">

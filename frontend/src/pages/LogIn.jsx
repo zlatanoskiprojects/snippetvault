@@ -14,7 +14,7 @@ function LogIn() {
     if (!email || !password) return
     try {
       await login(email, password)
-      navigate('/')
+      navigate('/dashboard')
     } catch (err) {
       toast.error(err.message || 'Login failed.')
     }
