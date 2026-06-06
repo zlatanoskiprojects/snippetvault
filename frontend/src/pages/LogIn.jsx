@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { login } from '../api/auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 
 function LogIn() {
@@ -21,7 +21,7 @@ function LogIn() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px]">
         <div className="flex flex-col items-center mb-8">
           <div className="rounded-lg bg-[#6366f1] w-9 h-9 flex items-center justify-center mb-3">
@@ -91,9 +91,9 @@ function LogIn() {
 
         <p className="text-center text-[#595e69] text-sm mt-5">
           Don't have an account?{' '}
-          <a href="/register" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+          <Link to="/register" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
             Sign up
-          </a>
+          </Link>
         </p>
 
       </div>

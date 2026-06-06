@@ -16,7 +16,7 @@ const createSnippetValidation = [
     body('title')
         .isString().trim()
         .notEmpty().withMessage('Title is required')
-        .isLength({ max: 255 }).withMessage('Title cannot exceed 255 characters'),
+        .isLength({ max: 200 }).withMessage('Title cannot exceed 200 characters'),
 
     body('code')
         .isString().trim()
@@ -50,7 +50,7 @@ const updateSnippetValidation = [
         .optional()
         .isString().trim()
         .notEmpty().withMessage('Title cannot be empty')
-        .isLength({ max: 255 }).withMessage('Title cannot exceed 255 characters'),
+        .isLength({ max: 200 }).withMessage('Title cannot exceed 200 characters'),
 
     body('code')
         .optional()

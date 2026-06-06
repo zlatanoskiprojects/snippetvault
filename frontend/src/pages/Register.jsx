@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { register } from '../api/auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 
 function Register() {
@@ -21,7 +21,7 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px]">
 
         <div className="flex flex-col items-center mb-7">
@@ -82,9 +82,9 @@ function Register() {
 
         <p className="text-center text-[#595e69] text-sm mt-5">
           Already have an account?{' '}
-          <a href="/login" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+          <Link to="/login" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
             Sign in
-          </a>
+          </Link>
         </p>
 
       </div>
