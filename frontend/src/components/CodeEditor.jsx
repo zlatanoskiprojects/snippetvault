@@ -26,7 +26,16 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
   }, [language])
 
   function handleCopy() {
-    navigator.clipboard.writeText(code)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code)
+    } else {
+      const el = document.createElement('textarea')
+      el.value = code
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
   }
 
   return (

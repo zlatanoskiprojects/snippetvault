@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const path = require('path');
 const authRoutes = require('./routes/auth.js');
 const snippetRoutes = require('./routes/snippets.js');
@@ -33,14 +34,23 @@ app.use(cors({
 
 app.use(express.json());
 
+const sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+});
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    store: sessionStore,
     cookie: {
         httpOnly: true,
         secure: false,
-        maxAge: 1000 * 60 * 60,
+        maxAge: 1000 * 60 * 60 * 24,
     },
 }));
 
