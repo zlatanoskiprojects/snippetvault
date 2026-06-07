@@ -3,11 +3,16 @@ import TagPill from './TagPill'
 
 function formatDate(isoString) {
   if (!isoString) return ''
-  const diffDays = Math.floor((Date.now() - new Date(isoString)) / 86400000)
+  const now = new Date()
+  const date = new Date(isoString)
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const diffDays = Math.round((startOfToday - startOfDate) / 86400000)
   if (diffDays === 0) return 'today'
+  if (diffDays === 1) return 'yesterday'
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 14) return '1w ago'
-  return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 export default function SnippetRow({ snippet, isSelected = false, onSelect }) {
