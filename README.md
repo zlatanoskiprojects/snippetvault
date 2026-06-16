@@ -2,7 +2,7 @@
  
 A web application for saving, organizing, and sharing code snippets. Built as a system design course project at the University of Primorska (UP FAMNIT).
  
-**Live demo:** [http://88.200.63.148:30162/dashboard](http://88.200.63.148:30162/)
+**Live demo:** [http://88.200.63.148:30162/](http://88.200.63.148:30162/)
  
 ---
  
