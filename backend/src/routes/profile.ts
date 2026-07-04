@@ -1,33 +1,60 @@
 import { Router, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
-import pool from '../lib/db';
+import { and, eq, ne } from 'drizzle-orm';
+import db from '../lib/db';
+import { users } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
 import { updateProfileValidation, changePasswordValidation } from '../validators/profile';
-import { PublicUserRow, IdRow } from '../types/db';
-
-interface PasswordHashRow extends IdRow {
-    password_hash: string;
-}
 
 interface ProfileUpdateFields {
     username?: string;
-    display_name?: string | null;
+    displayName?: string | null;
     bio?: string | null;
     email?: string;
 }
 
 const router = Router();
 
-const USER_SELECT = 'SELECT id, username, email, role, display_name, bio, avatar_url, registered_at FROM users WHERE id = ?';
+const PROFILE_SELECTION = {
+    id: users.id,
+    username: users.username,
+    email: users.email,
+    role: users.role,
+    displayName: users.displayName,
+    bio: users.bio,
+    avatarUrl: users.avatarUrl,
+    registeredAt: users.registeredAt,
+};
+
+const mapUser = (u: {
+    id: number;
+    username: string;
+    email: string;
+    role: string;
+    displayName: string | null;
+    bio: string | null;
+    avatarUrl: string | null;
+    registeredAt: Date;
+}) => ({
+    id: u.id,
+    username: u.username,
+    email: u.email,
+    role: u.role,
+    display_name: u.displayName,
+    bio: u.bio,
+    avatar_url: u.avatarUrl,
+    registered_at: u.registeredAt,
+});
 
 router.get('/', authMiddleware, async (req: Request, res: Response) => {
     try {
-        const [[user]] = await pool.query<PublicUserRow[]>(USER_SELECT, [req.userId]);
+        const rows = await db.select(PROFILE_SELECTION).from(users).where(eq(users.id, req.userId as number));
+        const user = rows[0];
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        return res.status(200).json({ user });
+        return res.status(200).json({ user: mapUser(user) });
     } catch (error) {
         console.error('Error fetching profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -43,18 +70,19 @@ router.patch('/password', authMiddleware, changePasswordValidation, async (req: 
     const { currentPassword, newPassword } = req.body;
 
     try {
-        const [[user]] = await pool.query<PasswordHashRow[]>('SELECT password_hash FROM users WHERE id = ?', [req.userId]);
+        const rows = await db.select({ passwordHash: users.passwordHash }).from(users).where(eq(users.id, req.userId as number));
+        const user = rows[0];
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const valid = await bcrypt.compare(currentPassword, user.password_hash);
+        const valid = await bcrypt.compare(currentPassword, user.passwordHash);
         if (!valid) {
             return res.status(401).json({ error: 'Current password is incorrect' });
         }
 
         const hash = await bcrypt.hash(newPassword.trim(), 10);
-        await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [hash, req.userId]);
+        await db.update(users).set({ passwordHash: hash }).where(eq(users.id, req.userId as number));
 
         return res.status(200).json({ message: 'Password updated' });
     } catch (error) {
@@ -69,11 +97,16 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const allowedFields: (keyof ProfileUpdateFields)[] = ['username', 'display_name', 'bio', 'email'];
+    const fieldMap: Record<string, keyof ProfileUpdateFields> = {
+        username: 'username',
+        display_name: 'displayName',
+        bio: 'bio',
+        email: 'email',
+    };
     const updates: ProfileUpdateFields = {};
-    for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-            (updates as Record<string, unknown>)[field] = req.body[field];
+    for (const bodyField of Object.keys(fieldMap)) {
+        if (req.body[bodyField] !== undefined) {
+            (updates as Record<string, unknown>)[fieldMap[bodyField]] = req.body[bodyField];
         }
     }
 
@@ -84,10 +117,10 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
     if (updates.username) {
         updates.username = updates.username.trim();
         try {
-            const [existing] = await pool.query<IdRow[]>(
-                'SELECT id FROM users WHERE username = ? AND id != ?',
-                [updates.username, req.userId]
-            );
+            const existing = await db
+                .select({ id: users.id })
+                .from(users)
+                .where(and(eq(users.username, updates.username), ne(users.id, req.userId as number)));
             if (existing.length > 0) {
                 return res.status(409).json({ error: 'Username already taken' });
             }
@@ -100,10 +133,10 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
     if (updates.email) {
         updates.email = updates.email.trim().toLowerCase();
         try {
-            const [existing] = await pool.query<IdRow[]>(
-                'SELECT id FROM users WHERE email = ? AND id != ?',
-                [updates.email, req.userId]
-            );
+            const existing = await db
+                .select({ id: users.id })
+                .from(users)
+                .where(and(eq(users.email, updates.email), ne(users.id, req.userId as number)));
             if (existing.length > 0) {
                 return res.status(409).json({ error: 'Email already in use' });
             }
@@ -113,14 +146,10 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
         }
     }
 
-    const keys = Object.keys(updates) as (keyof ProfileUpdateFields)[];
-    const setClauses = keys.map(field => `${field} = ?`).join(', ');
-    const values = [...keys.map(k => updates[k]), req.userId];
-
     try {
-        await pool.query(`UPDATE users SET ${setClauses} WHERE id = ?`, values);
-        const [[user]] = await pool.query<PublicUserRow[]>(USER_SELECT, [req.userId]);
-        return res.status(200).json({ user });
+        await db.update(users).set(updates).where(eq(users.id, req.userId as number));
+        const rows = await db.select(PROFILE_SELECTION).from(users).where(eq(users.id, req.userId as number));
+        return res.status(200).json({ user: mapUser(rows[0]) });
     } catch (error) {
         console.error('Error updating profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -129,7 +158,7 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
 
 router.delete('/', authMiddleware, async (req: Request, res: Response) => {
     try {
-        await pool.query('DELETE FROM users WHERE id = ?', [req.userId]);
+        await db.delete(users).where(eq(users.id, req.userId as number));
         req.session.destroy((err) => {
             if (err) {
                 console.error('Session destroy error:', err);

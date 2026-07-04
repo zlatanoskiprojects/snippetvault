@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
-import { ResultSetHeader } from 'mysql2';
-import pool from '../lib/db';
+import { and, eq, sql } from 'drizzle-orm';
+import db from '../lib/db';
+import { tag, snippet, snippetTag } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
 import { validationResult } from 'express-validator';
 import { tagIdValidation, createTagValidation, tagSnippetValidation } from '../validators/tags';
-import { TagRow, SnippetRow, IdRow, SnippetTagRow } from '../types/db';
 
 const router = Router();
 
 router.get('/', authMiddleware, async (req: Request, res: Response) => {
     try {
-        const [tags] = await pool.query<TagRow[]>('SELECT * FROM tag');
+        const tags = await db.select().from(tag);
         return res.status(200).json(tags);
     } catch (error) {
         console.log('Error fetching tags:', error);
@@ -24,7 +24,8 @@ router.get('/:id', authMiddleware, tagIdValidation, async (req: Request, res: Re
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const [rows] = await pool.query<TagRow[]>('SELECT * FROM tag WHERE id = ?', [req.params.id]);
+        const tagId = parseInt(req.params.id as string);
+        const rows = await db.select().from(tag).where(eq(tag.id, tagId));
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Tag not found' });
         }
@@ -41,13 +42,38 @@ router.get('/:id/snippets', authMiddleware, tagIdValidation, async (req: Request
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const [rows] = await pool.query<SnippetRow[]>(
-            `SELECT s.* FROM snippet s
-             JOIN snippet_tag st ON st.snippet_id = s.id
-             WHERE st.tag_id = ? AND s.user_id = ?`,
-            [req.params.id, req.userId]
-        );
-        return res.status(200).json(rows);
+        const tagId = parseInt(req.params.id as string);
+        const rows = await db
+            .select({
+                id: snippet.id,
+                userId: snippet.userId,
+                collectionId: snippet.collectionId,
+                title: snippet.title,
+                description: snippet.description,
+                code: snippet.code,
+                language: snippet.language,
+                visibility: snippet.visibility,
+                shareToken: snippet.shareToken,
+                createdAt: snippet.createdAt,
+                updatedAt: snippet.updatedAt,
+            })
+            .from(snippet)
+            .innerJoin(snippetTag, eq(snippetTag.snippetId, snippet.id))
+            .where(and(eq(snippetTag.tagId, tagId), eq(snippet.userId, req.userId as number)));
+
+        return res.status(200).json(rows.map((s) => ({
+            id: s.id,
+            user_id: s.userId,
+            collection_id: s.collectionId,
+            title: s.title,
+            description: s.description,
+            code: s.code,
+            language: s.language,
+            visibility: s.visibility,
+            share_token: s.shareToken,
+            created_at: s.createdAt,
+            updated_at: s.updatedAt,
+        })));
     } catch (err) {
         console.log('Error fetching snippets by tag:', err);
         return res.status(500).json({ error: 'Internal server error' });
@@ -63,13 +89,13 @@ router.post('/', authMiddleware, createTagValidation, async (req: Request, res: 
     const { name } = req.body;
 
     try {
-        const [existing] = await pool.query<IdRow[]>('SELECT id FROM tag WHERE name = ?', [name]);
+        const existing = await db.select({ id: tag.id }).from(tag).where(eq(tag.name, name));
         if (existing.length > 0) {
             return res.status(409).json({ error: 'Tag name already exists' });
         }
 
-        const [result] = await pool.query<ResultSetHeader>('INSERT INTO tag (name) VALUES (?)', [name]);
-        return res.status(201).json({ id: result.insertId, name, message: 'Tag created successfully' });
+        const [created] = await db.insert(tag).values({ name }).returning({ id: tag.id });
+        return res.status(201).json({ id: created.id, name, message: 'Tag created successfully' });
     } catch (error) {
         console.log('Error creating tag:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -84,25 +110,26 @@ router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, as
     }
 
     try {
-        const { id, snippetId } = req.params;
+        const tagId = parseInt(req.params.id as string);
+        const snippetId = parseInt(req.params.snippetId as string);
 
-        const [snippet] = await pool.query<IdRow[]>(
-            'SELECT id FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]
-        );
-        if (snippet.length === 0) {
+        const foundSnippet = await db
+            .select({ id: snippet.id })
+            .from(snippet)
+            .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)));
+        if (foundSnippet.length === 0) {
             return res.status(404).json({ error: 'Snippet not found or not yours' });
         }
 
-        const [existing] = await pool.query<SnippetTagRow[]>(
-            'SELECT * FROM snippet_tag WHERE snippet_id = ? AND tag_id = ?', [snippetId, id]
-        );
+        const existing = await db
+            .select()
+            .from(snippetTag)
+            .where(and(eq(snippetTag.snippetId, snippetId), eq(snippetTag.tagId, tagId)));
         if (existing.length > 0) {
             return res.status(409).json({ error: 'Tag already assigned to this snippet' });
         }
 
-        await pool.query(
-            'INSERT INTO snippet_tag (snippet_id, tag_id) VALUES (?, ?)', [snippetId, id]
-        );
+        await db.insert(snippetTag).values({ snippetId, tagId });
 
         return res.status(201).json({ message: 'Tag assigned to snippet successfully' });
     } catch (error) {
@@ -117,24 +144,27 @@ router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, 
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const { id, snippetId } = req.params;
+        const tagId = parseInt(req.params.id as string);
+        const snippetId = parseInt(req.params.snippetId as string);
 
-        const [snippet] = await pool.query<IdRow[]>(
-            'SELECT id FROM snippet WHERE id = ? AND user_id = ?',
-            [snippetId, req.userId]
-        );
-        if (snippet.length === 0) {
+        const foundSnippet = await db
+            .select({ id: snippet.id })
+            .from(snippet)
+            .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)));
+        if (foundSnippet.length === 0) {
             return res.status(404).json({ error: 'Snippet not found or not yours' });
         }
 
-        const [result] = await pool.query<ResultSetHeader>(
-            'DELETE FROM snippet_tag WHERE snippet_id = ? AND tag_id = ?',
-            [snippetId, id]
-        );
-        if (result.affectedRows === 0) {
+        const result = await db
+            .delete(snippetTag)
+            .where(and(eq(snippetTag.snippetId, snippetId), eq(snippetTag.tagId, tagId)))
+            .returning({ snippetId: snippetTag.snippetId });
+        if (result.length === 0) {
             return res.status(404).json({ error: 'Tag not assigned to this snippet' });
         }
-        await pool.query('DELETE FROM tag WHERE id NOT IN (SELECT tag_id FROM snippet_tag)');
+        await db.delete(tag).where(
+            sql`${tag.id} NOT IN (SELECT ${snippetTag.tagId} FROM ${snippetTag})`,
+        );
         return res.status(200).json({ message: 'Tag removed from snippet successfully' });
     } catch (error) {
         console.log('Error removing tag from snippet:', error);

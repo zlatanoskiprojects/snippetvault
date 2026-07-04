@@ -1,17 +1,16 @@
 services:
   db:
-    image: mysql:8.0
+    image: postgres:16
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: SISIII2026_89241167
-      MYSQL_USER: studenti
-      MYSQL_PASSWORD: S039C8R7
+      POSTGRES_DB: SISIII2026_89241167
+      POSTGRES_USER: studenti
+      POSTGRES_PASSWORD: S039C8R7
     ports:
-      - "3306:3306"
+      - "5433:5432"
     volumes:
-      - db_data:/var/lib/mysql
-      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - db_data:/var/lib/postgresql/data
+      - ./backend/drizzle/0000_wise_shen.sql:/docker-entrypoint-initdb.d/0000_wise_shen.sql
 
 volumes:
   db_data:

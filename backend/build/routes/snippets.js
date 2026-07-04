@@ -4,31 +4,78 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const drizzle_orm_1 = require("drizzle-orm");
 const db_1 = __importDefault(require("../lib/db"));
+const schema_1 = require("../db/schema");
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
 const express_validator_1 = require("express-validator");
 const snippets_1 = require("../validators/snippets");
 const router = (0, express_1.Router)();
+const snippetWithTagsSelection = {
+    id: schema_1.snippet.id,
+    userId: schema_1.snippet.userId,
+    collectionId: schema_1.snippet.collectionId,
+    title: schema_1.snippet.title,
+    description: schema_1.snippet.description,
+    code: schema_1.snippet.code,
+    language: schema_1.snippet.language,
+    visibility: schema_1.snippet.visibility,
+    shareToken: schema_1.snippet.shareToken,
+    createdAt: schema_1.snippet.createdAt,
+    updatedAt: schema_1.snippet.updatedAt,
+    tags: (0, drizzle_orm_1.sql) `string_agg(${schema_1.tag.name}, ',')`,
+};
+const mapSnippetWithTags = (s) => ({
+    id: s.id,
+    user_id: s.userId,
+    collection_id: s.collectionId,
+    title: s.title,
+    description: s.description,
+    code: s.code,
+    language: s.language,
+    visibility: s.visibility,
+    share_token: s.shareToken,
+    created_at: s.createdAt,
+    updated_at: s.updatedAt,
+    tags: s.tags ? s.tags.split(',') : [],
+});
+const mapSnippet = (s) => ({
+    id: s.id,
+    user_id: s.userId,
+    collection_id: s.collectionId,
+    title: s.title,
+    description: s.description,
+    code: s.code,
+    language: s.language,
+    visibility: s.visibility,
+    share_token: s.shareToken,
+    created_at: s.createdAt,
+    updated_at: s.updatedAt,
+});
+const mapVersion = (v) => ({
+    id: v.id,
+    snippet_id: v.snippetId,
+    code: v.code,
+    version_number: v.versionNumber,
+    change_note: v.changeNote,
+    created_at: v.createdAt,
+});
 router.get('/', authMiddleware_1.default, async (req, res) => {
     try {
         const userId = req.userId;
         const q = req.query.q;
-        let snippets;
-        const baseQuery = `
-            SELECT s.*, GROUP_CONCAT(t.name) AS tags
-            FROM snippet s
-            LEFT JOIN snippet_tag st ON st.snippet_id = s.id
-            LEFT JOIN tag t ON t.id = st.tag_id
-            WHERE s.user_id = ?
-        `;
-        if (q) {
-            const searchTerm = `%${q}%`;
-            [snippets] = await db_1.default.query(baseQuery + ' AND (s.title LIKE ? OR s.language LIKE ? OR s.description LIKE ? OR t.name LIKE ? OR s.code LIKE ?) GROUP BY s.id ORDER BY s.created_at DESC', [userId, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm]);
-        }
-        else {
-            [snippets] = await db_1.default.query(baseQuery + ' GROUP BY s.id ORDER BY s.created_at DESC', [userId]);
-        }
-        const result = snippets.map((s) => ({ ...s, tags: s.tags ? s.tags.split(',') : [] }));
+        const whereClause = q
+            ? (0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.userId, userId), (0, drizzle_orm_1.or)((0, drizzle_orm_1.ilike)(schema_1.snippet.title, `%${q}%`), (0, drizzle_orm_1.ilike)(schema_1.snippet.language, `%${q}%`), (0, drizzle_orm_1.ilike)(schema_1.snippet.description, `%${q}%`), (0, drizzle_orm_1.ilike)(schema_1.tag.name, `%${q}%`), (0, drizzle_orm_1.ilike)(schema_1.snippet.code, `%${q}%`)))
+            : (0, drizzle_orm_1.eq)(schema_1.snippet.userId, userId);
+        const snippets = await db_1.default
+            .select(snippetWithTagsSelection)
+            .from(schema_1.snippet)
+            .leftJoin(schema_1.snippetTag, (0, drizzle_orm_1.eq)(schema_1.snippetTag.snippetId, schema_1.snippet.id))
+            .leftJoin(schema_1.tag, (0, drizzle_orm_1.eq)(schema_1.tag.id, schema_1.snippetTag.tagId))
+            .where(whereClause)
+            .groupBy(schema_1.snippet.id)
+            .orderBy((0, drizzle_orm_1.desc)(schema_1.snippet.createdAt));
+        const result = snippets.map(mapSnippetWithTags);
         return res.status(200).json(result);
     }
     catch (error) {
@@ -42,17 +89,18 @@ router.get('/:id', authMiddleware_1.default, snippets_1.snippetIdValidation, asy
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const [rows] = await db_1.default.query(`SELECT s.*, GROUP_CONCAT(t.name) AS tags
-             FROM snippet s
-             LEFT JOIN snippet_tag st ON st.snippet_id = s.id
-             LEFT JOIN tag t ON t.id = st.tag_id
-             WHERE s.id = ? AND s.user_id = ?
-             GROUP BY s.id`, [req.params.id, req.userId]);
+        const snippetId = parseInt(req.params.id);
+        const rows = await db_1.default
+            .select(snippetWithTagsSelection)
+            .from(schema_1.snippet)
+            .leftJoin(schema_1.snippetTag, (0, drizzle_orm_1.eq)(schema_1.snippetTag.snippetId, schema_1.snippet.id))
+            .leftJoin(schema_1.tag, (0, drizzle_orm_1.eq)(schema_1.tag.id, schema_1.snippetTag.tagId))
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)))
+            .groupBy(schema_1.snippet.id);
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Snippet not found' });
         }
-        const snippet = { ...rows[0], tags: rows[0].tags ? rows[0].tags.split(',') : [] };
-        return res.status(200).json(snippet);
+        return res.status(200).json(mapSnippetWithTags(rows[0]));
     }
     catch (error) {
         console.log("Error fetching snippet", error);
@@ -66,17 +114,16 @@ router.post('/', authMiddleware_1.default, snippets_1.createSnippetValidation, a
     }
     const { title, description, code, language, visibility, collection_id } = req.body;
     try {
-        const [result] = await db_1.default.query('INSERT INTO snippet (user_id,title,description,code,language,visibility,collection_id) VALUES (?,?,?,?,?,?,?)', [
-            req.userId,
+        const [created] = await db_1.default.insert(schema_1.snippet).values({
+            userId: req.userId,
             title,
-            description || null,
+            description: description || null,
             code,
             language,
-            visibility || "private",
-            collection_id || null,
-        ]);
-        const [rows] = await db_1.default.query('SELECT * FROM snippet WHERE id = ?', [result.insertId]);
-        return res.status(201).json(rows[0]);
+            visibility: visibility || 'private',
+            collectionId: collection_id || null,
+        }).returning();
+        return res.status(201).json(mapSnippet(created));
     }
     catch (error) {
         console.log("Error creating snippet", error);
@@ -89,11 +136,15 @@ router.delete('/:id', authMiddleware_1.default, snippets_1.snippetIdValidation, 
         return res.status(400).json({ errors: err.array() });
     }
     try {
-        const [result] = await db_1.default.query('DELETE FROM snippet WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
-        if (result.affectedRows === 0) {
+        const snippetId = parseInt(req.params.id);
+        const deleted = await db_1.default
+            .delete(schema_1.snippet)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)))
+            .returning({ id: schema_1.snippet.id });
+        if (deleted.length === 0) {
             return res.status(404).json({ error: 'Snippet not found' });
         }
-        await db_1.default.query('DELETE FROM tag WHERE id NOT IN (SELECT tag_id FROM snippet_tag)');
+        await db_1.default.delete(schema_1.tag).where((0, drizzle_orm_1.sql) `${schema_1.tag.id} NOT IN (SELECT ${schema_1.snippetTag.tagId} FROM ${schema_1.snippetTag})`);
         return res.status(200).json({ message: 'Snippet deleted successfully' });
     }
     catch (error) {
@@ -107,22 +158,29 @@ router.patch('/:id', authMiddleware_1.default, snippets_1.updateSnippetValidatio
         return res.status(400).json({ errors: errors.array() });
     }
     const snippetId = parseInt(req.params.id);
-    const allowedFields = ['title', 'description', 'code', 'language', 'visibility', 'collection_id'];
+    const fieldMap = {
+        title: 'title',
+        description: 'description',
+        code: 'code',
+        language: 'language',
+        visibility: 'visibility',
+        collection_id: 'collectionId',
+    };
     const updates = {};
-    for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-            updates[field] = req.body[field];
+    for (const bodyField of Object.keys(fieldMap)) {
+        if (req.body[bodyField] !== undefined) {
+            updates[fieldMap[bodyField]] = req.body[bodyField];
         }
     }
     if (Object.keys(updates).length === 0) {
         return res.status(400).json({ error: 'No valid fields provided' });
     }
-    const keys = Object.keys(updates);
-    const setClauses = keys.map(field => `${field} = ?`).join(', ');
-    const values = [...keys.map(k => updates[k]), snippetId, req.userId];
     try {
-        if (updates.collection_id !== undefined && updates.collection_id !== null) {
-            const [cols] = await db_1.default.query('SELECT id FROM collection WHERE id = ? AND user_id = ?', [updates.collection_id, req.userId]);
+        if (updates.collectionId !== undefined && updates.collectionId !== null) {
+            const cols = await db_1.default
+                .select({ id: schema_1.collection.id })
+                .from(schema_1.collection)
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.collection.id, updates.collectionId), (0, drizzle_orm_1.eq)(schema_1.collection.userId, req.userId)));
             if (cols.length === 0) {
                 return res.status(403).json({ error: 'Collection not found or not yours' });
             }
@@ -130,22 +188,40 @@ router.patch('/:id', authMiddleware_1.default, snippets_1.updateSnippetValidatio
         let shouldSaveVersion = false;
         let oldCode = null;
         if (updates.code !== undefined) {
-            const [current] = await db_1.default.query('SELECT code FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
+            const current = await db_1.default
+                .select({ code: schema_1.snippet.code })
+                .from(schema_1.snippet)
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)));
             if (current.length > 0 && current[0].code !== updates.code) {
                 shouldSaveVersion = true;
                 oldCode = current[0].code;
             }
         }
-        const [result] = await db_1.default.query(`UPDATE snippet SET ${setClauses} WHERE id = ? AND user_id = ?`, values);
-        if (result.affectedRows === 0) {
+        const result = await db_1.default
+            .update(schema_1.snippet)
+            .set(updates)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)))
+            .returning({ id: schema_1.snippet.id });
+        if (result.length === 0) {
             return res.status(404).json({ error: 'Snippet not found' });
         }
-        if (shouldSaveVersion) {
-            const [existing] = await db_1.default.query('SELECT id FROM snippet_version WHERE snippet_id = ? AND code = ?', [snippetId, oldCode]);
+        if (shouldSaveVersion && oldCode !== null) {
+            const existing = await db_1.default
+                .select({ id: schema_1.snippetVersion.id })
+                .from(schema_1.snippetVersion)
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippetVersion.code, oldCode)));
             if (existing.length === 0) {
-                const [[{ maxVer }]] = await db_1.default.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
+                const [{ maxVer }] = await db_1.default
+                    .select({ maxVer: (0, drizzle_orm_1.sql) `max(${schema_1.snippetVersion.versionNumber})` })
+                    .from(schema_1.snippetVersion)
+                    .where((0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId));
                 const nextVersion = (maxVer || 0) + 1;
-                await db_1.default.query('INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)', [snippetId, oldCode, nextVersion, req.body.change_note || null]);
+                await db_1.default.insert(schema_1.snippetVersion).values({
+                    snippetId,
+                    code: oldCode,
+                    versionNumber: nextVersion,
+                    changeNote: req.body.change_note || null,
+                });
             }
         }
         return res.status(200).json({ message: 'Snippet updated successfully' });
@@ -160,11 +236,29 @@ router.get('/:id/versions', authMiddleware_1.default, snippets_1.snippetIdValida
     if (!errors.isEmpty())
         return res.status(400).json({ errors: errors.array() });
     try {
-        const [snippets] = await db_1.default.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
+        const snippetId = parseInt(req.params.id);
+        const snippets = await db_1.default
+            .select({ id: schema_1.snippet.id })
+            .from(schema_1.snippet)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)));
         if (snippets.length === 0)
             return res.status(404).json({ error: 'Snippet not found' });
-        const [versions] = await db_1.default.query('SELECT id, version_number, change_note, created_at FROM snippet_version WHERE snippet_id = ? ORDER BY version_number DESC', [req.params.id]);
-        return res.status(200).json(versions);
+        const versions = await db_1.default
+            .select({
+            id: schema_1.snippetVersion.id,
+            versionNumber: schema_1.snippetVersion.versionNumber,
+            changeNote: schema_1.snippetVersion.changeNote,
+            createdAt: schema_1.snippetVersion.createdAt,
+        })
+            .from(schema_1.snippetVersion)
+            .where((0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId))
+            .orderBy((0, drizzle_orm_1.desc)(schema_1.snippetVersion.versionNumber));
+        return res.status(200).json(versions.map((v) => ({
+            id: v.id,
+            version_number: v.versionNumber,
+            change_note: v.changeNote,
+            created_at: v.createdAt,
+        })));
     }
     catch (error) {
         console.error('Error fetching versions:', error);
@@ -176,13 +270,21 @@ router.get('/:id/versions/:versionId', authMiddleware_1.default, [...snippets_1.
     if (!errors.isEmpty())
         return res.status(400).json({ errors: errors.array() });
     try {
-        const [snippets] = await db_1.default.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
+        const snippetId = parseInt(req.params.id);
+        const versionId = parseInt(req.params.versionId);
+        const snippets = await db_1.default
+            .select({ id: schema_1.snippet.id })
+            .from(schema_1.snippet)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)));
         if (snippets.length === 0)
             return res.status(404).json({ error: 'Snippet not found' });
-        const [versions] = await db_1.default.query('SELECT * FROM snippet_version WHERE id = ? AND snippet_id = ?', [req.params.versionId, req.params.id]);
+        const versions = await db_1.default
+            .select()
+            .from(schema_1.snippetVersion)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippetVersion.id, versionId), (0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId)));
         if (versions.length === 0)
             return res.status(404).json({ error: 'Version not found' });
-        return res.status(200).json(versions[0]);
+        return res.status(200).json(mapVersion(versions[0]));
     }
     catch (error) {
         console.error('Error fetching version:', error);
@@ -196,11 +298,17 @@ router.delete('/:id/versions/:versionId', authMiddleware_1.default, [...snippets
     const snippetId = parseInt(req.params.id);
     const versionId = parseInt(req.params.versionId);
     try {
-        const [snippets] = await db_1.default.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
+        const snippets = await db_1.default
+            .select({ id: schema_1.snippet.id })
+            .from(schema_1.snippet)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)));
         if (snippets.length === 0)
             return res.status(404).json({ error: 'Snippet not found' });
-        const [result] = await db_1.default.query('DELETE FROM snippet_version WHERE id = ? AND snippet_id = ?', [versionId, snippetId]);
-        if (result.affectedRows === 0)
+        const result = await db_1.default
+            .delete(schema_1.snippetVersion)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippetVersion.id, versionId), (0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId)))
+            .returning({ id: schema_1.snippetVersion.id });
+        if (result.length === 0)
             return res.status(404).json({ error: 'Version not found' });
         return res.status(204).send();
     }
@@ -216,31 +324,48 @@ router.post('/:id/versions/:versionId/restore', authMiddleware_1.default, [...sn
     const snippetId = parseInt(req.params.id);
     const versionId = parseInt(req.params.versionId);
     try {
-        const [snippets] = await db_1.default.query('SELECT * FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
+        const snippets = await db_1.default
+            .select()
+            .from(schema_1.snippet)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)));
         if (snippets.length === 0)
             return res.status(404).json({ error: 'Snippet not found' });
         const currentSnippet = snippets[0];
-        const [versions] = await db_1.default.query('SELECT * FROM snippet_version WHERE id = ? AND snippet_id = ?', [versionId, snippetId]);
+        const versions = await db_1.default
+            .select()
+            .from(schema_1.snippetVersion)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippetVersion.id, versionId), (0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId)));
         if (versions.length === 0)
             return res.status(404).json({ error: 'Version not found' });
         const targetVersion = versions[0];
         if (currentSnippet.code !== targetVersion.code) {
-            const [existing] = await db_1.default.query('SELECT id FROM snippet_version WHERE snippet_id = ? AND code = ?', [snippetId, currentSnippet.code]);
+            const existing = await db_1.default
+                .select({ id: schema_1.snippetVersion.id })
+                .from(schema_1.snippetVersion)
+                .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippetVersion.code, currentSnippet.code)));
             if (existing.length === 0) {
-                const [[{ maxVer }]] = await db_1.default.query('SELECT MAX(version_number) AS maxVer FROM snippet_version WHERE snippet_id = ?', [snippetId]);
+                const [{ maxVer }] = await db_1.default
+                    .select({ maxVer: (0, drizzle_orm_1.sql) `max(${schema_1.snippetVersion.versionNumber})` })
+                    .from(schema_1.snippetVersion)
+                    .where((0, drizzle_orm_1.eq)(schema_1.snippetVersion.snippetId, snippetId));
                 const nextVersion = (maxVer || 0) + 1;
-                await db_1.default.query('INSERT INTO snippet_version (snippet_id, code, version_number, change_note) VALUES (?, ?, ?, ?)', [snippetId, currentSnippet.code, nextVersion, `Auto-save before restore to v${targetVersion.version_number}`]);
+                await db_1.default.insert(schema_1.snippetVersion).values({
+                    snippetId,
+                    code: currentSnippet.code,
+                    versionNumber: nextVersion,
+                    changeNote: `Auto-save before restore to v${targetVersion.versionNumber}`,
+                });
             }
-            await db_1.default.query('UPDATE snippet SET code = ? WHERE id = ?', [targetVersion.code, snippetId]);
+            await db_1.default.update(schema_1.snippet).set({ code: targetVersion.code }).where((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId));
         }
-        const [updated] = await db_1.default.query(`SELECT s.*, GROUP_CONCAT(t.name) AS tags
-             FROM snippet s
-             LEFT JOIN snippet_tag st ON st.snippet_id = s.id
-             LEFT JOIN tag t ON t.id = st.tag_id
-             WHERE s.id = ?
-             GROUP BY s.id`, [snippetId]);
-        const snippet = { ...updated[0], tags: updated[0].tags ? updated[0].tags.split(',') : [] };
-        return res.status(200).json(snippet);
+        const updated = await db_1.default
+            .select(snippetWithTagsSelection)
+            .from(schema_1.snippet)
+            .leftJoin(schema_1.snippetTag, (0, drizzle_orm_1.eq)(schema_1.snippetTag.snippetId, schema_1.snippet.id))
+            .leftJoin(schema_1.tag, (0, drizzle_orm_1.eq)(schema_1.tag.id, schema_1.snippetTag.tagId))
+            .where((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId))
+            .groupBy(schema_1.snippet.id);
+        return res.status(200).json(mapSnippetWithTags(updated[0]));
     }
     catch (error) {
         console.error('Error restoring version:', error);

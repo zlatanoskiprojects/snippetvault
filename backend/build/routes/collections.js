@@ -5,14 +5,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
+const drizzle_orm_1 = require("drizzle-orm");
 const db_1 = __importDefault(require("../lib/db"));
+const schema_1 = require("../db/schema");
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
 const collections_1 = require("../validators/collections");
 const router = (0, express_1.Router)();
 router.get('/', authMiddleware_1.default, async (req, res) => {
     try {
-        const [collections] = await db_1.default.query(`SELECT c.id,c.name,c.description,c.created_at,COUNT(s.id) AS snippet_count FROM collection c LEFT JOIN snippet s ON s.collection_id = c.id WHERE c.user_id = ? GROUP BY c.id ORDER BY c.created_at DESC`, [req.userId]);
-        return res.status(200).json(collections);
+        const collections = await db_1.default
+            .select({
+            id: schema_1.collection.id,
+            name: schema_1.collection.name,
+            description: schema_1.collection.description,
+            createdAt: schema_1.collection.createdAt,
+            snippetCount: (0, drizzle_orm_1.sql) `count(${schema_1.snippet.id})`,
+        })
+            .from(schema_1.collection)
+            .leftJoin(schema_1.snippet, (0, drizzle_orm_1.eq)(schema_1.snippet.collectionId, schema_1.collection.id))
+            .where((0, drizzle_orm_1.eq)(schema_1.collection.userId, req.userId))
+            .groupBy(schema_1.collection.id)
+            .orderBy((0, drizzle_orm_1.desc)(schema_1.collection.createdAt));
+        return res.status(200).json(collections.map((c) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            created_at: c.createdAt,
+            snippet_count: Number(c.snippetCount),
+        })));
     }
     catch (error) {
         console.error('Error fetching collections:', error);
@@ -26,9 +46,13 @@ router.post('/', authMiddleware_1.default, collections_1.createCollectionValidat
     }
     const { name, description } = req.body;
     try {
-        const [result] = await db_1.default.query('INSERT INTO collection (user_id, name, description) VALUES (?, ?, ?)', [req.userId, name, description ?? null]);
+        const [created] = await db_1.default.insert(schema_1.collection).values({
+            userId: req.userId,
+            name,
+            description: description ?? null,
+        }).returning({ id: schema_1.collection.id });
         return res.status(201).json({
-            id: result.insertId,
+            id: created.id,
             name,
             description: description ?? null,
             message: 'Collection created successfully',
@@ -54,12 +78,14 @@ router.patch('/:id', authMiddleware_1.default, collections_1.updateCollectionVal
     if (Object.keys(updates).length === 0) {
         return res.status(400).json({ error: 'No valid fields provided' });
     }
-    const keys = Object.keys(updates);
-    const setClauses = keys.map(field => `${field} = ?`).join(', ');
-    const values = [...keys.map(k => updates[k]), req.params.id, req.userId];
     try {
-        const [result] = await db_1.default.query(`UPDATE collection SET ${setClauses} WHERE id = ? AND user_id = ?`, values);
-        if (result.affectedRows === 0) {
+        const collectionId = parseInt(req.params.id);
+        const result = await db_1.default
+            .update(schema_1.collection)
+            .set(updates)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.collection.id, collectionId), (0, drizzle_orm_1.eq)(schema_1.collection.userId, req.userId)))
+            .returning({ id: schema_1.collection.id });
+        if (result.length === 0) {
             return res.status(404).json({ error: 'Collection not found' });
         }
         return res.status(200).json({ message: 'Collection updated successfully' });
@@ -75,8 +101,12 @@ router.delete('/:id', authMiddleware_1.default, collections_1.collectionIdValida
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const [result] = await db_1.default.query('DELETE FROM collection WHERE id = ? AND user_id = ?', [req.params.id, req.userId]);
-        if (result.affectedRows === 0) {
+        const collectionId = parseInt(req.params.id);
+        const result = await db_1.default
+            .delete(schema_1.collection)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.collection.id, collectionId), (0, drizzle_orm_1.eq)(schema_1.collection.userId, req.userId)))
+            .returning({ id: schema_1.collection.id });
+        if (result.length === 0) {
             return res.status(404).json({ error: 'Collection not found' });
         }
         return res.status(200).json({ message: 'Collection deleted successfully' });
@@ -91,17 +121,24 @@ router.patch('/:id/snippets/:snippetId', authMiddleware_1.default, collections_1
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { id, snippetId } = req.params;
+    const collectionId = parseInt(req.params.id);
+    const snippetId = parseInt(req.params.snippetId);
     try {
-        const [[collection]] = await db_1.default.query('SELECT id FROM collection WHERE id = ? AND user_id = ?', [id, req.userId]);
-        if (!collection) {
+        const [foundCollection] = await db_1.default
+            .select({ id: schema_1.collection.id })
+            .from(schema_1.collection)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.collection.id, collectionId), (0, drizzle_orm_1.eq)(schema_1.collection.userId, req.userId)));
+        if (!foundCollection) {
             return res.status(404).json({ error: 'Collection not found' });
         }
-        const [[snippet]] = await db_1.default.query('SELECT id FROM snippet WHERE id = ? AND user_id = ?', [snippetId, req.userId]);
-        if (!snippet) {
+        const [foundSnippet] = await db_1.default
+            .select({ id: schema_1.snippet.id })
+            .from(schema_1.snippet)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId), (0, drizzle_orm_1.eq)(schema_1.snippet.userId, req.userId)));
+        if (!foundSnippet) {
             return res.status(404).json({ error: 'Snippet not found' });
         }
-        await db_1.default.query('UPDATE snippet SET collection_id = ? WHERE id = ?', [id, snippetId]);
+        await db_1.default.update(schema_1.snippet).set({ collectionId }).where((0, drizzle_orm_1.eq)(schema_1.snippet.id, snippetId));
         return res.status(200).json({ message: 'Snippet assigned to collection' });
     }
     catch (error) {

@@ -5,7 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const drizzle_orm_1 = require("drizzle-orm");
 const db_1 = __importDefault(require("../lib/db"));
+const schema_1 = require("../db/schema");
 const router = (0, express_1.Router)();
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
@@ -16,12 +18,16 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: 'All fields are required' });
     }
     try {
-        const [existingUser] = await db_1.default.query('SELECT id FROM users WHERE email = ?', [cleanEmail]);
+        const existingUser = await db_1.default.select({ id: schema_1.users.id }).from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, cleanEmail));
         if (existingUser.length > 0) {
             return res.status(400).json({ error: 'User with this email already exists' });
         }
         const hashedPassword = await bcryptjs_1.default.hash(cleanPassword, 10);
-        await db_1.default.query('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [cleanUsername, cleanEmail, hashedPassword]);
+        await db_1.default.insert(schema_1.users).values({
+            username: cleanUsername,
+            email: cleanEmail,
+            passwordHash: hashedPassword,
+        });
         return res.status(201).json({ message: 'User registered successfully' });
     }
     catch (error) {
@@ -37,11 +43,11 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'All fields are required' });
     }
     try {
-        const [rows] = await db_1.default.query('SELECT * FROM users WHERE email = ?', [cleanEmail]);
+        const rows = await db_1.default.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, cleanEmail));
         if (rows.length === 0) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
-        const validPassword = await bcryptjs_1.default.compare(cleanPassword, rows[0].password_hash);
+        const validPassword = await bcryptjs_1.default.compare(cleanPassword, rows[0].passwordHash);
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
@@ -57,8 +63,8 @@ router.post('/login', async (req, res) => {
                     username: rows[0].username,
                     email: rows[0].email,
                     role: rows[0].role,
-                    display_name: rows[0].display_name,
-                    avatar_url: rows[0].avatar_url,
+                    display_name: rows[0].displayName,
+                    avatar_url: rows[0].avatarUrl,
                 },
             });
         });

@@ -2,8 +2,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
-import ExpressMySQLSession from 'express-mysql-session';
+import PgSession from 'connect-pg-simple';
 import path from 'path';
+import { pool } from './lib/db';
 import authRoutes from './routes/auth';
 import snippetRoutes from './routes/snippets';
 import collectionRoutes from './routes/collections';
@@ -12,7 +13,7 @@ import commentRoutes from './routes/comments';
 import aiSettingsRoutes from './routes/aiSettings';
 import profileRoutes from './routes/profile';
 
-const MySQLStore = ExpressMySQLSession(session);
+const PostgresqlStore = PgSession(session);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,12 +37,9 @@ app.use(cors({
 
 app.use(express.json());
 
-const sessionStore = new MySQLStore({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : undefined,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+const sessionStore = new PostgresqlStore({
+    pool,
+    createTableIfMissing: true,
 });
 
 app.use(session({

@@ -7,8 +7,9 @@ require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const express_session_1 = __importDefault(require("express-session"));
-const express_mysql_session_1 = __importDefault(require("express-mysql-session"));
+const connect_pg_simple_1 = __importDefault(require("connect-pg-simple"));
 const path_1 = __importDefault(require("path"));
+const db_1 = require("./lib/db");
 const auth_1 = __importDefault(require("./routes/auth"));
 const snippets_1 = __importDefault(require("./routes/snippets"));
 const collections_1 = __importDefault(require("./routes/collections"));
@@ -16,7 +17,7 @@ const tags_1 = __importDefault(require("./routes/tags"));
 const comments_1 = __importDefault(require("./routes/comments"));
 const aiSettings_1 = __importDefault(require("./routes/aiSettings"));
 const profile_1 = __importDefault(require("./routes/profile"));
-const MySQLStore = (0, express_mysql_session_1.default)(express_session_1.default);
+const PostgresqlStore = (0, connect_pg_simple_1.default)(express_session_1.default);
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGINS = [
@@ -36,12 +37,9 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 app.use(express_1.default.json());
-const sessionStore = new MySQLStore({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : undefined,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+const sessionStore = new PostgresqlStore({
+    pool: db_1.pool,
+    createTableIfMissing: true,
 });
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET,
