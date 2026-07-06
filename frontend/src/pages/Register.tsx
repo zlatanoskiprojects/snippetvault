@@ -2,6 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { register } from '../api/auth'
 import { useNavigate, Link } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Field from '../components/ui/Field'
 
 function Register() {
   const [username, setUsername] = useState('')
@@ -34,50 +37,44 @@ function Register() {
 
         <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 flex flex-col gap-4">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-xs text-[#9ba3af] mb-1.5">Username</label>
-              <input
+            <Field label="Username">
+              <Input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="johndoe"
-                className="w-full h-[40px] bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white placeholder-[#595e69] px-3 focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                className="h-[40px]"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-[#9ba3af] mb-1.5">Email</label>
-              <input
+            </Field>
+            <Field label="Email">
+              <Input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full h-[40px] bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white placeholder-[#595e69] px-3 focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                className="h-[40px]"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-[#9ba3af] mb-1.5">Password</label>
-              <input
+            </Field>
+            <Field label="Password">
+              <Input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Create a password"
-                className="w-full h-[40px] bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white placeholder-[#595e69] px-3 focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                className="h-[40px]"
               />
-            </div>
-            <button
-              type="submit"
-              className="w-full h-[40px] bg-[#6366f1] hover:bg-indigo-500 text-white text-sm font-medium rounded-md transition-colors duration-150"
-            >
+            </Field>
+            <Button type="submit" variant="primary" className="w-full h-[40px]">
               Create Account
-            </button>
+            </Button>
           </form>
 
-          <button
-            type="button"
-            className="w-full text-[#595e69] text-xs hover:text-[#9ba3af] transition-colors duration-150"
+          <Button
+            variant="ghost"
+            className="w-full h-auto p-0 text-[#595e69] text-xs hover:text-[#9ba3af] hover:bg-transparent"
           >
             Continue as guest
-          </button>
+          </Button>
         </div>
 
         <p className="text-center text-[#595e69] text-sm mt-5">

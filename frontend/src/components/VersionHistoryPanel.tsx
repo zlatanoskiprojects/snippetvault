@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { getSnippetVersions, getSnippetVersion, restoreSnippetVersion, deleteSnippetVersion } from '../api/snippets'
 import CodeEditor from './CodeEditor'
+import Button from './ui/Button'
+import ConfirmDialog from './ui/AlertDialog'
+import Spinner from './ui/Spinner'
 import type { Snippet, SnippetVersion } from '../api/types'
 
 function timeAgo(dateStr: string): string {
@@ -30,6 +33,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [restoring, setRestoring] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -65,6 +69,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
       setPreviewCode(null)
     } finally {
       setDeleting(false)
+      setDeleteConfirmOpen(false)
     }
   }
 
@@ -83,12 +88,9 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
     <div className="flex flex-col h-full bg-[#101010]">
       <div className="flex items-center justify-between px-4 h-[56px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
         <div className="flex items-center gap-2">
-          <button
-            onClick={onBack}
-            className="text-[#9ba3af] hover:text-white transition-colors duration-150 text-sm"
-          >
+          <Button variant="ghost" size="sm" onClick={onBack} className="h-auto p-0 text-sm">
             ←
-          </button>
+          </Button>
           <span className="text-[13px] font-medium text-white">Version History</span>
         </div>
         <span className="text-[12px] text-[#595e69]">{snippet.title}</span>
@@ -98,7 +100,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
         <div className="w-[220px] shrink-0 border-r border-[#2a2a2a] overflow-y-auto flex flex-col">
           {loading ? (
             <div className="flex flex-1 items-center justify-center p-4">
-              <div className="spinner-border spinner-border-sm text-secondary" role="status" />
+              <Spinner size="sm" className="text-[#9ba3af]" />
             </div>
           ) : versions.length === 0 ? (
             <div className="flex flex-1 items-center justify-center p-4">
@@ -144,7 +146,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
               <div className="flex-1 overflow-hidden mx-3 my-3 min-h-0">
                 {loadingPreview ? (
                   <div className="flex h-full items-center justify-center">
-                    <div className="spinner-border spinner-border-sm text-secondary" role="status" />
+                    <Spinner size="sm" className="text-[#9ba3af]" />
                   </div>
                 ) : (
                   <CodeEditor language={language} code={previewCode ?? ''} editable={false} label={null} />
@@ -160,30 +162,40 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
       </div>
 
       <div className="flex items-center justify-between px-5 h-[56px] border-t border-[#2a2a2a] shrink-0 bg-[#101010]">
-        <button
-          onClick={onBack}
-          className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:text-white hover:bg-[#222] text-[13px] font-medium px-4 h-[34px] rounded-md transition-colors duration-150"
-        >
+        <Button variant="secondary" onClick={onBack} className="h-[34px] px-4 text-[13px]">
           Back
-        </button>
+        </Button>
         {selectedVersion && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleDelete}
+            <Button
+              variant="danger"
+              onClick={() => setDeleteConfirmOpen(true)}
               disabled={deleting}
-              className="bg-[#2a0a0a] border border-[#5c1a1a] hover:bg-red-900/40 disabled:opacity-50 text-red-400 hover:text-red-300 text-[13px] font-medium px-4 h-[34px] rounded-md transition-colors duration-150"
+              className="h-[34px] px-4 text-[13px] bg-[#2a0a0a] border border-[#5c1a1a] hover:bg-red-900/40 text-red-400 hover:text-red-300"
             >
               {deleting ? 'Deleting…' : 'Delete'}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               onClick={handleRestore}
               disabled={restoring}
-              className="bg-[#6366f1] hover:bg-indigo-500 disabled:opacity-50 text-white text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"
+              className="h-[34px] px-4 text-[13px]"
             >
               {restoring ? 'Restoring…' : `Restore v${selectedVersion.version_number}`}
-            </button>
+            </Button>
           </div>
         )}
+
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="Delete version"
+          description={selectedVersion ? `Delete v${selectedVersion.version_number}? This action cannot be undone.` : undefined}
+          confirmLabel="Delete"
+          danger
+          confirming={deleting}
+          onConfirm={handleDelete}
+        />
       </div>
     </div>
   )

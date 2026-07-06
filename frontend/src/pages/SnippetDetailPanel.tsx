@@ -3,6 +3,8 @@ import LanguageBadge from '../components/LanguageBadge'
 import TagPill from '../components/TagPill'
 import CodeEditor from '../components/CodeEditor'
 import VersionHistoryPanel from '../components/VersionHistoryPanel'
+import Button from '../components/ui/Button'
+import ConfirmDialog from '../components/ui/AlertDialog'
 import type { Snippet } from '../api/types'
 
 const LANG_NAMES: Record<string, string> = {
@@ -24,6 +26,7 @@ interface SnippetDetailPanelProps {
 export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete, onRestore }: SnippetDetailPanelProps) {
   const [copied, setCopied] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -57,12 +60,13 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
     <div className="flex flex-col h-full bg-[#101010]">
       <div className="flex items-center justify-between px-4 h-[56px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
         <div className="flex items-center gap-3">
-          <button
-            className="lg:hidden text-[#9ba3af] hover:text-white transition-colors duration-150 text-sm mr-1"
+          <Button
+            variant="ghost"
+            className="lg:hidden h-auto p-0 text-sm mr-1"
             onClick={onClose}
           >
             ←
-          </button>
+          </Button>
           <span className="text-[13px] font-medium text-[#9ba3af]">Editor 1</span>
         </div>
         <div className="flex items-center gap-2">
@@ -70,13 +74,14 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
             {LANG_NAMES[snippet.language] ?? snippet.language}
             <span className="text-[#9ba3af]">∨</span>
           </div>
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
             aria-label="Close"
-            className="hidden lg:flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+            className="hidden lg:flex w-[28px] h-[28px] p-0"
           >
             ✕
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -105,34 +110,51 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
         <CodeEditor language={snippet.language} code={snippet.code} editable={false} label={null} />
       </div>
 
-      <div className="flex items-center justify-between px-5 h-[56px] border-t border-[#2a2a2a] shrink-0 bg-[#101010]">
-        <div className="flex items-center gap-2">
-          <button
-            className="bg-[#6366f1] hover:bg-indigo-500 text-white text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-t border-[#2a2a2a] shrink-0 bg-[#101010] sm:h-[56px] sm:flex-nowrap sm:py-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="primary"
+            className="h-[34px] px-4 text-[13px]"
             onClick={() => onEdit(snippet)}
           >
             ✏ Edit
-          </button>
-          <button
-            className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:text-white hover:bg-[#222] text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"
+          </Button>
+          <Button
+            variant="secondary"
+            className="h-[34px] px-4 text-[13px]"
             onClick={() => setShowHistory(true)}
           >
             ⏱ History
-          </button>
-          <button
-            className="bg-[#331212] hover:bg-[#3d1515] text-[#ef4444] text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"
-            onClick={() => onDelete(snippet.id)}
+          </Button>
+          <Button
+            variant="danger"
+            className="h-[34px] px-4 text-[13px]"
+            onClick={() => setDeleteConfirmOpen(true)}
           >
             🗑 Delete
-          </button>
+          </Button>
         </div>
 
-        <button
-          className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:text-white hover:bg-[#222] text-[13px] font-medium px-4 h-[34px] rounded-md flex items-center gap-1.5 transition-colors duration-150"
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="Delete snippet"
+          description={`Are you sure you want to delete "${snippet.title}"? This action cannot be undone.`}
+          confirmLabel="Delete"
+          danger
+          onConfirm={() => {
+            setDeleteConfirmOpen(false)
+            onDelete(snippet.id)
+          }}
+        />
+
+        <Button
+          variant="secondary"
+          className="h-[34px] px-4 text-[13px]"
           onClick={handleCopy}
         >
           ⎘ {copied ? 'Copied!' : 'Copy'}
-        </button>
+        </Button>
       </div>
     </div>
   )

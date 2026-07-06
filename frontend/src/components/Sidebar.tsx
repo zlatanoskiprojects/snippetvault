@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../api/auth'
 import { useUser } from '../hooks/useUser'
+import Input from './ui/Input'
+import Button from './ui/Button'
 import type { Snippet } from '../api/types'
 
 const TAG_DOT_COLORS = ['#3d77fc', '#22c55e', '#8c5af3', '#fba528', '#ef4444', '#6366f1']
@@ -61,14 +63,14 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
             <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2" />
             <path d="M7.5 7.5L10 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
-          <input
+          <Input
             type="search"
             value={searchQuery}
             onChange={e => onSearchChange?.(e.target.value)}
             onFocus={() => onSearchFocus?.()}
             onBlur={() => { if (!searchQuery && !isSearchActive) onSearchBlur?.() }}
             placeholder="Search snippets…"
-            className="bg-transparent border-none outline-none text-[11px] text-[#9ba3af] placeholder:text-[#595e69] w-full"
+            className="bg-transparent border-0 h-auto p-0 text-[11px] text-[#9ba3af] placeholder-[#595e69] focus:border-transparent"
           />
         </div>
       </div>
@@ -137,12 +139,13 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
         </div>
         <div className="px-4 py-3 flex items-center justify-between">
           <span className="text-xs text-[#595e69]">☀ Light mode</span>
-          <button
+          <Button
+            variant="ghost"
             onClick={handleLogout}
-            className="text-xs text-[#595e69] hover:text-[#ef4444] transition-colors duration-150"
+            className="h-auto p-0 text-xs text-[#595e69] hover:text-[#ef4444] hover:bg-transparent"
           >
             Sign out
-          </button>
+          </Button>
         </div>
       </div>
     </aside>

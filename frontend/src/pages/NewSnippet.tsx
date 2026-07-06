@@ -1,5 +1,10 @@
-import { useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import CodeEditor from '../components/CodeEditor'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Textarea from '../components/ui/Textarea'
+import Select from '../components/ui/Select'
+import Field from '../components/ui/Field'
 import { createSnippet, updateSnippet, type SnippetInput } from '../api/snippets'
 import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } from '../api/tags'
 import { useToast } from '../hooks/useToast'
@@ -7,31 +12,11 @@ import { useCollections } from '../hooks/useCollections'
 import type { Snippet } from '../api/types'
 
 const LANGUAGES = ['TypeScript', 'JavaScript', 'Python', 'Shell', 'SQL', 'Go', 'Rust']
-
-const inputBase =
-  'w-full bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white placeholder-[#595e69] px-3 focus:outline-none focus:border-[#6366f1] transition-colors duration-150'
-
-const selectBase =
-  'w-full h-[38px] bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white px-3 appearance-none cursor-pointer focus:outline-none focus:border-[#6366f1] transition-colors duration-150'
-
-interface SelectWrapperProps {
-  label: string
-  children: ReactNode
-}
-
-function SelectWrapper({ label, children }: SelectWrapperProps) {
-  return (
-    <div className="flex-1">
-      <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">{label}</label>
-      <div className="relative">
-        {children}
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#595e69] text-xs pointer-events-none">
-          ∨
-        </span>
-      </div>
-    </div>
-  )
-}
+const LANGUAGE_OPTIONS = LANGUAGES.map(l => ({ value: l, label: l }))
+const VISIBILITY_OPTIONS = [
+  { value: 'Private', label: 'Private' },
+  { value: 'Public', label: 'Public' },
+]
 
 interface NewSnippetProps {
   snippet?: Snippet | null
@@ -130,67 +115,46 @@ export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetPro
         </h1>
       </div>
 
-      <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-x-hidden overflow-y-auto lg:overflow-y-hidden">
 
-        <div className="flex flex-col flex-1 min-w-0 px-6 py-5 gap-4 overflow-y-auto">
+        <div className="flex flex-col min-w-0 px-6 py-5 gap-4 lg:flex-1 lg:overflow-y-auto">
 
-          <div>
-            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Title</label>
-            <input
+          <Field label="Title">
+            <Input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="e.g. useDebounce hook"
-              className={`${inputBase} h-[38px]`}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Description</label>
-            <textarea
+          <Field label="Description">
+            <Textarea
               value={description ?? ''}
               onChange={e => setDescription(e.target.value)}
               placeholder="Optional description..."
-              className={`${inputBase} h-[60px] py-2 resize-none`}
             />
-          </div>
+          </Field>
 
           {isEditing && (
-            <div>
-              <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Change note <span className="text-[#595e69]">(optional)</span></label>
-              <input
+            <Field label={<>Change note <span className="text-[#595e69]">(optional)</span></>}>
+              <Input
                 type="text"
                 value={changeNote}
                 onChange={e => setChangeNote(e.target.value)}
                 placeholder="e.g. Fixed off-by-one error"
-                className={`${inputBase} h-[38px]`}
               />
-            </div>
+            </Field>
           )}
 
           <div className="flex gap-3">
-            <SelectWrapper label="Language">
-              <select
-                value={language}
-                onChange={e => setLanguage(e.target.value)}
-                className={selectBase}
-              >
-                {LANGUAGES.map(l => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
-            </SelectWrapper>
+            <Field label="Language" className="flex-1">
+              <Select value={language} onValueChange={setLanguage} options={LANGUAGE_OPTIONS} />
+            </Field>
 
-            <SelectWrapper label="Visibility">
-              <select
-                value={visibility}
-                onChange={e => setVisibility(e.target.value)}
-                className={selectBase}
-              >
-                <option value="Private">Private</option>
-                <option value="Public">Public</option>
-              </select>
-            </SelectWrapper>
+            <Field label="Visibility" className="flex-1">
+              <Select value={visibility} onValueChange={setVisibility} options={VISIBILITY_OPTIONS} />
+            </Field>
           </div>
 
           <div>
@@ -202,65 +166,45 @@ export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetPro
                   className="flex items-center gap-1 bg-[#242424] text-[#595e69] text-[10px] px-2 py-0.5 rounded"
                 >
                   {tag}
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
                     onClick={() => removeTag(i)}
-                    className="text-[#595e69] hover:text-white leading-none ml-0.5"
+                    className="h-auto p-0 text-[#595e69] hover:text-white hover:bg-transparent leading-none ml-0.5"
                   >
                     ×
-                  </button>
+                  </Button>
                 </span>
               ))}
-              <input
+              <Input
                 type="text"
                 value={tagInput}
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
                 placeholder="Add tag…"
-                className="bg-transparent text-sm text-white placeholder-[#595e69] outline-none flex-1 min-w-[80px]"
+                className="bg-transparent border-0 h-auto p-0 flex-1 min-w-[80px] focus:border-transparent"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Collection</label>
-            <div className="relative">
-              <select
-                value={collectionId}
-                onChange={e => setCollectionId(e.target.value ? Number(e.target.value) : '')}
-                className={selectBase}
-              >
-                <option value="">No collection</option>
-                {collections.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#595e69] text-xs pointer-events-none">
-                ∨
-              </span>
-            </div>
-          </div>
+          <Field label="Collection">
+            <Select
+              value={collectionId}
+              onValueChange={setCollectionId}
+              options={[{ value: '' as number | '', label: 'No collection' }, ...collections.map(c => ({ value: c.id, label: c.name }))]}
+            />
+          </Field>
 
-          <div className="flex gap-3 mt-auto pt-5">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-[#6366f1] hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-5 h-[36px] rounded-md transition-colors duration-150"
-            >
+          <div className="flex flex-col gap-3 mt-auto pt-5 sm:flex-row">
+            <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
               {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save snippet'}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:bg-[#222] text-sm px-5 h-[36px] rounded-md transition-colors duration-150"
-            >
+            </Button>
+            <Button variant="secondary" onClick={onCancel} className="w-full sm:w-auto">
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
 
-        <div className="flex lg:w-[55%] min-h-[300px] min-w-0 px-6 pb-6 pt-5 lg:pt-5">
+        <div className="flex h-[340px] lg:h-auto lg:w-[55%] min-h-[300px] min-w-0 px-6 pb-6 pt-5 lg:pt-5 shrink-0 lg:shrink">
           <CodeEditor language={language} code={code} onChange={setCode} />
         </div>
       </div>
