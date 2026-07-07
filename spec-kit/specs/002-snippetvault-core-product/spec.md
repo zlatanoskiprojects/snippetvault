@@ -26,7 +26,11 @@ Two deployment targets are in scope: a **cloud (SaaS) version** for individuals 
 
 ## Scope Reconciliation (read before implementing)
 
-The project owner's formal functional requirements (below) were cross-checked against what's already built. Three capabilities exist in the current codebase but are **not mentioned in the formal requirements**: **version history/restore**, **comments on snippets**, and **per-user AI provider settings**. They are kept in this spec as lower-priority user stories (US10–US12) rather than deleted, since removing working, non-harmful functionality without being asked to would be a worse default than flagging the discrepancy. Treat US10–US12 as "already delivered, formally out-of-spec" rather than "must build" — they need a product decision (keep, formalize, or deprecate), not implementation work.
+The project owner's formal functional requirements (below) were cross-checked against what's already built. Three capabilities exist in the current codebase but are **not mentioned in the formal requirements**: **version history/restore**, **comments on snippets**, and **per-user AI provider settings**. They are kept in this spec as lower-priority user stories (US10–US12) rather than deleted, since removing working, non-harmful functionality without being asked to would be a worse default than flagging the discrepancy. Treat US10 and US12 as "already delivered, formally out-of-spec" rather than "must build" — they need a product decision (keep, formalize, or deprecate), not implementation work.
+
+**Update (2026-07-07, second revision, project owner decision)**: **Team Workspaces (US14–US16)** are added, reversing this spec's earlier assumption that shared workspaces were out of scope. A workspace is a named environment with its own membership and roles (Workspace Owner / Workspace Admin / Workspace Member); snippets and collections gain a dual scope — personal (as before) or workspace-owned. Personal-scope behavior, including US13 user-to-user sharing, is unchanged and continues to apply **to personal snippets only**; workspace snippets are governed by workspace roles instead. The requested requirement identifiers FR-014–FR-018 for this layer were already partially allocated (FR-014/FR-015 cover US13/US11), so the workspace layer occupies **FR-016–FR-020**. Storage-level definitions live in `data-model.md`, not this spec.
+
+**Update (2026-07-07, project owner decision)**: Comments (US11) are now **formalized into scope** rather than pending a decision, and a new capability — **user-to-user snippet sharing (US13)** — is added. A snippet owner can share a snippet with specific registered users, who gain read-only access and may participate in that snippet's comments. This is distinct from and orthogonal to public share-link visibility (US5): public links remain anonymous, read-only, and comment-free. A **known defect** is also recorded: the current comment listing and creation endpoints do not verify that the requester has any access to the target snippet at all, violating FR-012 — any authenticated user can read or post comments on any snippet by guessing its ID. Fixing this is part of US11/US13's acceptance, not optional hardening.
 
 One requirements-vs-code conflict was found and has been resolved: the formal non-functional requirements call for **JWT-based API authentication**, but the existing implementation and the ratified project constitution (Principle III) use **server-side sessions**. Per project owner decision, **session-based authentication is authoritative** — the JWT line in the original requirements document is superseded by this spec and should not be implemented.
 
@@ -114,7 +118,7 @@ When a user sets a snippet's visibility to public, the system generates a unique
 **Acceptance Scenarios**:
 
 1. **Given** a private snippet, **When** its owner sets visibility to public, **Then** a unique share token is generated (if one doesn't already exist) and a shareable link becomes valid.
-2. **Given** a valid share link for a public snippet, **When** accessed without authentication, **Then** the snippet's title, description, code, language, and tags are viewable, but not owner-only data (e.g. no edit/delete affordance, no comments if those are private to the owner).
+2. **Given** a valid share link for a public snippet, **When** accessed without authentication, **Then** the snippet's title, description, code, language, and tags are viewable, but not access-restricted data (no edit/delete affordance, no comments — comments are visible only to the owner and share recipients per User Story 11, never on the public link).
 3. **Given** a public snippet, **When** the owner sets it back to private, **Then** the previously valid share link no longer resolves to the snippet's content.
 4. **Given** a share link for a snippet that was deleted entirely, **When** accessed, **Then** it fails cleanly (404-equivalent), not with an unhandled error.
 5. **Given** two different public snippets, **When** their share tokens are generated, **Then** they are guaranteed unique — no collision allows one snippet's link to expose another's content.
@@ -204,19 +208,22 @@ Every meaningful code edit to a snippet preserves a prior version, viewable in a
 
 ---
 
-### User Story 11 - Comments on snippets *(built, not in formal requirements — see Scope Reconciliation)* (Priority: P3)
+### User Story 11 - Comments on snippets, scoped to owner and share recipients *(formalized 2026-07-07 — see Scope Reconciliation)* (Priority: P3)
 
-A user leaves comments on their own snippets as personal notes/context, editable and deletable by their author.
+The snippet owner and every user the snippet has been shared with (see User Story 13) can view and post comments on that snippet, as notes, context, or discussion. Each comment displays its author's identity (username/display name). A comment is editable and deletable only by its author. No one else — including other authenticated users who guess the snippet's ID — can see or post comments on it. Anonymous visitors on a public share link (User Story 5) never see comments.
 
-**Why this priority**: Already implemented; lowest usage-frequency organizational feature, pending a decision on formalizing.
+**Why this priority**: Comment CRUD is already implemented; this story adds the access rule (owner + share recipients), author identity display, and the fix for the recorded access-control defect.
 
-**Independent Test**: Add, edit, and delete a comment on an owned snippet; confirm cascading deletion when the snippet itself is deleted.
+**Independent Test**: As the owner, comment on an owned snippet; share the snippet with a second user, confirm that user can read the owner's comment (with author identity shown) and post their own; as a third user with no share, confirm both reading and posting comments on that snippet are rejected; confirm each author can edit/delete only their own comment; delete the snippet and confirm its comments are gone.
 
 **Acceptance Scenarios**:
 
-1. **Given** an authenticated user viewing their own snippet, **When** they post a comment, **Then** it's saved associated with the snippet and the author.
-2. **Given** a comment a user authored, **When** they edit or delete it, **Then** it succeeds only for their own comment.
-3. **Given** a snippet is deleted, **When** completed, **Then** its comments are removed too.
+1. **Given** the snippet owner or a user the snippet is shared with, **When** they post a comment, **Then** it's saved associated with the snippet and the author, and appears to every user with access to that snippet.
+2. **Given** a comment list is requested by a user with access, **When** returned, **Then** each comment includes its author's identity (username/display name), not just an opaque author ID.
+3. **Given** an authenticated user with no ownership of and no share to a snippet, **When** they attempt to list or post comments on it by ID, **Then** the request is rejected — this closes the recorded defect where these endpoints performed no snippet-access check (FR-012 violation).
+4. **Given** a comment a user authored, **When** they edit or delete it, **Then** it succeeds only for their own comment — the snippet owner cannot edit another author's comment text (deletion moderation by the owner is not in scope).
+5. **Given** a snippet is deleted, **When** completed, **Then** its comments are removed too.
+6. **Given** a share is revoked (User Story 13), **When** the former recipient attempts to list or post comments on that snippet, **Then** the request is rejected; comments they authored while the share was active remain on the snippet.
 
 ---
 
@@ -234,6 +241,85 @@ A user configures a personal AI provider integration (type, API key, model, base
 2. **Given** existing settings, **When** resubmitted, **Then** it upserts rather than duplicating (one row per user).
 3. **Given** any `GET` of AI settings, **When** returned, **Then** the raw API key is never included.
 
+---
+
+### User Story 13 - Share a snippet with specific users (Priority: P3)
+
+A snippet owner shares a snippet with specific registered users, identified by their email or username. Each recipient gains read-only access to the snippet — they can view its title, description, code, language, and tags, and participate in its comments (User Story 11), but cannot edit or delete it, change its collection or tags, or manage its shares. Recipients see snippets shared with them in a dedicated "shared with me" listing. The owner can view the current recipient list and revoke any recipient at any time, immediately ending that recipient's access. This mechanism is independent of the snippet's public/private visibility setting (User Story 5): a private snippet can be shared with users, and revoking a user share does not affect the public link or vice versa.
+
+**Why this priority**: Delivers the "development teams" value proposition (shared institutional knowledge) with a deliberately small surface — targeted per-snippet sharing rather than full team workspaces, which remain out of scope. Depends on core CRUD (US2) but nothing else; comments scoping (US11) depends on it.
+
+**Independent Test**: As user A, share an owned private snippet with user B by email; as B, confirm the snippet appears in "shared with me" and its content is viewable but edit/delete/share actions are rejected; as A, view the recipient list showing B, then revoke B; as B, confirm the snippet no longer appears in "shared with me" and direct access by ID is rejected.
+
+**Acceptance Scenarios**:
+
+1. **Given** a snippet's owner and an identifier (email or username) of a registered user, **When** the owner shares the snippet with them, **Then** a share is recorded for that recipient, at most one share exists per snippet-recipient pair (re-sharing is idempotent, not duplicated), and the recipient gains read-only access.
+2. **Given** a recipient of a shared snippet, **When** they view it, **Then** they see title, description, code, language, and tags, but any attempt to edit, delete, retag, recollect, or manage shares on it is rejected — read-only means read-only at the enforcement level, not just hidden UI.
+3. **Given** a recipient, **When** they open their "shared with me" listing, **Then** every snippet currently shared with them appears, and none appears after its share is revoked or its snippet is deleted.
+4. **Given** the owner revokes a recipient, **When** the revocation completes, **Then** that recipient's access (snippet view, comments read/post, "shared with me" presence) ends immediately.
+5. **Given** a non-owner of a snippet (including a recipient), **When** they attempt to share it with someone or list its recipients, **Then** the request is rejected — share management is owner-only.
+6. **Given** a share attempt naming an identifier that matches no registered account, **When** submitted, **Then** it fails without revealing more about account existence than the sharing operation inherently requires, and the failure response is indistinguishable in shape from other share-validation failures.
+7. **Given** an owner attempts to share a snippet with themselves, **When** submitted, **Then** it is rejected as invalid rather than creating a meaningless share.
+8. **Given** a shared snippet is deleted, or the recipient's account is deleted, **When** the deletion completes, **Then** the associated shares are removed with it and no orphaned share records remain.
+
+---
+
+### User Story 14 - Workspace creation and membership management (Priority: P2)
+
+A regular user creates a named workspace and automatically becomes its Workspace Owner. The Owner (or a Workspace Admin) invites other registered users by email or username, assigning each a workspace role — Workspace Admin or Workspace Member — and can change a member's role or remove a member at any time. A member can leave a workspace voluntarily. The Owner can transfer ownership to another member or delete the workspace entirely. Workspace roles are entirely separate from the platform-level regular-user/administrator role (User Story 7): a platform-regular user can be a Workspace Owner, and platform administrators get no implicit workspace access.
+
+**Why this priority**: The workspace container must exist before any workspace-scoped content (US15) or role enforcement (US16) is meaningful; it directly serves the "development teams" target users with a real shared boundary rather than only per-snippet grants.
+
+**Independent Test**: As user A, create a workspace and confirm A is its Owner; invite user B as Member and user C as Admin; as C, remove B; as B, confirm all workspace access is gone; as A, transfer ownership to C, confirm A is demoted to Admin and C holds Owner powers; as C, delete the workspace, confirm it and its memberships are gone.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user, **When** they create a workspace with a name, **Then** the workspace is created with a unique identifying slug, a creation timestamp, and exactly one Owner — the creator.
+2. **Given** a Workspace Owner or Admin and an email/username of a registered user, **When** they invite that user with a role, **Then** a membership is recorded with that role; at most one membership exists per user-workspace pair, and re-inviting an existing member does not duplicate it. Failed recipient resolution reveals no more about account existence than the invitation inherently requires.
+3. **Given** a Workspace Admin, **When** they attempt to remove the Owner, change the Owner's role, or delete the workspace, **Then** the request is rejected — those actions are Owner-only.
+4. **Given** a Workspace Member, **When** they attempt any membership-management action (invite, remove, change roles), **Then** the request is rejected.
+5. **Given** a member who is not the Owner, **When** they leave the workspace, **Then** their membership is removed and their workspace access ends; the Owner cannot leave without first transferring ownership or deleting the workspace — a workspace never exists without exactly one Owner.
+6. **Given** the Owner, **When** they transfer ownership to another current member, **Then** that member becomes the sole Owner and the previous Owner becomes a Workspace Admin.
+7. **Given** a user, **When** they view their workspace list, **Then** they see every workspace they hold a membership in, with their role.
+
+---
+
+### User Story 15 - Workspace snippet lifecycle and team collections (Priority: P2)
+
+A workspace member creates snippets inside a workspace, making them visible to all members of that workspace. Collections can likewise be workspace-scoped: a workspace snippet can only be assigned to a collection belonging to the same workspace (never to a personal collection, and never to another workspace's collection), and deleting a workspace collection uncategorizes its snippets without deleting them. Tags remain a single global registry; when working inside a workspace, tag filtering applies within that workspace's snippets, and members can toggle or combine their personal context and workspace context when browsing and searching. A snippet is always in exactly one scope — personal or one workspace — and can be moved between scopes under explicit rules (see Edge Cases and FR-020).
+
+**Why this priority**: This is the payoff of US14 — the actual shared content. Without it a workspace is an empty shell.
+
+**Independent Test**: As member B of a workspace, create a snippet in the workspace and confirm member C sees it in the workspace listing without any explicit share; create a workspace collection and assign the snippet; attempt to assign the workspace snippet to a personal collection and confirm rejection; delete the workspace collection and confirm the snippet survives uncategorized; filter the workspace by a tag and confirm only that workspace's matching snippets return.
+
+**Acceptance Scenarios**:
+
+1. **Given** a workspace member, **When** they create a snippet in that workspace, **Then** it is recorded as workspace-scoped with the member as its creator, and every active member sees it in the workspace's snippet listing.
+2. **Given** a workspace snippet and a collection, **When** assignment is attempted, **Then** it succeeds only if the collection belongs to the same workspace; personal collections and other workspaces' collections are rejected. The same-scope rule applies symmetrically: personal snippets cannot join workspace collections.
+3. **Given** a workspace collection is deleted, **When** the deletion completes, **Then** its snippets become uncategorized within the workspace, not deleted.
+4. **Given** a tag from the global registry, **When** attached to a workspace snippet, **Then** the same global tag row is reused (no workspace-local duplicate), and filtering by that tag inside the workspace returns only that workspace's snippets carrying it.
+5. **Given** a member browsing or searching, **When** they select personal context, a workspace context, or a combined view, **Then** results respect the selected scope(s) — workspace snippets never appear in another user's personal-only view and personal snippets never appear in a workspace listing.
+6. **Given** a non-member, **When** they attempt to view, list, or search a workspace's snippets or collections by any means, **Then** the request is rejected.
+
+---
+
+### User Story 16 - Workspace role enforcement and comments (Priority: P2)
+
+Workspace roles govern what each member can do with workspace content, enforced on every request: all active members read all workspace snippets and comment on them; a Member edits and deletes only snippets they created; Admins and the Owner edit and delete any workspace snippet and manage workspace collections; membership management follows User Story 14. Comments on a workspace snippet open automatically to all active members — no per-snippet sharing step is needed — while comment edit/delete remains author-only (User Story 11's rule, unchanged). Access is evaluated per request against current membership: removal or leaving takes effect on the very next request, with no lingering client-side entitlement, consistent with the server-side session model.
+
+**Why this priority**: US14/US15 without enforcement would be a labeling scheme, not a data boundary; this story is what makes the workspace an actual access-control perimeter.
+
+**Independent Test**: In a workspace with Owner A, Admin C, Member B: as B, edit B's own workspace snippet (succeeds) and attempt to edit C's snippet (rejected); as C, edit B's snippet (succeeds); as B, comment on C's snippet without any explicit share (succeeds, author identity shown); remove B from the workspace, then as B confirm the snippet, its comments, and the workspace listing are all rejected on the next request; confirm B's past comments remain visible to remaining members.
+
+**Acceptance Scenarios**:
+
+1. **Given** any active member of a workspace, **When** they request any snippet in that workspace or its comments, **Then** read access succeeds; **Given** any non-member (regardless of platform role), **Then** it is rejected.
+2. **Given** a Workspace Member, **When** they edit or delete a workspace snippet they created, **Then** it succeeds; **When** they attempt the same on a snippet created by someone else, **Then** it is rejected.
+3. **Given** a Workspace Admin or the Owner, **When** they edit or delete any snippet or collection in the workspace, **Then** it succeeds.
+4. **Given** an active member viewing a workspace snippet, **When** they post a comment, **Then** it is saved with their author identity and visible to all members — no user-to-user share (User Story 13) is required or involved for workspace snippets.
+5. **Given** a member is removed or leaves mid-session, **When** they make their next request touching the workspace or its content, **Then** it is rejected — entitlement is re-evaluated server-side per request, never cached in the client.
+6. **Given** a comment on a workspace snippet, **When** anyone other than its author attempts to edit or delete it, **Then** it is rejected; comments by a removed member remain on the snippet, attributed to them.
+
 ### Edge Cases
 
 - What happens when a user's session cookie is valid but the underlying user row has been deleted (e.g. an administrator deleted the account, or deleted it from another device mid-session)? Every protected route must handle a missing user gracefully, not throw an unhandled error.
@@ -241,6 +327,14 @@ A user configures a personal AI provider integration (type, API key, model, base
 - What happens when a public snippet's share link is requested at a rate suggesting scraping/abuse? Not addressed by any current requirement — flagged as an open question, not assumed out of scope.
 - What happens when an administrator deactivates their own account, or the last remaining administrator account? Needs an explicit rule (e.g. disallow, or require at least one active administrator) rather than being left to whatever the deactivation code happens to do.
 - What happens when a collection is deleted while a snippet inside it is being edited in another tab? The snippet's collection reference becomes null; the editing client should not silently keep referencing a deleted collection.
+- What happens when a recipient is viewing a shared snippet at the moment the owner revokes the share? Their next request for that snippet (or its comments) is rejected; already-rendered content on screen is acceptable staleness.
+- What happens to comments authored by a recipient whose share is later revoked, or whose account is deleted? Revocation leaves their past comments on the snippet; account deletion removes their comments along with all their owned data (User Story 8 cascade).
+- What happens when the owner shares with a user who is later deactivated by an administrator (User Story 7)? The share record may persist, but a deactivated account cannot authenticate, so no access is exercisable through it.
+- What happens to workspace snippets when the Owner deletes the workspace? **Decision: cascade delete.** The workspace, its memberships, its collections, and its workspace-scoped snippets (with their versions, comments, tags associations, and any residual records) are permanently removed. The alternative — archiving or converting content to some member's personal scope — was considered and rejected: it silently reassigns ownership of team content to an individual and requires an archival surface this product doesn't have. Deletion must be an explicit, confirmed, Owner-only action precisely because it is destructive; members who want to keep a snippet move it to personal scope (below) before deletion.
+- What happens when a user is removed from a workspace (or leaves) mid-session while viewing a workspace snippet? There are no client-held entitlements to revoke — auth is a server-side session, and workspace access is re-checked against current membership on every request. The removal deletes the membership record, so the user's very next request touching that workspace's content is rejected; whatever is already rendered on their screen is acceptable staleness, mirroring the US13 revocation rule.
+- What happens when a user tries to move a personal snippet into a workspace, or a workspace snippet to personal scope? Personal → workspace: allowed only if the mover owns the snippet and is an active member of the target workspace; the snippet becomes workspace-scoped, its personal collection assignment is stripped (personal collections cannot hold workspace snippets), and its US13 user-to-user shares are removed — workspace membership now governs access. Workspace → personal: allowed only for the snippet's creator, a Workspace Admin, or the Owner; the snippet moves into the mover's own personal scope, its workspace collection assignment is stripped, and it disappears from the workspace listing. Both directions preserve the snippet's content, versions, comments, and tag associations.
+- What happens when the same person is invited to a workspace under two identifiers (their email and their username)? Both resolve to the same account, so the uniqueness rule (one membership per user-workspace pair) makes the second invite a no-op, not a duplicate.
+- What happens when a Workspace Owner deletes their entire account (User Story 8)? Rejected while they still own any workspace — the exactly-one-Owner invariant extends the owner-leave rule: they must transfer ownership or delete each owned workspace first. Silently cascading a team's entire workspace off one member's personal account deletion would destroy shared data as a side effect.
 
 ## Requirements *(mandatory)*
 
@@ -257,17 +351,27 @@ A user configures a personal AI provider integration (type, API key, model, base
 - **FR-009**: System MUST restrict administrator-only actions (user list/deactivation/deletion, platform statistics, public-snippet moderation) to the administrator role at the route level.
 - **FR-010**: System MUST support profile viewing/editing, password change (requiring current password), and full account deletion cascading to all owned data.
 - **FR-011**: System MUST render a public landing page for unauthenticated visitors on any unmatched route, and an authenticated dashboard summarizing snippets/activity/collections after login.
-- **FR-012**: System MUST reject any request to view, modify, or delete another user's owned resource via direct ID access regardless of that resource's visibility setting — visibility only governs the public share-link path (FR-007), never direct API access by a non-owning, non-administrator user.
-- **FR-013** *(existing, not in formal requirements)*: System MAY continue to support snippet version history/restore and snippet comments and per-user AI provider settings as already implemented, pending an explicit product decision to formalize, change, or deprecate each.
+- **FR-012**: System MUST reject any request to view, modify, or delete another user's owned resource via direct ID access regardless of that resource's visibility setting — visibility only governs the public share-link path (FR-007), and read access additionally extends to explicit share recipients per FR-014; no other non-owning, non-administrator user gets direct API access.
+- **FR-013** *(existing, not in formal requirements)*: System MAY continue to support snippet version history/restore and per-user AI provider settings as already implemented, pending an explicit product decision to formalize, change, or deprecate each. Comments are no longer covered by this clause — they are formalized under FR-015.
+- **FR-014**: System MUST allow a snippet's owner (and only the owner) to share that snippet with specific registered users resolved by email or username, to list its current recipients, and to revoke any recipient at any time. A recipient gains read-only access to the snippet's title, description, code, language, and tags, and the snippet appears in their "shared with me" listing; recipients MUST NOT be able to edit, delete, retag, recollect, or manage shares on it. At most one share exists per snippet-recipient pair; self-sharing is rejected; shares are removed automatically when the snippet or the recipient's account is deleted. Recipient resolution MUST NOT reveal more about account existence than the sharing operation inherently requires.
+- **FR-015**: System MUST restrict viewing and posting comments on a personal snippet to its owner and its current share recipients, verified on every request (closing the recorded defect where no snippet-access check was performed); each returned comment MUST include its author's identity (username/display name); editing and deleting a comment MUST remain restricted to that comment's author; comments MUST be removed when their snippet is deleted; revoking a share ends the former recipient's comment access but leaves their existing comments in place. For workspace-scoped snippets, comment access extends to all active workspace members per FR-019.
+- **FR-016**: System MUST allow any authenticated user to create a workspace (name, unique slug, creation timestamp), making the creator its sole Workspace Owner; MUST support Owner/Admin-managed membership of registered users resolved by email or username, each membership carrying exactly one workspace role (Workspace Owner, Workspace Admin, or Workspace Member) with at most one membership per user-workspace pair (idempotent re-invites); MUST support role changes, member removal, voluntary leaving (except by the Owner), Owner-only ownership transfer (previous Owner becomes Admin), and Owner-only workspace deletion. A workspace MUST have exactly one Owner at all times. Membership resolution MUST NOT reveal more about account existence than the invitation inherently requires.
+- **FR-017**: System MUST support a dual scope for snippets and collections — personal (as before) or belonging to exactly one workspace. A workspace-scoped snippet MUST only be assignable to a collection of that same workspace, and a personal snippet only to a personal collection of its owner; deleting a workspace collection MUST uncategorize, not delete, its snippets. Tags MUST remain a single global registry with no workspace-local duplicates; tag filtering MUST apply within the selected scope. Listing and search MUST let a user select personal context, a workspace context, or a combined view, with no leakage of workspace content to non-members or of one user's personal content into any workspace view.
+- **FR-018**: System MUST enforce workspace roles at the route level on every request, evaluated against current membership (no client-cached entitlement): all active members read all workspace snippets and collections; Members create workspace content and edit/delete only snippets they created; Admins and the Owner edit/delete any workspace snippet and manage workspace collections; membership management is restricted per FR-016. Platform administrators (FR-009) receive no implicit workspace access; workspace roles confer no platform-level privileges.
+- **FR-019**: System MUST automatically extend comment viewing and posting on a workspace-scoped snippet to all active members of that workspace — no per-snippet grant involved — while preserving author-only comment edit/delete and author identity display (FR-015). Removal from the workspace MUST end comment access on the next request while leaving the former member's existing comments in place, attributed to them.
+- **FR-020**: System MUST support moving a snippet between scopes: personal → workspace only by the snippet's owner into a workspace they are an active member of, stripping its personal collection assignment and removing its user-to-user shares (FR-014) in the same operation; workspace → personal only by the snippet's creator, a Workspace Admin, or the Owner, into the mover's own personal scope, stripping its workspace collection assignment. Content, versions, comments, and tag associations MUST be preserved across a move. Workspace deletion MUST cascade: memberships, workspace collections, and workspace-scoped snippets (with their dependent records) are permanently removed, and the action MUST be Owner-only and explicitly confirmed.
 
 ### Key Entities
 
 - **User**: account identity (username, email, password hash, role [regular/administrator], display name, bio, avatar, registration timestamp).
-- **Snippet**: core content unit (title, code, language [predefined allowlist], description, visibility [public/private], share token, optional collection, owner, created/last-modified timestamps).
-- **Collection**: named grouping of snippets (name, optional description, creation timestamp), owned by a user.
+- **Snippet**: core content unit (title, code, language [predefined allowlist], description, visibility [public/private], share token, optional collection, creator, created/last-modified timestamps); scoped to exactly one of: its creator's personal space, or one workspace.
+- **Collection**: named grouping of snippets (name, optional description, creation timestamp); scoped to exactly one of: its owning user's personal space, or one workspace; may only contain snippets of its own scope.
 - **Tag**: global label, many-to-many with snippets.
 - **SnippetVersion** *(existing, not in formal requirements)*: immutable historical snapshot of a snippet's code.
-- **Comment** *(existing, not in formal requirements)*: user-authored annotation on a snippet.
+- **Comment**: user-authored annotation on a snippet, visible to the snippet's owner and share recipients; carries author identity; removed with its snippet.
+- **SnippetShare**: grant of read-only access on one **personal** snippet to one recipient user; unique per snippet-recipient pair; removed automatically when the snippet or the recipient account is deleted, or when the snippet moves into a workspace; carries an access level that defaults to view-only so future levels (e.g. comment-only vs. view-only distinctions) can be added without restructuring.
+- **Workspace**: named team environment (name, unique slug, creation timestamp) acting as a distinct data boundary; contains members via WorkspaceMembership; owns workspace-scoped snippets and collections; always has exactly one Workspace Owner; deletion cascades to memberships and all workspace-scoped content. *(Storage-level definition: `data-model.md`.)*
+- **WorkspaceMembership**: association of one user to one workspace with exactly one workspace role (Workspace Owner / Workspace Admin / Workspace Member); unique per user-workspace pair; removed on leaving, removal, workspace deletion, or account deletion. *(Storage-level definition: `data-model.md`.)*
 - **UserAiSettings** *(existing, not in formal requirements)*: one-per-user external AI provider configuration.
 
 ## Non-Functional Requirements *(mandatory)*
@@ -293,10 +397,19 @@ A user configures a personal AI provider integration (type, API key, model, base
 - **SC-004**: A public snippet's share link renders correctly to an unauthenticated visitor, and stops resolving within one request cycle after the owner reverts it to private.
 - **SC-005**: Deleting an account leaves zero orphaned rows tied to that user across every owned resource type (verified via cascade FK behavior).
 - **SC-006**: Standard read operations (list, search, single-snippet view) complete within 500ms under normal load, per NFR-001.
+- **SC-007**: A revoked share recipient's next request against the affected snippet (content or comments) is rejected — revocation takes effect within one request cycle, mirroring SC-004 for public links.
+- **SC-008**: No authenticated user can read or post comments on any snippet they neither own, nor have been granted a share to, nor can access via active workspace membership, verified by direct-ID probing across every comment operation.
+- **SC-009**: No workspace content (snippets, collections, comments, member list) is ever returned to a non-member, verified by direct-ID probing as an authenticated non-member and as a platform administrator without membership.
+- **SC-010**: A removed or departed workspace member's next request against that workspace or any of its content is rejected — access ends within one request cycle of the membership change.
+- **SC-011**: Deleting a workspace leaves zero orphaned rows tied to it (memberships, workspace snippets, workspace collections, and their dependent records), mirroring SC-005's cascade guarantee at the workspace level.
 
 ## Assumptions
 
-- Single-tenant-per-account model beyond the new administrator role: there is no team/organization/shared-workspace concept in this spec — "development teams" in the Target Users section benefit from shared *discovery* via public sharing (User Story 5) and tag conventions, not from a built shared-workspace feature. If true team workspaces are wanted, that's a materially larger addition than this spec covers and should be its own future feature.
+- ~~There is no team/organization/shared-workspace concept in this spec~~ **Superseded 2026-07-07**: Team Workspaces (US14–US16) are now in scope, reversing this spec's earlier assumption. The workspace model is deliberately bounded: a flat set of workspaces (no nesting, no organizations-of-workspaces), three fixed roles, membership by direct invite of existing registered accounts only (no email invitations to non-users, no invite links, no notifications), and no per-workspace settings beyond name/slug. Billing, quotas, and audit logs remain out of scope.
+- User-to-user sharing (US13) grants read-only access at a single level and applies to **personal snippets only** — workspace snippets are governed exclusively by workspace membership (US16), and moving a snippet into a workspace removes its individual shares (FR-020). The share record carries an access level defaulting to view-only purely as future-proofing; no second level (e.g. edit access) is specified or implemented under this spec.
+- Workspace roles are fixed at three (Owner/Admin/Member) with the permission matrix in US16; custom roles or per-snippet permission overrides inside a workspace are not in scope.
+- Workspace deletion cascades content permanently (see Edge Cases); no archive, soft-delete, or trash surface exists anywhere in the product, and workspaces don't introduce one.
+- Share recipients do not receive notifications when a snippet is shared with them; discovery is via the "shared with me" listing. Notifications, if wanted, are a future feature.
 - The predefined language allowlist (FR-004) starts from the list given in the formal requirements (JavaScript, Python, Java, C++, SQL, Go, Rust, TypeScript) and can grow, but is a closed list enforced server-side, not open free text — this resolves the earlier open question about whether `snippet.language` should be an enum: yes, per the formal requirements' explicit "predefined list" language.
 - Tags remain global (not per-user), an intentional decision already reflected in the schema and unchanged by the formal requirements, which describe "a global tag registry" consistent with the existing design.
 - Deployment-mode-specific requirements (NFR-005, NFR-008 self-hosted vs. SaaS distinctions) are captured here as requirements to plan for, not yet resolved into a concrete architecture — that resolution belongs in `plan.md`.
