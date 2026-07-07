@@ -1,11 +1,9 @@
+import Badge from './ui/Badge'
+
 interface TagPillProps {
   label: string
 }
 
 export default function TagPill({ label }: TagPillProps) {
-  return (
-    <span className="bg-[#242424] text-[#595e69] text-[10px] px-2 py-0.5 rounded">
-      {label}
-    </span>
-  )
+  return <Badge label={label} bgColor="#242424" textColor="#595e69" />
 }

@@ -1,3 +1,5 @@
+import Badge from './ui/Badge'
+
 const LANG_COLORS: Record<string, { bg: string; color: string }> = {
   TS:  { bg: '#0b152d', color: '#3d77fc' },
   PY:  { bg: '#062311', color: '#22c55e' },
@@ -6,22 +8,25 @@ const LANG_COLORS: Record<string, { bg: string; color: string }> = {
   JS:  { bg: '#1f1200', color: '#fba528' },
 }
 
+const LANG_ALIASES: Record<string, string> = {
+  ts: 'TS',
+  typescript: 'TS',
+  py: 'PY',
+  python: 'PY',
+  sh: 'SH',
+  shell: 'SH',
+  bash: 'SH',
+  sql: 'SQL',
+  js: 'JS',
+  javascript: 'JS',
+}
+
 interface LanguageBadgeProps {
   language: string
 }
 
 export default function LanguageBadge({ language }: LanguageBadgeProps) {
-  const { bg, color } = LANG_COLORS[language] ?? { bg: '#1a1a1a', color: '#9ba3af' }
-  return (
-    <span
-      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium"
-      style={{ backgroundColor: bg, color }}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-sm shrink-0"
-        style={{ backgroundColor: color }}
-      />
-      {language}
-    </span>
-  )
+  const key = LANG_ALIASES[language.trim().toLowerCase()]
+  const { bg, color } = (key && LANG_COLORS[key]) || { bg: '#1a1a1a', color: '#9ba3af' }
+  return <Badge label={language} bgColor={bg} textColor={color} dotColor={color} />
 }

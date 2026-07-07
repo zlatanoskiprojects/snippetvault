@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Dialog as BaseDialog } from '@base-ui/react/dialog'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import SnippetList from '../components/SnippetList'
@@ -11,6 +12,8 @@ import { useSnippets } from '../hooks/useSnippets'
 import { deleteSnippet } from '../api/snippets'
 import { useToast } from '../hooks/useToast'
 import { UserProvider } from '../contexts/UserContext'
+import Spinner from '../components/ui/Spinner'
+import Alert from '../components/ui/Alert'
 import type { Snippet } from '../api/types'
 import type { Collection } from '../api/types'
 
@@ -131,13 +134,10 @@ export default function Dashboard() {
         />
       </div>
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-[rgba(0,0,0,0.5)]"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <div className="absolute left-0 top-0 h-full z-50">
+      <BaseDialog.Root open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <BaseDialog.Portal>
+          <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+          <BaseDialog.Popup className="fixed left-0 top-0 z-40 h-full lg:hidden outline-none transition-transform duration-150 data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full">
             <Sidebar
               snippets={snippets}
               activeView={view}
@@ -145,9 +145,9 @@ export default function Dashboard() {
               activeTag={activeTag}
               onTagChange={tag => { handleSelectTag(tag); setSidebarOpen(false) }}
             />
-          </div>
-        </div>
-      )}
+          </BaseDialog.Popup>
+        </BaseDialog.Portal>
+      </BaseDialog.Root>
 
       <div className="flex flex-1 min-w-0 overflow-hidden">
         {isSearching || searchQuery ? (
@@ -167,15 +167,11 @@ export default function Dashboard() {
             .filter(s => !activeTag || (s.tags || []).includes(activeTag))
           return loading ? (
             <div className="flex flex-1 items-center justify-center">
-              <div className="spinner-border text-light" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
+              <Spinner className="text-white" />
             </div>
           ) : error ? (
             <div className="flex flex-1 flex-col min-w-0 p-6">
-              <div className="alert alert-danger" role="alert">
-                Failed to load snippets: {error}
-              </div>
+              <Alert>Failed to load snippets: {error}</Alert>
             </div>
           ) : selectedSnippet ? (
             <>

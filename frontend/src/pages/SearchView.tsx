@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
 import { useSnippets } from '../hooks/useSnippets'
 import SnippetRow from '../components/SnippetRow'
+import Spinner from '../components/ui/Spinner'
+import Alert from '../components/ui/Alert'
 import type { Snippet } from '../api/types'
 
 const LANG_MAP: Record<string, string> = { ts: 'TypeScript', js: 'JavaScript', py: 'Python', rs: 'Rust', sql: 'SQL', sh: 'Shell', go: 'Go' }
@@ -173,15 +175,11 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="spinner-border text-light" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
+            <Spinner className="text-white" />
           </div>
         ) : error ? (
           <div className="px-6 py-4">
-            <div className="alert alert-danger" role="alert">
-              Failed to load snippets: {error}
-            </div>
+            <Alert>Failed to load snippets: {error}</Alert>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import CollectionCard, { type CollectionWithMeta } from '../components/CollectionCard'
+import Button from '../components/ui/Button'
 import CollectionDialog, {
   type CollectionDialogInitialData,
   type CollectionDialogSubmitData,
@@ -43,19 +44,15 @@ export default function CollectionsView({ onSelectCollection }: CollectionsViewP
     : null
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
       <header className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
         <div>
           <h1 className="text-lg font-semibold text-white leading-tight">Collections</h1>
           <p className="text-xs text-[#595e69] mt-0.5">{collections.length} collections</p>
         </div>
-        <button
-          type="button"
-          onClick={handleNew}
-          className="bg-[#6366f1] hover:bg-indigo-500 text-white text-xs font-medium px-4 h-[30px] rounded-md transition-colors duration-150"
-        >
+        <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs">
           + New collection
-        </button>
+        </Button>
       </header>
 
       {loading ? (

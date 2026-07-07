@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo, type ChangeEvent } from 'react'
 import StatCard from '../components/StatCard'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Textarea from '../components/ui/Textarea'
+import Field from '../components/ui/Field'
+import ConfirmDialog from '../components/ui/AlertDialog'
+import { TabsRoot, TabsList, Tab, Panel } from '../components/ui/Tabs'
+import Spinner from '../components/ui/Spinner'
+import Alert from '../components/ui/Alert'
 import { useUser } from '../hooks/useUser'
 import { useToast } from '../hooks/useToast'
 import { useCollections } from '../hooks/useCollections'
@@ -49,6 +57,8 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
   const [saving, setSaving] = useState(false)
   const [pwForm, setPwForm] = useState<PasswordForm>(EMPTY_PW)
   const [pwSaving, setPwSaving] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -99,8 +109,12 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
   }
 
   const handleDeleteAccount = async () => {
-    if (window.confirm('Are you sure? This action cannot be undone.')) {
+    setDeletingAccount(true)
+    try {
       await deleteAccount()
+    } finally {
+      setDeletingAccount(false)
+      setDeleteConfirmOpen(false)
     }
   }
 
@@ -110,9 +124,7 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center bg-[#0f0f0f]">
-        <div className="spinner-border text-light" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+        <Spinner className="text-white" />
       </div>
     )
   }
@@ -120,9 +132,7 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
   if (error) {
     return (
       <div className="flex flex-1 flex-col min-w-0 p-6 bg-[#0f0f0f]">
-        <div className="alert alert-danger" role="alert">
-          Failed to load profile: {error}
-        </div>
+        <Alert>Failed to load profile: {error}</Alert>
       </div>
     )
   }
@@ -131,35 +141,32 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-[#0f0f0f]">
       <div className="flex items-center gap-3 px-6 py-3 border-b border-[#2a2a2a] shrink-0">
         {onBack && (
-          <button
+          <Button
+            variant="ghost"
             onClick={onBack}
-            className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+            className="w-[28px] h-[28px] p-0"
             aria-label="Go back"
           >
             ←
-          </button>
+          </Button>
         )}
         <span className="text-lg font-semibold text-white">Profile &amp; Settings</span>
       </div>
 
-      <div className="flex items-end gap-8 px-6 pt-4 border-b border-[#2a2a2a] shrink-0">
-        {TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            className="pb-0 flex flex-col items-start transition-colors duration-150 hover:text-white"
-          >
-            <span className={activeTab === key ? 'text-white text-sm font-medium' : 'text-[#9ba3af] text-sm font-normal'}>
+      <TabsRoot
+        value={activeTab}
+        onValueChange={value => setActiveTab(value as string)}
+        className="flex flex-col flex-1 min-h-0"
+      >
+        <TabsList className="px-6 pt-4 shrink-0">
+          {TABS.map(({ key, label }) => (
+            <Tab key={key} value={key}>
               {label}
-            </span>
-            {activeTab === key && (
-              <div className="h-[2px] bg-[#6366f1] rounded-full mt-2 w-full" />
-            )}
-          </button>
-        ))}
-      </div>
+            </Tab>
+          ))}
+        </TabsList>
 
-      <div className="flex-1 overflow-y-auto">
+        <Panel value={activeTab} className="flex-1 overflow-y-auto">
         {activeTab === 'profile' ? (
           <div className="flex flex-col lg:flex-row gap-8 px-6 py-6">
             <div className="flex-1 max-w-[480px] flex flex-col gap-6">
@@ -168,9 +175,12 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
                   <div className="w-[80px] h-[80px] rounded-full bg-[#2e2457] flex items-center justify-center">
                     <span className="text-[#6366f1] text-[22px] font-bold">{avatarLetter}</span>
                   </div>
-                  <button className="absolute bottom-0 right-0 w-[30px] h-[30px] rounded-full bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center cursor-pointer hover:bg-[#222] transition-colors duration-150">
-                    <span className="text-[#9ba3af] text-[11px]">✏</span>
-                  </button>
+                  <Button
+                    variant="secondary"
+                    className="absolute bottom-0 right-0 w-[30px] h-[30px] p-0 rounded-full"
+                  >
+                    <span className="text-[11px]">✏</span>
+                  </Button>
                 </div>
 
                 <div className="flex flex-col gap-1 pt-1">
@@ -180,62 +190,58 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
               </div>
 
               <div className="flex flex-col gap-4">
-                <div>
-                  <label className="text-xs text-[#9ba3af] mb-1.5 block">Username</label>
-                  <input
+                <Field label="Username">
+                  <Input
                     type="text"
                     value={form.username}
                     onChange={handleChange('username')}
-                    className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                    className="text-[13px]"
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="text-xs text-[#9ba3af] mb-1.5 block">Display name</label>
-                  <input
+                <Field label="Display name">
+                  <Input
                     type="text"
                     value={form.displayName}
                     onChange={handleChange('displayName')}
-                    className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                    className="text-[13px]"
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="text-xs text-[#9ba3af] mb-1.5 block">Email</label>
-                  <input
+                <Field label="Email">
+                  <Input
                     type="email"
                     value={form.email}
                     onChange={handleChange('email')}
-                    className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                    className="text-[13px]"
                   />
-                </div>
+                </Field>
 
-                <div>
-                  <label className="text-xs text-[#9ba3af] mb-1.5 block">Bio</label>
-                  <textarea
+                <Field label="Bio">
+                  <Textarea
                     value={form.bio}
                     onChange={handleChange('bio')}
-                    className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 py-2 h-[80px] resize-none focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                    className="text-[13px] h-[80px]"
                   />
-                </div>
+                </Field>
               </div>
 
               <div className="flex items-center gap-3">
-                <button
+                <Button
+                  variant="primary"
                   onClick={isDirty && !saving ? handleSave : undefined}
                   disabled={!isDirty || saving}
-                  className={`bg-[#6366f1] text-white text-[13px] font-medium px-5 h-[38px] rounded-md transition-colors duration-150 ${
-                    isDirty && !saving ? 'hover:bg-indigo-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'
-                  }`}
+                  className="h-[38px] px-5 text-[13px]"
                 >
                   {saving ? 'Saving…' : 'Save changes'}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={handleDiscard}
-                  className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] hover:bg-[#222] text-[13px] h-[38px] px-4 rounded-md transition-colors duration-150 cursor-pointer"
+                  className="h-[38px] px-4 text-[13px]"
                 >
                   Discard
-                </button>
+                </Button>
               </div>
 
               <div className="w-full bg-[#1c0d0d] border border-[#611a1a] rounded-lg px-4 py-4 mt-2">
@@ -245,12 +251,24 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
                 <p className="text-[#595e69] text-xs mt-1">
                   Permanently delete your account and all associated data.
                 </p>
-                <button
-                  onClick={handleDeleteAccount}
-                  className="bg-[#3d1414] hover:bg-[#4a1a1a] text-[#ef4444] text-[12px] font-medium px-3 h-[34px] rounded-md transition-colors duration-150 mt-3 flex items-center gap-1.5 cursor-pointer"
+                <Button
+                  variant="danger"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  className="bg-[#3d1414] hover:bg-[#4a1a1a] text-[12px] h-[34px] px-3 mt-3"
                 >
                   🗑 Delete account
-                </button>
+                </Button>
+
+                <ConfirmDialog
+                  open={deleteConfirmOpen}
+                  onOpenChange={setDeleteConfirmOpen}
+                  title="Delete account"
+                  description="Are you sure? This action cannot be undone."
+                  confirmLabel={deletingAccount ? 'Deleting…' : 'Delete account'}
+                  danger
+                  confirming={deletingAccount}
+                  onConfirm={handleDeleteAccount}
+                />
               </div>
             </div>
 
@@ -271,53 +289,50 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
         ) : activeTab === 'security' ? (
           <div className="flex flex-col gap-6 px-6 py-6 max-w-[480px]">
             <div className="flex flex-col gap-4">
-              <div>
-                <label className="text-xs text-[#9ba3af] mb-1.5 block">Current password</label>
-                <input
+              <Field label="Current password">
+                <Input
                   type="password"
                   value={pwForm.currentPassword}
                   onChange={handlePwChange('currentPassword')}
-                  className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                  className="text-[13px]"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="text-xs text-[#9ba3af] mb-1.5 block">New password</label>
-                <input
+              <Field label="New password">
+                <Input
                   type="password"
                   value={pwForm.newPassword}
                   onChange={handlePwChange('newPassword')}
-                  className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                  className="text-[13px]"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="text-xs text-[#9ba3af] mb-1.5 block">Confirm new password</label>
-                <input
+              <Field label="Confirm new password">
+                <Input
                   type="password"
                   value={pwForm.confirmPassword}
                   onChange={handlePwChange('confirmPassword')}
-                  className="w-full bg-[#222] border border-[#2a2a2a] rounded-md text-[13px] text-white px-3 h-[38px] focus:outline-none focus:border-[#6366f1] transition-colors duration-150"
+                  className="text-[13px]"
                 />
-              </div>
+              </Field>
             </div>
 
-            <button
+            <Button
+              variant="primary"
               onClick={pwReady && !pwSaving ? handlePasswordChange : undefined}
               disabled={!pwReady || pwSaving}
-              className={`bg-[#6366f1] text-white text-[13px] font-medium px-5 h-[38px] rounded-md transition-colors duration-150 self-start ${
-                pwReady && !pwSaving ? 'hover:bg-indigo-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'
-              }`}
+              className="h-[38px] px-5 text-[13px] self-start"
             >
               {pwSaving ? 'Updating…' : 'Update password'}
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="flex items-center justify-center h-48 text-[#595e69] text-sm">
             This section is coming soon.
           </div>
         )}
-      </div>
+        </Panel>
+      </TabsRoot>
     </div>
   )
 }
