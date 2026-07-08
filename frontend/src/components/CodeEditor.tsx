@@ -6,18 +6,23 @@ import { python } from '@codemirror/lang-python'
 import { css } from '@codemirror/lang-css'
 import { html } from '@codemirror/lang-html'
 import { sql } from '@codemirror/lang-sql'
+import { cpp } from '@codemirror/lang-cpp'
+import { java } from '@codemirror/lang-java'
+import { rust } from '@codemirror/lang-rust'
+import { go } from '@codemirror/lang-go'
 import { oneDark } from '@codemirror/theme-one-dark'
 
 const LANG_MAP: Record<string, Extension> = {
   javascript: javascript(),
-  js: javascript(),
   typescript: javascript({ typescript: true }),
-  ts: javascript({ typescript: true }),
   python: python(),
-  py: python(),
   css: css(),
   html: html(),
   sql: sql(),
+  'c++': cpp(),
+  java: java(),
+  rust: rust(),
+  go: go(),
 }
 
 interface CodeEditorProps {
