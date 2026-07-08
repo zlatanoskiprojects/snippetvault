@@ -1,94 +1,114 @@
 # SnippetVault
- 
-A web application for saving, organizing, and sharing code snippets. Built as a system design course project at the University of Primorska (UP FAMNIT).
- 
-**Live demo:** [http://88.200.63.148:30162/](http://88.200.63.148:30162/)
- 
----
- 
-## Overview
- 
-SnippetVault lets developers save code snippets with syntax highlighting, organize them with tags, and manage them through a clean dashboard. The project was designed with a focus on relational database modeling, RESTful API architecture, and authentication patterns.
- 
+
+SnippetVault is a full-stack web app for storing, organizing, and managing personal code snippets with a modern editor experience and account-based access control.
+
+## Purpose
+
+The project solves a common developer problem: keeping reusable code organized and searchable in one place without losing ownership boundaries.  
+It combines snippet CRUD, metadata organization, profile/account management, and a product-facing landing experience in one system.
+
+## What Is Built
+
+### Core product capabilities
+- Session-based authentication (register, login, logout) with role persisted on user accounts.
+- Snippet CRUD with:
+  - language and visibility fields
+  - collection assignment
+  - tag association
+  - full ownership checks on direct resource access
+- Collection management (create, rename, delete, assign snippets).
+- Global tags with snippet attach/detach flows.
+- Search endpoint for snippet discovery.
+- Version history for snippets (list, inspect, delete, restore).
+- Snippet comments.
+- Profile management (view/update), password change, and account deletion.
+- Personal AI settings CRUD (provider/model/base URL/API key field storage).
+
+### Frontend product surfaces
+- Public landing page for unauthenticated users.
+- Auth pages (`/login`, `/register`).
+- Authenticated dashboard with views for snippets, collections, search, and profile.
+- Snippet detail panel with editor preview, copy action, history access, edit/delete flows.
+
+## Current Scope
+
+This repository currently contains:
+- `frontend/`: React 19 + Vite SPA
+- `backend/`: Express + TypeScript API
+- PostgreSQL schema/migrations via Drizzle
+- `spec-kit/`: spec-driven planning artifacts for product direction
+
+Spec-kit now drives feature planning in:
+- `spec-kit/specs/002-snippetvault-core-product/spec.md`
+- `spec-kit/specs/002-snippetvault-core-product/plan.md`
+- `spec-kit/specs/002-snippetvault-core-product/tasks.md`
+
+These docs reconcile required scope vs already-built behavior and define phased implementation work.
+
+## What’s Next To Build
+
+Based on the current spec-kit plan/tasks, the next major delivery areas are:
+- Public snippet sharing via unique links (token generation + unauthenticated public-read flow).
+- Predefined backend-enforced language allowlist (and aligned frontend picker).
+- Search improvements (explicit sorting and full requirement alignment).
+- Real administrator capabilities (admin-only routes, moderation, stats, user lifecycle controls).
+- Non-functional follow-up:
+  - performance/load verification
+  - deployment/security documentation updates
+  - self-hosted installation/integration documentation expansion
+
 ## Tech Stack
- 
-**Frontend**
-- React + Vite
-- CodeMirror 6 — syntax highlighting for JavaScript, Python, CSS, HTML, SQL, and Rust
-**Backend**
-- Node.js + Express
-- Session-based authentication with JWT in HttpOnly cookies
-- RESTful API with a dedicated service layer
-**Database**
-- MySQL — deployed on university server
-- Normalized to 3NF with many-to-many tag relationships via junction tables
-**Tooling**
-- pnpm monorepo (frontend + backend as separate workspaces)
-## Project Structure
- 
-```
-snippetvault/
-├── frontend/         # React + Vite app
-├── backend/          # Node.js + Express API
-├── package.json      # Root workspace config
-└── pnpm-lock.yaml
-```
- 
-## Database Design
- 
-The schema follows third normal form (3NF) with the following key design decisions:
- 
-- Snippets have a many-to-many relationship with tags via a `snippet_tags` junction table
-- Users are linked to their snippets through a foreign key on the snippets table
-- Authentication state is managed server-side with sessions persisted in the database
-## Features
- 
-- User registration and login
-- Create, edit, and delete code snippets
-- Tag-based organization
-- Syntax-highlighted editor (CodeMirror 6) supporting multiple languages
-- Dashboard view of all personal snippets
-## Running Locally
- 
-**Prerequisites:** Node.js, pnpm, MySQL
- 
+
+- Frontend: React 19, Vite, Tailwind, Base UI, CodeMirror
+- Backend: Node.js, Express, TypeScript, express-session
+- Database: PostgreSQL + Drizzle ORM
+
+## Local Development
+
+### Prerequisites
+- Node.js 20+
+- npm
+- PostgreSQL
+
+### 1) Configure backend environment
 ```bash
-# Clone the repo
-git clone https://github.com/Zlatanoski/snippetvault.git
-cd snippetvault
- 
-# Install dependencies
-pnpm install
- 
-# Set up environment variables
 cp backend/.env.example backend/.env
-# Edit backend/.env with your DB credentials and session secret
- 
-# Start backend
-cd backend
-pnpm dev
- 
-# Start frontend (separate terminal)
-cd frontend
-pnpm dev
 ```
- 
-The frontend runs on `http://localhost:5173` and the backend on `http://localhost:3000` by default.
- 
-## Deployment
- 
-The application is deployed on a university server with the MySQL database hosted on the same machine. The backend serves the API and the frontend is built and served statically.
- 
-## Course Context
- 
-This project was developed as part of the Systems Design course at UP FAMNIT. The academic deliverables included:
- 
-- Entity-Relationship (ER) diagram
-- Relational model
-- Physical database model (implemented in phpMyAdmin)
-- Figma wireframes for all major screens
-- Full seminar documentation
-## Author
- 
-David Zlatanoski — [github.com/Zlatanoski](https://github.com/Zlatanoski)  
-University of Primorska, Faculty of Mathematics, Natural Sciences and Information Technologies (UP FAMNIT)
+Set at least:
+- `DATABASE_URL`
+- `SESSION_SECRET`
+
+### 2) Install dependencies
+```bash
+cd frontend && npm ci
+cd ../backend && npm ci
+```
+
+### 3) Run both apps
+```bash
+# terminal 1
+cd backend
+npm run dev
+
+# terminal 2
+cd frontend
+npm run dev
+```
+
+Default local URLs:
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3000`
+
+## Validation Commands
+
+```bash
+# frontend
+cd frontend
+npm run lint
+npm run build
+
+# backend
+cd backend
+npm run typecheck
+npm run build
+```
