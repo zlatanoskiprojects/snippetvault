@@ -9,9 +9,10 @@ const router = Router();
 
 router.post('/register', registerValidation, handleValidation, async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
+    const cleanEmail = email.toLowerCase();
 
     try {
-        const existingUser = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+        const existingUser = await db.select({ id: users.id }).from(users).where(eq(users.email, cleanEmail));
         if (existingUser.length > 0) {
             return res.status(400).json({ error: 'User with this email already exists' });
         }
