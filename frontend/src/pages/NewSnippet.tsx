@@ -10,9 +10,9 @@ import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } 
 import { useToast } from '../hooks/useToast'
 import { useCollections } from '../hooks/useCollections'
 import type { Snippet } from '../api/types'
+import { SUPPORTED_LANGUAGES } from '../constants/languages'
 
-const LANGUAGES = ['TypeScript', 'JavaScript', 'Python', 'Shell', 'SQL', 'Go', 'Rust']
-const LANGUAGE_OPTIONS = LANGUAGES.map(l => ({ value: l, label: l }))
+const LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map(l => ({ value: l, label: l }))
 const VISIBILITY_OPTIONS = [
   { value: 'Private', label: 'Private' },
   { value: 'Public', label: 'Public' },

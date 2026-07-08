@@ -1,4 +1,5 @@
 import { body, param, ValidationChain } from 'express-validator';
+import { SUPPORTED_LANGUAGES } from '../constants/languages';
 
 const versionIdValidation: ValidationChain[] = [
     param('versionId')
@@ -26,7 +27,8 @@ const createSnippetValidation: ValidationChain[] = [
     body('language')
         .isString().trim()
         .notEmpty().withMessage('Language is required')
-        .isLength({ max: 50 }).withMessage('Language cannot exceed 50 characters'),
+        .isLength({ max: 50 }).withMessage('Language cannot exceed 50 characters')
+        .isIn(SUPPORTED_LANGUAGES).withMessage('Language must be one of: ' + SUPPORTED_LANGUAGES.join(', ')),
 
     body('description')
         .optional({ nullable: true })
@@ -62,7 +64,8 @@ const updateSnippetValidation: ValidationChain[] = [
         .optional()
         .isString().trim()
         .notEmpty().withMessage('Language cannot be empty')
-        .isLength({ max: 50 }).withMessage('Language cannot exceed 50 characters'),
+        .isLength({ max: 50 }).withMessage('Language cannot exceed 50 characters')
+        .isIn(SUPPORTED_LANGUAGES).withMessage('Language must be one of: ' + SUPPORTED_LANGUAGES.join(', ')),
 
     body('description')
         .optional({ nullable: true })

@@ -44,10 +44,10 @@
 
 **Goal**: Existing CRUD stays correct; add the predefined-language enforcement that's new in spec.md.
 
-- [ ] T006 [US2] Add a shared `SUPPORTED_LANGUAGES` constant (single source of truth) consumed by both the backend validator and the frontend's language picker/`LanguageBadge`, per the earlier language-enum decision now confirmed by spec.md's FR-004.
-- [ ] T007 [US2] Add `isIn(SUPPORTED_LANGUAGES)` to the `language` field validator in `backend/src/validators/snippets.ts` (both create and update chains), replacing the current free-text-only check.
+- [x] T006 [US2] Add a shared `SUPPORTED_LANGUAGES` constant (single source of truth) consumed by both the backend validator and the frontend's language picker/`LanguageBadge`, per the earlier language-enum decision now confirmed by spec.md's FR-004.
+- [x] T007 [US2] Add `isIn(SUPPORTED_LANGUAGES)` to the `language` field validator in `backend/src/validators/snippets.ts` (both create and update chains), replacing the current free-text-only check.
 - [ ] T008 🟢 [US2] Manual verification: existing ownership checks in `routes/snippets.ts` (`and(eq(snippet.id, id), eq(snippet.userId, req.userId))`) remain intact — regression check, not new code.
-- [ ] T009 [US2] Manual verification: submitting a language not on the allowlist is rejected with a 400, not silently accepted (new behavior from T007).
+- [x] T009 [US2] Manual verification: submitting a language not on the allowlist is rejected with a 400, not silently accepted (new behavior from T007).
 
 **Checkpoint**: Snippet CRUD enforces the predefined language list; all other CRUD behavior unchanged.
 
