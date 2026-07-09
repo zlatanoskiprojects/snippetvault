@@ -1,11 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import bcrypt from 'bcryptjs';
 import { and, eq, ne } from 'drizzle-orm';
 import db from '../lib/db';
 import { users } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
-import { updateProfileValidation, changePasswordValidation } from '../validators/profile';
+import { updateProfileValidation } from '../validators/profile';
 
 interface ProfileUpdateFields {
     username?: string;
@@ -57,36 +56,6 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         return res.status(200).json({ user: mapUser(user) });
     } catch (error) {
         console.error('Error fetching profile:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-router.patch('/password', authMiddleware, changePasswordValidation, async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { currentPassword, newPassword } = req.body;
-
-    try {
-        const rows = await db.select({ passwordHash: users.passwordHash }).from(users).where(eq(users.id, req.userId as number));
-        const user = rows[0];
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!valid) {
-            return res.status(401).json({ error: 'Current password is incorrect' });
-        }
-
-        const hash = await bcrypt.hash(newPassword.trim(), 10);
-        await db.update(users).set({ passwordHash: hash }).where(eq(users.id, req.userId as number));
-
-        return res.status(200).json({ message: 'Password updated' });
-    } catch (error) {
-        console.error('Error changing password:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -159,13 +128,7 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
 router.delete('/', authMiddleware, async (req: Request, res: Response) => {
     try {
         await db.delete(users).where(eq(users.id, req.userId as number));
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Session destroy error:', err);
-            }
-            res.clearCookie('connect.sid');
-            return res.status(200).json({ message: 'Account deleted' });
-        });
+        return res.status(200).json({ message: 'App profile deleted' });
     } catch (error) {
         console.error('Error deleting account:', error);
         return res.status(500).json({ error: 'Internal server error' });
