@@ -147,6 +147,15 @@ router.post('/', authMiddleware, createSnippetValidation, async (req: Request, r
     const { title, description, code, language, visibility, collection_id } = req.body;
 
     try {
+        if(collection_id !== undefined && collection_id !== null){
+            const cols = await db.select({id: collection.id}).from(collection).where(and(eq(collection.id,collection_id),eq(collection.userId,req.userId as number)))
+            if(cols.length === 0 ){
+                return res.status(403).json({error: 'Collection not found or not yours'})
+            }
+        }
+
+
+
         const [created] = await db.insert(snippet).values({
             userId: req.userId as number,
             title,
@@ -154,7 +163,7 @@ router.post('/', authMiddleware, createSnippetValidation, async (req: Request, r
             code,
             language,
             visibility: visibility || 'private',
-            collectionId: collection_id || null,
+            collectionId: collection_id ?? null,
         }).returning();
         return res.status(201).json(mapSnippet(created));
     } catch (error) {
@@ -178,9 +187,7 @@ router.delete('/:id', authMiddleware, snippetIdValidation, async (req: Request, 
         if (deleted.length === 0) {
             return res.status(404).json({ error: 'Snippet not found' });
         }
-        await db.delete(tag).where(
-            sql`${tag.id} NOT IN (SELECT ${snippetTag.tagId} FROM ${snippetTag})`,
-        );
+
         return res.status(200).json({ message: 'Snippet deleted successfully' });
     } catch (error) {
         console.log("Error deleting snippet", error);

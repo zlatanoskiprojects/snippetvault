@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { toNodeHandler } from 'better-auth/node';
 import path from 'path';
 import { auth } from './lib/auth';
@@ -12,6 +13,7 @@ import aiSettingsRoutes from './routes/aiSettings';
 import profileRoutes from './routes/profile';
 
 const app = express();
+app.use(helmet);
 const PORT = process.env.PORT || 3000;
 
 const ALLOWED_ORIGINS = [

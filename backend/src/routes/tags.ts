@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import db from '../lib/db';
 import { tag, snippet, snippetTag } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
@@ -162,9 +162,7 @@ router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, 
         if (result.length === 0) {
             return res.status(404).json({ error: 'Tag not assigned to this snippet' });
         }
-        await db.delete(tag).where(
-            sql`${tag.id} NOT IN (SELECT ${snippetTag.tagId} FROM ${snippetTag})`,
-        );
+
         return res.status(200).json({ message: 'Tag removed from snippet successfully' });
     } catch (error) {
         console.log('Error removing tag from snippet:', error);
