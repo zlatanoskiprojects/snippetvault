@@ -11,9 +11,10 @@ import tagRoutes from './routes/tags';
 import commentRoutes from './routes/comments';
 import aiSettingsRoutes from './routes/aiSettings';
 import profileRoutes from './routes/profile';
+import shareRoutes from './routes/share';
 
 const app = express();
-app.use(helmet);
+app.use(helmet());
 const PORT = process.env.PORT || 3000;
 
 const ALLOWED_ORIGINS = [
@@ -46,6 +47,7 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
+app.use('/api/share', shareRoutes);
 
 const frontendBuildPath = path.join(__dirname, '../dist/frontend-build');
 console.log('Serving static files from:', frontendBuildPath);

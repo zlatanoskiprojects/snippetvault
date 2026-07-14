@@ -76,7 +76,7 @@ export const snippet = pgTable('snippet', {
     code: text('code').notNull(),
     language: varchar('language', { length: 50 }).notNull(),
     visibility: varchar('visibility', { length: 10 }).notNull().default('private'),
-    shareToken: varchar('share_token', { length: 255 }),
+    shareToken: varchar('share_token', { length: 255 }).unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

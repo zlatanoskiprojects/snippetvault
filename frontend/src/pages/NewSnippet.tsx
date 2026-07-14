@@ -74,7 +74,8 @@ export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetPro
     setSaving(true)
     try {
       if (isEditing && snippet) {
-        await updateSnippet(snippet.id, payload)
+        const updated = await updateSnippet(snippet.id, payload)
+        console.log('share_token:', updated.share_token)
         const existingTags = snippet.tags || []
         const toAdd = finalTags.filter(t => !existingTags.includes(t))
         const toRemove = existingTags.filter(t => !finalTags.includes(t))
@@ -90,9 +91,10 @@ export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetPro
           }
         }
         toast.success('Snippet updated.')
-        onSaved({ ...snippet, ...payload, tags: finalTags })
+        onSaved({ ...updated, tags: finalTags })
       } else {
         const created = await createSnippet(payload)
+        console.log('share_token:', created.share_token)
         for (const name of finalTags) {
           const tag = await getOrCreateTag(name)
           if (tag) await assignTagToSnippet(tag.id, created.id)

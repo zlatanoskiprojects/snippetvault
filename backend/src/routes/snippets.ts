@@ -5,6 +5,7 @@ import { snippet, snippetTag, tag, snippetVersion, collection } from '../db/sche
 import authMiddleware from '../middleware/authMiddleware';
 import { validationResult } from 'express-validator';
 import { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation } from '../validators/snippets';
+import crypto from 'crypto';
 
 const router = Router();
 
@@ -154,16 +155,17 @@ router.post('/', authMiddleware, createSnippetValidation, async (req: Request, r
             }
         }
 
-
-
+        const isPublic = visibility === 'public';
+        const shareToken = isPublic ? crypto.randomBytes(24).toString('base64url') : null;
         const [created] = await db.insert(snippet).values({
             userId: req.userId as number,
             title,
             description: description || null,
             code,
             language,
-            visibility: visibility || 'private',
+            visibility: isPublic ? 'public' : 'private',
             collectionId: collection_id ?? null,
+            shareToken: shareToken,
         }).returning();
         return res.status(201).json(mapSnippet(created));
     } catch (error) {
@@ -202,6 +204,7 @@ interface SnippetUpdateFields {
     language?: string;
     visibility?: string;
     collectionId?: number | null;
+    shareToken?: string | null;
 }
 
 router.patch('/:id', authMiddleware, updateSnippetValidation, async (req: Request, res: Response) => {
@@ -244,22 +247,37 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req: Reques
 
         let shouldSaveVersion = false;
         let oldCode: string | null = null;
-        if (updates.code !== undefined) {
+        if (updates.code !== undefined || updates.visibility !== undefined) {
             const current = await db
-                .select({ code: snippet.code })
+                .select({ code: snippet.code, shareToken: snippet.shareToken })
                 .from(snippet)
                 .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)));
-            if (current.length > 0 && current[0].code !== updates.code) {
+
+            if (current.length === 0) {
+                return res.status(404).json({ error: 'Snippet not found' });
+            }
+
+            if (updates.code !== undefined && current[0].code !== updates.code) {
                 shouldSaveVersion = true;
                 oldCode = current[0].code;
             }
+
+            if (updates.visibility !== undefined) {
+                const isPublic = updates.visibility === 'public';
+                updates.visibility = isPublic ? 'public' : 'private';
+                updates.shareToken = isPublic
+                    ? (current[0].shareToken ?? crypto.randomBytes(24).toString('base64url'))
+                    : null;
+            }
         }
+
+
 
         const result = await db
             .update(snippet)
             .set(updates)
             .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)))
-            .returning({ id: snippet.id });
+            .returning();
 
         if (result.length === 0) {
             return res.status(404).json({ error: 'Snippet not found' });
@@ -285,7 +303,7 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req: Reques
             }
         }
 
-        return res.status(200).json({ message: 'Snippet updated successfully' });
+        return res.status(200).json(mapSnippet(result[0]));
 
     } catch (error) {
         console.error('Error updating snippet:', error);
