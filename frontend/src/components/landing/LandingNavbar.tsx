@@ -1,8 +1,9 @@
 interface LandingNavbarProps {
   onGetStarted?: () => void
+  showNavLinks?: boolean
 }
 
-export default function LandingNavbar({ onGetStarted }: LandingNavbarProps) {
+export default function LandingNavbar({ onGetStarted, showNavLinks = true }: LandingNavbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full flex items-center justify-between px-6 h-[56px] border-b border-[#2a2a2a] bg-[#0f0f0f]">
       <div className="flex items-center gap-2.5">
@@ -12,16 +13,18 @@ export default function LandingNavbar({ onGetStarted }: LandingNavbarProps) {
         <span className="text-sm font-medium text-white">Snippet Vault</span>
       </div>
 
-      <nav className="hidden md:flex items-center gap-8">
-        {['Product ∨', 'Docs ∨', 'About ∨'].map(link => (
-          <span
-            key={link}
-            className="text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer"
-          >
-            {link}
-          </span>
-        ))}
-      </nav>
+      {showNavLinks && (
+        <nav className="hidden md:flex items-center gap-8">
+          {['Product ∨', 'Docs ∨', 'About ∨'].map(link => (
+            <span
+              key={link}
+              className="text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer"
+            >
+              {link}
+            </span>
+          ))}
+        </nav>
+      )}
 
       <div className="flex items-center gap-3">
         <button

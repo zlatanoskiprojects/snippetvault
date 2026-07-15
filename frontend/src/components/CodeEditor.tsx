@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import type { Extension } from '@codemirror/state'
 import { javascript } from '@codemirror/lang-javascript'
@@ -11,6 +11,7 @@ import { java } from '@codemirror/lang-java'
 import { rust } from '@codemirror/lang-rust'
 import { go } from '@codemirror/lang-go'
 import { oneDark } from '@codemirror/theme-one-dark'
+import Button from './ui/Button'
 
 const LANG_MAP: Record<string, Extension> = {
   javascript: javascript(),
@@ -34,6 +35,8 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ language, code, onChange, editable = true, label = 'Code' }: CodeEditorProps) {
+  const [copied, setCopied] = useState(false)
+
   const extensions = useMemo(() => {
     const ext = LANG_MAP[(language || '').toLowerCase()]
     return ext ? [ext] : []
@@ -50,6 +53,8 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
       document.execCommand('copy')
       document.body.removeChild(el)
     }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   return (
@@ -58,13 +63,13 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
       <div className="flex flex-col bg-[#0d0d0d] rounded-lg overflow-hidden flex-1 min-h-[300px]">
         <div className="flex items-center justify-between px-3 h-[40px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
           <span className="text-xs text-[#595e69] font-medium">{language || 'TypeScript'}</span>
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={handleCopy}
-            className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-[11px] px-2.5 py-1 rounded"
+            className="h-auto text-[11px] px-2.5 py-1 rounded"
           >
-            ⎘ Copy
-          </button>
+            ⎘ {copied ? 'Copied!' : 'Copy'}
+          </Button>
         </div>
 
         <CodeMirror

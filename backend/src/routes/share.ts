@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../lib/db';
 import { and, eq, sql } from 'drizzle-orm';
-import { snippet,snippetTag,tag  } from '../db/schema';
+import { snippet,snippetTag,tag,users  } from '../db/schema';
 import {shareTokenValidation} from '../validators/snippets'
 import {validationResult} from 'express-validator'
 
@@ -25,11 +25,14 @@ router.get('/:token',shareTokenValidation,async (req:Request,res:Response)=>{
             createdAt: snippet.createdAt,
             updatedAt: snippet.updatedAt,
             tags: sql<string | null>`string_agg(${tag.name}, ',')`,
+            ownerDisplayName: users.displayName,
+            ownerUsername: users.username,
         }).from(snippet)
             .leftJoin(snippetTag, eq(snippetTag.snippetId, snippet.id))
             .leftJoin(tag, eq(tag.id, snippetTag.tagId))
+            .innerJoin(users, eq(users.id, snippet.userId))
             .where(and(eq(snippet.shareToken, req.params.token as string), eq(snippet.visibility, 'public')))
-            .groupBy(snippet.id);
+            .groupBy(snippet.id, users.id);
 
         if(rows.length === 0){
             return res.status(404).json({error:'Snippet not found or not public'})
@@ -44,6 +47,7 @@ router.get('/:token',shareTokenValidation,async (req:Request,res:Response)=>{
             tags: s.tags ? s.tags.split(',') : [],
             created_at: s.createdAt,
             updated_at: s.updatedAt,
+            owner_name: s.ownerDisplayName ?? s.ownerUsername,
         });
 
     }catch(error){
