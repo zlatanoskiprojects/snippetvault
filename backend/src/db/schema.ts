@@ -14,12 +14,49 @@ export const users = pgTable('users', {
     id: serial('id').primaryKey(),
     username: varchar('username', { length: 32 }).notNull(),
     email: varchar('email', { length: 255 }).notNull().unique(),
-    passwordHash: varchar('password_hash', { length: 255 }).notNull(),
     role: varchar('role', { length: 20 }).notNull().default('user'),
     displayName: varchar('display_name', { length: 64 }),
     bio: text('bio'),
     avatarUrl: varchar('avatar_url', { length: 512 }),
+    emailVerified: boolean('email_verified').notNull().default(false),
     registeredAt: timestamp('registered_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+export const authSession = pgTable('auth_session', {
+    id: serial('id').primaryKey(),
+    expiresAt: timestamp('expiresAt', { withTimezone: true }).notNull(),
+    token: text('token').notNull().unique(),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+    ipAddress: text('ipAddress'),
+    userAgent: text('userAgent'),
+    userId: integer('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+});
+
+export const authAccount = pgTable('auth_account', {
+    id: serial('id').primaryKey(),
+    accountId: text('accountId').notNull(),
+    providerId: text('providerId').notNull(),
+    userId: integer('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    accessToken: text('accessToken'),
+    refreshToken: text('refreshToken'),
+    idToken: text('idToken'),
+    accessTokenExpiresAt: timestamp('accessTokenExpiresAt', { withTimezone: true }),
+    refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt', { withTimezone: true }),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const authVerification = pgTable('auth_verification', {
+    id: serial('id').primaryKey(),
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
+    expiresAt: timestamp('expiresAt', { withTimezone: true }).notNull(),
+    createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const collection = pgTable('collection', {
@@ -39,7 +76,7 @@ export const snippet = pgTable('snippet', {
     code: text('code').notNull(),
     language: varchar('language', { length: 50 }).notNull(),
     visibility: varchar('visibility', { length: 10 }).notNull().default('private'),
-    shareToken: varchar('share_token', { length: 255 }),
+    shareToken: varchar('share_token', { length: 255 }).unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

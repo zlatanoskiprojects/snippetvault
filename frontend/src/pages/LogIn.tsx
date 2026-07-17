@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { login } from '../api/auth'
+import { login, socialLogin } from '../api/auth'
 import { useNavigate, Link } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Button from '../components/ui/Button'
@@ -23,6 +23,14 @@ function LogIn() {
     }
   }
 
+  async function handleSocialLogin(provider: 'google' | 'github') {
+    try {
+      await socialLogin(provider)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : `${provider} login failed.`)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px]">
@@ -39,12 +47,14 @@ function LogIn() {
             <Button
               variant="secondary"
               className="w-full h-[40px] bg-[#222] hover:bg-[#2a2a2a]"
+              onClick={() => handleSocialLogin('google')}
             >
               Continue with Google
             </Button>
             <Button
               variant="secondary"
               className="w-full h-[40px] bg-[#222] hover:bg-[#2a2a2a]"
+              onClick={() => handleSocialLogin('github')}
             >
               Continue with GitHub
             </Button>

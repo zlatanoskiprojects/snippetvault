@@ -1,4 +1,5 @@
 import { Select as BaseSelect } from '@base-ui/react/select'
+import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 export interface SelectOption<T extends string | number> {
@@ -43,8 +44,8 @@ export default function Select<T extends string | number>({
         {...rest}
       >
         <BaseSelect.Value placeholder={placeholder} className="truncate" />
-        <BaseSelect.Icon className="shrink-0 text-[#595e69] text-xs leading-none">
-          ∨
+        <BaseSelect.Icon className="shrink-0 text-[#595e69] leading-none">
+          <ChevronDown size={14} />
         </BaseSelect.Icon>
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
@@ -58,8 +59,8 @@ export default function Select<T extends string | number>({
                   className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-[#9ba3af] cursor-pointer select-none outline-none transition-colors duration-150 data-[highlighted]:bg-white/5 data-[highlighted]:text-white data-[selected]:text-[#6366f1]"
                 >
                   <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
-                  <BaseSelect.ItemIndicator className="shrink-0 text-[#6366f1] text-xs">
-                    ✓
+                  <BaseSelect.ItemIndicator className="shrink-0 text-[#6366f1]">
+                    <Check size={14} />
                   </BaseSelect.ItemIndicator>
                 </BaseSelect.Item>
               ))}

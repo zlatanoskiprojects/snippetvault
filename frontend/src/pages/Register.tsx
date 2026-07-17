@@ -15,9 +15,15 @@ function Register() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const cleanUsername = username.trim()
+    if (!cleanUsername) {
+      toast.error('Username is required.')
+      return
+    }
+
     try {
-      await register(username, email, password)
-      navigate('/login')
+      await register(cleanUsername, email, password)
+      navigate('/dashboard')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Registration failed.')
     }

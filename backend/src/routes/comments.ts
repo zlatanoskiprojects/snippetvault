@@ -20,6 +20,12 @@ const mapComment = (c: typeof comment.$inferSelect) => ({
 router.get('/snippets/:snippetId/comments', authMiddleware, async (req: Request, res: Response) => {
     try {
         const snippetId = parseInt(req.params.snippetId as string);
+
+        const [checkSnippet] = await db.select().from(snippet).where(eq(snippet.id, snippetId));
+        if(!checkSnippet || checkSnippet.userId !== req.userId){
+            return res.status(404).json({ error: 'Snippet not found' });
+        }
+
         const comments = await db
             .select()
             .from(comment)
@@ -42,8 +48,8 @@ router.post('/snippets/:snippetId/comments', authMiddleware, createCommentValida
     const { content } = req.body;
 
     try {
-        const snippets = await db.select({ id: snippet.id }).from(snippet).where(eq(snippet.id, snippetId));
-        if (snippets.length === 0) {
+        const [checkSnippet] = await db.select().from(snippet).where(eq(snippet.id, snippetId));
+        if(!checkSnippet || checkSnippet.userId !== req.userId){
             return res.status(404).json({ error: 'Snippet not found' });
         }
 
@@ -74,6 +80,7 @@ router.patch('/comments/:id', authMiddleware, updateCommentValidation, async (re
     }
 
     try {
+
         const result = await db
             .update(comment)
             .set({ content })

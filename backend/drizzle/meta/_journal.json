@@ -8,6 +8,20 @@
       "when": 1783115886593,
       "tag": "0000_wise_shen",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783843200000,
+      "tag": "0001_better_auth_direct",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784006545915,
+      "tag": "0002_parched_snowbird",
+      "breakpoints": true
     }
   ]
 }

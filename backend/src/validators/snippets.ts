@@ -1,6 +1,8 @@
 import { body, param, ValidationChain } from 'express-validator';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
 
+
+
 const versionIdValidation: ValidationChain[] = [
     param('versionId')
         .isInt({ min: 1 })
@@ -85,4 +87,11 @@ const updateSnippetValidation: ValidationChain[] = [
         .isLength({ max: 500 }).withMessage('Change note cannot exceed 500 characters'),
 ];
 
-export { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation };
+const shareTokenValidation: ValidationChain[] = [
+    param('token')
+        .isString()
+        .isLength({ min: 20, max: 64 }).withMessage('Invalid share token')
+        .matches(/^[A-Za-z0-9_-]+$/).withMessage('Invalid share token'),
+];
+
+export { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation, shareTokenValidation };

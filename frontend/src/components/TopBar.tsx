@@ -1,3 +1,4 @@
+import { ArrowLeft, Menu, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import Button from './ui/Button'
 
 interface TopBarProps {
@@ -19,7 +20,7 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
             onClick={onBack}
             className="h-auto p-0 shrink-0 leading-none"
           >
-            ←
+            <ArrowLeft size={16} />
           </Button>
         )}
         <div className="min-w-0">
@@ -35,11 +36,7 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           aria-label="Open menu"
           className="lg:hidden w-[30px] h-[30px] p-0"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect y="2" width="14" height="1.5" rx="0.75" fill="currentColor" />
-            <rect y="6.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
-            <rect y="10.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
-          </svg>
+          <Menu size={14} />
         </Button>
 
         <Button
@@ -48,22 +45,17 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           aria-label="Search"
           className="lg:hidden w-[30px] h-[30px] p-0"
         >
-          <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-            <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2" />
-            <path d="M7.5 7.5L10 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
+          <Search size={13} />
         </Button>
 
         <Button variant="secondary" size="sm" className="text-xs">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
+          <SlidersHorizontal size={12} />
           <span className="hidden sm:inline">Filter</span>
         </Button>
 
         <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs">
-          <span className="hidden sm:inline">+ New snippet</span>
-          <span className="sm:hidden">+</span>
+          <span className="hidden sm:inline-flex items-center gap-1"><Plus size={14} /> New snippet</span>
+          <span className="sm:hidden flex items-center"><Plus size={14} /></span>
         </Button>
       </div>
     </header>

@@ -1,3 +1,5 @@
+import { Code2, LayoutGrid, Lock, Plus, Star } from 'lucide-react'
+
 const TAGS = [
   { label: 'react', dotClass: 'bg-[#3d77fc]' },
   { label: 'utils', dotClass: 'bg-[#22c55e]' },
@@ -34,7 +36,7 @@ function MiniSidebar() {
     <div className="hidden sm:flex w-[172px] shrink-0 bg-[#161616] border-r border-[#2a2a2a] flex-col p-3 gap-2">
       <div className="flex items-center gap-1.5">
         <div className="bg-[#6366f1] rounded w-[26px] h-[26px] flex items-center justify-center shrink-0">
-          <span className="text-[8px] font-bold font-mono text-white">&lt;/&gt;</span>
+          <Code2 size={14} className="text-white" />
         </div>
         <span className="text-[10px] font-medium text-white">Snippet Vault</span>
       </div>
@@ -46,13 +48,16 @@ function MiniSidebar() {
       <p className="text-[7px] font-medium text-[#595e69] mt-2 tracking-wider">LIBRARY</p>
       <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-1.5 bg-[#6366f1] rounded px-1.5 py-0.5">
-          <span className="text-[9px] text-white">⊞ All snippets</span>
+          <LayoutGrid size={9} className="text-white shrink-0" />
+          <span className="text-[9px] text-white">All snippets</span>
         </div>
         <div className="flex items-center gap-1.5 px-1.5 py-0.5">
-          <span className="text-[9px] text-[#9ba3af]">☆ Favourites</span>
+          <Star size={9} className="text-[#9ba3af] shrink-0" />
+          <span className="text-[9px] text-[#9ba3af]">Favourites</span>
         </div>
         <div className="flex items-center gap-1.5 px-1.5 py-0.5">
-          <span className="text-[9px] text-[#9ba3af]">🔒 Private</span>
+          <Lock size={9} className="text-[#9ba3af] shrink-0" />
+          <span className="text-[9px] text-[#9ba3af]">Private</span>
         </div>
       </div>
 
@@ -80,8 +85,8 @@ function MiniTopBar() {
         <div className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] rounded text-[8px] px-2 h-[20px] flex items-center">
           Filter
         </div>
-        <div className="bg-[#6366f1] text-white rounded text-[8px] px-2 h-[20px] flex items-center">
-          + New snippet
+        <div className="bg-[#6366f1] text-white rounded text-[8px] px-2 h-[20px] flex items-center gap-1">
+          <Plus size={9} /> New snippet
         </div>
       </div>
     </div>

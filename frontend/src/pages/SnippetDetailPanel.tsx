@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import { ArrowLeft, Check, ChevronDown, Copy, History, Pencil, Share2, Trash2, X } from 'lucide-react'
 import LanguageBadge from '../components/LanguageBadge'
 import TagPill from '../components/TagPill'
 import CodeEditor from '../components/CodeEditor'
 import VersionHistoryPanel from '../components/VersionHistoryPanel'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/AlertDialog'
+import ShareDialog from '../components/ShareDialog'
 import type { Snippet } from '../api/types'
 
 const LANG_NAMES: Record<string, string> = {
@@ -21,12 +23,21 @@ interface SnippetDetailPanelProps {
   onEdit: (snippet: Snippet) => void
   onDelete: (id: number) => void
   onRestore: (updated: Snippet) => void
+  onUpdate?: (updated: Snippet) => void
 }
 
-export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete, onRestore }: SnippetDetailPanelProps) {
+export default function SnippetDetailPanel({
+  snippet,
+  onClose,
+  onEdit,
+  onDelete,
+  onRestore,
+  onUpdate,
+}: SnippetDetailPanelProps) {
   const [copied, setCopied] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -65,14 +76,14 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
             className="lg:hidden h-auto p-0 text-sm mr-1"
             onClick={onClose}
           >
-            ←
+            <ArrowLeft size={16} />
           </Button>
           <span className="text-[13px] font-medium text-[#9ba3af]">Editor 1</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="bg-[#222] border border-[#2a2a2a] rounded-md text-xs text-white px-3 h-[28px] flex items-center gap-1 select-none">
             {LANG_NAMES[snippet.language] ?? snippet.language}
-            <span className="text-[#9ba3af]">∨</span>
+            <ChevronDown size={14} className="text-[#9ba3af]" />
           </div>
           <Button
             variant="ghost"
@@ -80,7 +91,7 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
             aria-label="Close"
             className="hidden lg:flex w-[28px] h-[28px] p-0"
           >
-            ✕
+            <X size={16} />
           </Button>
         </div>
       </div>
@@ -117,21 +128,28 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
             className="h-[34px] px-4 text-[13px]"
             onClick={() => onEdit(snippet)}
           >
-            ✏ Edit
+            <Pencil size={14} /> Edit
           </Button>
           <Button
             variant="secondary"
             className="h-[34px] px-4 text-[13px]"
             onClick={() => setShowHistory(true)}
           >
-            ⏱ History
+            <History size={14} /> History
           </Button>
           <Button
             variant="danger"
             className="h-[34px] px-4 text-[13px]"
             onClick={() => setDeleteConfirmOpen(true)}
           >
-            🗑 Delete
+            <Trash2 size={14} /> Delete
+          </Button>
+          <Button
+            variant="secondary"
+            className="h-[34px] px-4 text-[13px]"
+            onClick={() => setShareDialogOpen(true)}
+          >
+            <Share2 size={14} /> Share
           </Button>
         </div>
 
@@ -148,12 +166,19 @@ export default function SnippetDetailPanel({ snippet, onClose, onEdit, onDelete,
           }}
         />
 
+        <ShareDialog
+          open={shareDialogOpen}
+          onClose={() => setShareDialogOpen(false)}
+          snippet={snippet}
+          onUpdate={onUpdate || (() => {})}
+        />
+
         <Button
           variant="secondary"
           className="h-[34px] px-4 text-[13px]"
           onClick={handleCopy}
         >
-          ⎘ {copied ? 'Copied!' : 'Copy'}
+          {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied!' : 'Copy'}
         </Button>
       </div>
     </div>

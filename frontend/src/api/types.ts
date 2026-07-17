@@ -55,6 +55,18 @@ export interface Comment {
     updated_at: string;
 }
 
+export interface SharedSnippet {
+    id: number;
+    title: string;
+    description: string | null;
+    code: string;
+    language: string;
+    tags: string[];
+    created_at: string;
+    updated_at: string;
+    owner_name: string;
+}
+
 export interface AiSettings {
     id: number;
     user_id: number;

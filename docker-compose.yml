@@ -2,10 +2,8 @@ services:
   db:
     image: postgres:16
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: SISIII2026_89241167
-      POSTGRES_USER: studenti
-      POSTGRES_PASSWORD: S039C8R7
+    env_file:
+      - .env
     ports:
       - "5433:5432"
     volumes:

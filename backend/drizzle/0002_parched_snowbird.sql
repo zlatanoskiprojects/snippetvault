@@ -1,0 +1,1 @@
+ALTER TABLE "snippet" ADD CONSTRAINT "snippet_share_token_unique" UNIQUE("share_token");
