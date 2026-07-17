@@ -18,3 +18,7 @@ backend/.env
 
 .DS_Store
 Thumbs.db
+
+# Playwright MCP output
+.playwright-mcp/
+/*.png

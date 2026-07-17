@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 interface LandingNavbarProps {
   onGetStarted?: () => void
   showNavLinks?: boolean
@@ -15,14 +17,18 @@ export default function LandingNavbar({ onGetStarted, showNavLinks = true }: Lan
 
       {showNavLinks && (
         <nav className="hidden md:flex items-center gap-8">
-          {['Product ∨', 'Docs ∨', 'About ∨'].map(link => (
-            <span
-              key={link}
-              className="text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer"
-            >
-              {link}
-            </span>
-          ))}
+          <span className="text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer">
+            Product ∨
+          </span>
+          <Link
+            to="/docs"
+            className="text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer"
+          >
+            Docs
+          </Link>
+          <span className="text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer">
+            About ∨
+          </span>
         </nav>
       )}
 
