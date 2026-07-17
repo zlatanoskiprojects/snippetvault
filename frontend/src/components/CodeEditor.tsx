@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Check, Copy } from 'lucide-react'
 import CodeMirror from '@uiw/react-codemirror'
 import type { Extension } from '@codemirror/state'
 import { javascript } from '@codemirror/lang-javascript'
@@ -68,7 +69,7 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
             onClick={handleCopy}
             className="h-auto text-[11px] px-2.5 py-1 rounded"
           >
-            ⎘ {copied ? 'Copied!' : 'Copy'}
+            {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
           </Button>
         </div>
 

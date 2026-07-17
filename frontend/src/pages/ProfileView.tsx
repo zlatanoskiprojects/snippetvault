@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, type ChangeEvent } from 'react'
+import { ArrowLeft, Pencil, Trash2, TriangleAlert } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -147,7 +148,7 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
             className="w-[28px] h-[28px] p-0"
             aria-label="Go back"
           >
-            ←
+            <ArrowLeft size={16} />
           </Button>
         )}
         <span className="text-lg font-semibold text-white">Profile &amp; Settings</span>
@@ -179,7 +180,7 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
                     variant="secondary"
                     className="absolute bottom-0 right-0 w-[30px] h-[30px] p-0 rounded-full"
                   >
-                    <span className="text-[11px]">✏</span>
+                    <Pencil size={12} />
                   </Button>
                 </div>
 
@@ -246,7 +247,9 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
 
               <div className="w-full bg-[#1c0d0d] border border-[#611a1a] rounded-lg px-4 py-4 mt-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[#ef4444] text-[14px] font-medium">⚠ Danger Zone</span>
+                  <span className="flex items-center gap-1.5 text-[#ef4444] text-[14px] font-medium">
+                    <TriangleAlert size={14} /> Danger Zone
+                  </span>
                 </div>
                 <p className="text-[#595e69] text-xs mt-1">
                   Permanently delete your account and all associated data.
@@ -256,7 +259,7 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
                   onClick={() => setDeleteConfirmOpen(true)}
                   className="bg-[#3d1414] hover:bg-[#4a1a1a] text-[12px] h-[34px] px-3 mt-3"
                 >
-                  🗑 Delete account
+                  <Trash2 size={14} /> Delete account
                 </Button>
 
                 <ConfirmDialog

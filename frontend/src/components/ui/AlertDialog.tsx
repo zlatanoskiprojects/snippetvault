@@ -29,7 +29,7 @@ export default function ConfirmDialog({
   return (
     <BaseAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseAlertDialog.Portal>
-        <BaseAlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+        <BaseAlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
         <BaseAlertDialog.Viewport className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <BaseAlertDialog.Popup className="w-full max-w-md bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg outline-none p-6 flex flex-col gap-2 transition-all duration-150 data-[starting-style]:opacity-0 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[ending-style]:scale-95">
             <BaseAlertDialog.Title className="text-[15px] font-semibold text-white">

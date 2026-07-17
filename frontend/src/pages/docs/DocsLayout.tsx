@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dialog as BaseDialog } from '@base-ui/react/dialog'
+import { Menu } from 'lucide-react'
 import LandingNavbar from '../../components/landing/LandingNavbar'
 import Button from '../../components/ui/Button'
 import DocsSidebar from './DocsSidebar'
@@ -35,11 +36,7 @@ export default function DocsLayout({ slug, title, headings, children }: DocsLayo
           aria-label="Open docs menu"
           className="w-[30px] h-[30px] p-0 shrink-0"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect y="2" width="14" height="1.5" rx="0.75" fill="currentColor" />
-            <rect y="6.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
-            <rect y="10.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
-          </svg>
+          <Menu size={14} />
         </Button>
         <span className="text-sm text-white truncate min-w-0">{title}</span>
       </div>

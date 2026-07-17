@@ -72,6 +72,11 @@ export default function Dashboard() {
     toast.success('Version restored.')
   }
 
+  function onUpdateSnippet(updated: Snippet) {
+    setSnippets(prev => prev.map(s => s.id === updated.id ? updated : s))
+    setSelectedSnippet(updated)
+  }
+
   function onCancelForm() {
     setEditingSnippet(null)
     setView('list')
@@ -191,6 +196,7 @@ export default function Dashboard() {
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onRestore={onRestore}
+                  onUpdate={onUpdateSnippet}
                 />
               </div>
 
@@ -202,6 +208,7 @@ export default function Dashboard() {
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onRestore={onRestore}
+                  onUpdate={onUpdateSnippet}
                 />
               </div>
             </>

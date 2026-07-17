@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
+import { X } from 'lucide-react'
 import { useSnippets } from '../hooks/useSnippets'
 import SnippetRow from '../components/SnippetRow'
 import Spinner from '../components/ui/Spinner'
@@ -98,7 +99,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
           aria-label="Close search"
           className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
         >
-          ✕
+          <X size={14} />
         </button>
       </div>
 
@@ -110,7 +111,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
           value={query}
           onChange={e => onQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="🔍  Search by title, description, tags, or code..."
+          placeholder="Search by title, description, tags, or code..."
           className="w-full h-[48px] bg-[#222] border-2 border-[#6366f1] rounded-lg text-sm text-white px-4 outline-none placeholder-[#595e69]"
         />
 

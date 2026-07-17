@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Check, Copy, Hash } from 'lucide-react'
 import Button from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -29,9 +30,9 @@ export function DocHeading({ id, level = 2, children }: DocHeadingProps) {
         href={`#${id}`}
         onClick={e => { e.preventDefault(); scrollToHeading(id) }}
         aria-label="Link to this section"
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-[#595e69] hover:text-[#6366f1] text-sm font-normal"
+        className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-[#595e69] hover:text-[#6366f1] font-normal"
       >
-        #
+        <Hash size={14} />
       </a>
     </Tag>
   )
@@ -87,7 +88,7 @@ export function DocCodeBlock({ code, language, filename }: DocCodeBlockProps) {
           onClick={handleCopy}
           className="h-auto text-[11px] px-2.5 py-1 rounded"
         >
-          ⎘ {copied ? 'Copied!' : 'Copy'}
+          {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
         </Button>
       </div>
       <pre className="p-4 font-mono text-[13px] leading-6 text-[#d4d4d8] overflow-x-auto">

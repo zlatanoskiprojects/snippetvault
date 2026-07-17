@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { ChevronDown, Search, Sun } from 'lucide-react'
 import { logout } from '../api/auth'
 import { useUser } from '../hooks/useUser'
 import Input from './ui/Input'
@@ -54,15 +55,12 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
           <span className="text-white font-bold font-mono text-[11px]">&lt;/&gt;</span>
         </div>
         <span className="text-sm font-medium text-white flex-1 min-w-0 truncate">Snippet Vault</span>
-        <span className="text-[#9ba3af] text-[10px] shrink-0">∨</span>
+        <ChevronDown size={10} className="text-[#9ba3af] shrink-0" />
       </div>
 
       <div className="mx-3 mt-2">
         <div className="bg-[#222] border border-[#2a2a2a] rounded-md h-[30px] flex items-center gap-2 px-2">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-[#595e69]">
-            <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.2" />
-            <path d="M7.5 7.5L10 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
+          <Search size={12} className="shrink-0 text-[#595e69]" />
           <Input
             type="search"
             value={searchQuery}
@@ -138,7 +136,12 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
           </div>
         </div>
         <div className="px-4 py-3 flex items-center justify-between">
-          <span className="text-xs text-[#595e69]">☀ Light mode</span>
+          <button
+            type="button"
+            className="text-xs text-[#595e69] hover:text-white flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0 transition-colors duration-150 focus:outline-none"
+          >
+            <Sun size={14} /> Light mode
+          </button>
           <Button
             variant="ghost"
             onClick={handleLogout}

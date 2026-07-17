@@ -1,4 +1,5 @@
 import { Toast as BaseToast } from '@base-ui/react/toast'
+import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ToastContext } from '../../contexts/ToastContext'
 import type { ToastContextValue } from '../../contexts/ToastContext'
@@ -47,9 +48,9 @@ function ToastList() {
               <BaseToast.Description className="text-sm leading-snug flex-1" />
               <BaseToast.Close
                 aria-label="Dismiss notification"
-                className="text-lg leading-none opacity-70 hover:opacity-100 transition-opacity"
+                className="leading-none opacity-70 hover:opacity-100 transition-opacity"
               >
-                ×
+                <X size={16} />
               </BaseToast.Close>
             </BaseToast.Content>
           </BaseToast.Root>

@@ -10,10 +10,10 @@ export const INTRODUCTION_HEADINGS: DocHeadingRef[] = [
 ]
 
 const FEATURES = [
-  { title: 'Snippets & Editor', description: 'Write and edit code with a CodeMirror-powered editor across a dozen languages.', color: '#6366f1' },
-  { title: 'Collections & Tags', description: 'Group related snippets into collections and label them with global tags.', color: '#22c55e' },
-  { title: 'Version History', description: 'Every meaningful edit is snapshotted, so you can review and restore prior versions.', color: '#fba528' },
-  { title: 'Public Sharing', description: 'Share a single snippet publicly with a share link, without exposing your account.', color: '#8c5af3' },
+  { title: 'Snippets & Editor', description: 'Write and edit code with a CodeMirror-powered editor across a dozen languages.', color: '#818cf8' },
+  { title: 'Collections & Tags', description: 'Group related snippets into collections and label them with global tags.', color: '#4ade80' },
+  { title: 'Version History', description: 'Every meaningful edit is snapshotted, so you can review and restore prior versions.', color: '#fbbf24' },
+  { title: 'Public Sharing', description: 'Share a single snippet publicly with a share link, without exposing your account.', color: '#a78bfa' },
 ]
 
 export default function Introduction() {
@@ -27,10 +27,26 @@ export default function Introduction() {
 
       <DocHeading id="key-features">Key features</DocHeading>
       <div className="grid sm:grid-cols-2 gap-4 mb-6">
-        {FEATURES.map(feature => (
-          <Card key={feature.title} accentColor={feature.color} className="flex flex-col">
-            <div className="flex flex-col flex-1 px-5 pt-4 pb-5">
-              <p className="text-sm font-semibold text-white mb-1.5">{feature.title}</p>
+        {FEATURES.map((feature, index) => (
+          <Card
+            key={feature.title}
+            className="group min-h-[148px] border-[#303030] bg-[#1c1c1c] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#454545] hover:bg-[#202020] hover:shadow-[0_10px_28px_rgba(0,0,0,0.2)]"
+          >
+            <div className="flex h-full flex-col px-5 py-5">
+              <div className="mb-4 flex items-center justify-between">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-md border text-[11px] font-semibold tracking-wide"
+                  style={{
+                    color: feature.color,
+                    backgroundColor: `${feature.color}14`,
+                    borderColor: `${feature.color}36`,
+                  }}
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="h-1.5 w-1.5 rounded-full opacity-60 transition-opacity duration-200 group-hover:opacity-100" style={{ backgroundColor: feature.color }} />
+              </div>
+              <p className="mb-1.5 text-sm font-semibold text-white">{feature.title}</p>
               <p className="text-xs leading-relaxed text-[#9ba3af]">{feature.description}</p>
             </div>
           </Card>

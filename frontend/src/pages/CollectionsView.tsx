@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import CollectionCard, { type CollectionWithMeta } from '../components/CollectionCard'
 import Button from '../components/ui/Button'
 import CollectionDialog, {
@@ -51,7 +52,7 @@ export default function CollectionsView({ onSelectCollection }: CollectionsViewP
           <p className="text-xs text-[#595e69] mt-0.5">{collections.length} collections</p>
         </div>
         <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs">
-          + New collection
+          <Plus size={14} /> New collection
         </Button>
       </header>
 

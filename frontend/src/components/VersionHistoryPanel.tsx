@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { getSnippetVersions, getSnippetVersion, restoreSnippetVersion, deleteSnippetVersion } from '../api/snippets'
 import CodeEditor from './CodeEditor'
 import Button from './ui/Button'
@@ -89,7 +90,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
       <div className="flex items-center justify-between px-4 h-[56px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onBack} className="h-auto p-0 text-sm">
-            ←
+            <ArrowLeft size={16} />
           </Button>
           <span className="text-[13px] font-medium text-white">Version History</span>
         </div>
