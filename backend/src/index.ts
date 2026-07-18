@@ -23,8 +23,8 @@ const ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'http://localhost:3000',
-    'http://88.200.63.148:30162',
-];
+    process.env.CLIENT_URL,
+].filter((origin): origin is string => Boolean(origin));
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -49,8 +49,7 @@ app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
 app.use('/api/share', shareRoutes);
 
-const frontendBuildPath = path.join(__dirname, '../dist/frontend-build');
-console.log('Serving static files from:', frontendBuildPath);
+const frontendBuildPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendBuildPath));
 
 app.get('/{*path}', (req, res) => {

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { createCipheriv, randomBytes, scryptSync } from 'crypto';
 import { eq } from 'drizzle-orm';
 import db from '../lib/db';
 import { userAiSettings } from '../db/schema';
@@ -7,6 +8,18 @@ import { validationResult } from 'express-validator';
 import { createAiSettingsValidation, updateAiSettingsValidation, deleteAiSettingsValidation } from '../validators/aiSettings';
 
 const router = Router();
+
+function encryptApiKey(apiKey: string): string {
+    const secret = process.env.AI_KEY_SECRET;
+    if (!secret) {
+        throw new Error('AI_KEY_SECRET is not set');
+    }
+    const key = scryptSync(secret, 'snippetvault-ai-key', 32);
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', key, iv);
+    const encrypted = Buffer.concat([cipher.update(apiKey, 'utf8'), cipher.final()]);
+    return Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString('base64');
+}
 
 const SETTINGS_SELECTION = {
     id: userAiSettings.id,
@@ -64,12 +77,13 @@ router.post('/', authMiddleware, createAiSettingsValidation, async (req: Request
     const { api_key, provider_type, model_name, base_url, is_configured } = req.body;
 
     try {
+        const apiKeyEnc = encryptApiKey(api_key);
         await db
             .insert(userAiSettings)
             .values({
                 userId: req.userId as number,
                 providerType: provider_type,
-                apiKeyEnc: api_key,
+                apiKeyEnc,
                 modelName: model_name || null,
                 baseUrl: base_url || null,
                 isConfigured: is_configured ?? false,
@@ -78,7 +92,7 @@ router.post('/', authMiddleware, createAiSettingsValidation, async (req: Request
                 target: userAiSettings.userId,
                 set: {
                     providerType: provider_type,
-                    apiKeyEnc: api_key,
+                    apiKeyEnc,
                     modelName: model_name || null,
                     baseUrl: base_url || null,
                     isConfigured: is_configured ?? false,
