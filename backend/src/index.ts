@@ -12,8 +12,10 @@ import commentRoutes from './routes/comments';
 import aiSettingsRoutes from './routes/aiSettings';
 import profileRoutes from './routes/profile';
 import shareRoutes from './routes/share';
+import { apiLimiter, shareLimiter } from './middleware/rateLimit';
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(helmet());
 const PORT = process.env.PORT || 3000;
 
@@ -41,13 +43,15 @@ app.all('/api/auth/{*any}', toNodeHandler(auth));
 
 app.use(express.json());
 
+app.use('/api', apiLimiter);
+
 app.use('/api/snippets', snippetRoutes);
 app.use('/api/collections', collectionRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
-app.use('/api/share', shareRoutes);
+app.use('/api/share', shareLimiter, shareRoutes);
 
 const frontendBuildPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendBuildPath));

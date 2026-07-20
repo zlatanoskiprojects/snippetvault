@@ -56,6 +56,18 @@ export const auth = betterAuth({
             generateId: 'serial',
         },
     },
+    rateLimit: {
+        enabled: true,
+        window: 60,
+        max: 100,
+        storage: 'memory',
+        customRules: {
+            '/sign-in/email': { window: 60, max: 5 },
+            '/sign-up/email': { window: 60, max: 5 },
+            '/delete-user': { window: 60, max: 3 },
+            '/change-password': { window: 60, max: 5 },
+        },
+    },
     emailAndPassword: {
         enabled: true,
     },
