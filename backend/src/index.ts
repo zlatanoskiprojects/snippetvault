@@ -16,7 +16,18 @@ import { apiLimiter, shareLimiter } from './middleware/rateLimit';
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(helmet());
+
+const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            'script-src': ["'self'", TURNSTILE_ORIGIN],
+            'frame-src': ["'self'", TURNSTILE_ORIGIN],
+            'connect-src': ["'self'", TURNSTILE_ORIGIN],
+        },
+    },
+}));
 const PORT = process.env.PORT || 3000;
 
 const ALLOWED_ORIGINS = [

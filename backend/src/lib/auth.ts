@@ -1,7 +1,18 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { captcha } from 'better-auth/plugins';
 import db from './db';
 import { authAccount, authSession, authVerification, users } from '../db/schema';
+
+const captchaPlugins = process.env.TURNSTILE_SECRET_KEY
+    ? [
+          captcha({
+              provider: 'cloudflare-turnstile',
+              secretKey: process.env.TURNSTILE_SECRET_KEY,
+              endpoints: ['/sign-in/email', '/sign-up/email'],
+          }),
+      ]
+    : [];
 
 function deriveUsername(name: string): string {
     const trimmed = name.trim().slice(0, 32);
@@ -51,6 +62,7 @@ export const auth = betterAuth({
             verification: authVerification,
         },
     }),
+    plugins: captchaPlugins,
     advanced: {
         database: {
             generateId: 'serial',

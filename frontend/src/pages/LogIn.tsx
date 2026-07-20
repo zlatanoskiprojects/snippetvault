@@ -5,10 +5,12 @@ import { useToast } from '../hooks/useToast'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Field from '../components/ui/Field'
+import Turnstile from '../components/Turnstile'
 
 function LogIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [captchaToken, setCaptchaToken] = useState('')
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -16,7 +18,7 @@ function LogIn() {
     e.preventDefault()
     if (!email || !password) return
     try {
-      await login(email, password)
+      await login(email, password, captchaToken)
       navigate('/dashboard')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Login failed.')
@@ -84,6 +86,9 @@ function LogIn() {
                 className="h-[40px]"
               />
             </Field>
+            <div className="flex justify-center">
+              <Turnstile onVerify={setCaptchaToken} />
+            </div>
             <Button type="submit" variant="primary" className="w-full h-[40px]">
               Sign In
             </Button>
