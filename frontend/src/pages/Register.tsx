@@ -5,11 +5,13 @@ import { useToast } from '../hooks/useToast'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Field from '../components/ui/Field'
+import Turnstile from '../components/Turnstile'
 
 function Register() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [captchaToken, setCaptchaToken] = useState('')
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -22,7 +24,7 @@ function Register() {
     }
 
     try {
-      await register(cleanUsername, email, password)
+      await register(cleanUsername, email, password, captchaToken)
       navigate('/dashboard')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Registration failed.')
@@ -70,6 +72,9 @@ function Register() {
                 className="h-[40px]"
               />
             </Field>
+            <div className="flex justify-center">
+              <Turnstile onVerify={setCaptchaToken} />
+            </div>
             <Button type="submit" variant="primary" className="w-full h-[40px]">
               Create Account
             </Button>

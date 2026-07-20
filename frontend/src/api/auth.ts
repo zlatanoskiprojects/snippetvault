@@ -8,10 +8,10 @@ export interface AuthResponse {
     user: User;
 }
 
-export async function register(username: string, email: string, password: string): Promise<AuthResponse> {
+export async function register(username: string, email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
     const response = await fetch(`${BASE_URL}/sign-up/email`, {
         method: 'POST',
-        headers: JSON_HEADERS,
+        headers: captchaToken ? { ...JSON_HEADERS, 'x-captcha-response': captchaToken } : JSON_HEADERS,
         credentials: 'include',
         body: JSON.stringify({
             name: username,
@@ -24,10 +24,10 @@ export async function register(username: string, email: string, password: string
     return response.json();
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
+export async function login(email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
     const response = await fetch(`${BASE_URL}/sign-in/email`, {
         method: 'POST',
-        headers: JSON_HEADERS,
+        headers: captchaToken ? { ...JSON_HEADERS, 'x-captcha-response': captchaToken } : JSON_HEADERS,
         credentials: 'include',
         body: JSON.stringify({
             email,
