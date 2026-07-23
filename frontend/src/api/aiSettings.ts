@@ -1,4 +1,4 @@
-import { JSON_HEADERS, throwIfNotOk } from './utils';
+import { JSON_HEADERS, apiFetch } from './utils';
 import type { AiSettings } from './types';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -11,30 +11,19 @@ export interface SaveAiSettingsData {
 }
 
 export async function getAiSettings(): Promise<AiSettings | null> {
-    const response = await fetch(BASE_URL, {
-        credentials: 'include',
-    });
-    await throwIfNotOk(response);
-    return response.json();
+    return apiFetch<AiSettings | null>(BASE_URL);
 }
 
 export async function saveAiSettings(data: SaveAiSettingsData): Promise<AiSettings> {
-    const response = await fetch(BASE_URL, {
+    return apiFetch<AiSettings>(BASE_URL, {
         method: 'POST',
         headers: JSON_HEADERS,
-        credentials: 'include',
         body: JSON.stringify(data),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function deleteAiSettings(): Promise<null> {
-    const response = await fetch(BASE_URL, {
+    return apiFetch<null>(BASE_URL, {
         method: 'DELETE',
-        credentials: 'include',
     });
-    await throwIfNotOk(response);
-    if (response.status === 204) return null;
-    return response.json();
 }

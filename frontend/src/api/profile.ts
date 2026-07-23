@@ -1,4 +1,4 @@
-import { JSON_HEADERS, throwIfNotOk } from './utils';
+import { JSON_HEADERS, apiFetch } from './utils';
 import type { User } from './types';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/profile`;
@@ -22,42 +22,32 @@ export interface ChangePasswordData {
 }
 
 export async function getProfile(): Promise<ProfileResponse> {
-    const response = await fetch(BASE_URL, {
-        credentials: 'include',
-    });
-    await throwIfNotOk(response);
-    return response.json();
+    return apiFetch<ProfileResponse>(BASE_URL, { silent: true });
 }
 
 export async function updateProfile(data: UpdateProfileData): Promise<ProfileResponse> {
-    const response = await fetch(BASE_URL, {
+    return apiFetch<ProfileResponse>(BASE_URL, {
         method: 'PATCH',
         headers: JSON_HEADERS,
-        credentials: 'include',
+        silent: true,
         body: JSON.stringify(data),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function changePassword(data: ChangePasswordData): Promise<{ message?: string }> {
-    const response = await fetch(`${AUTH_BASE_URL}/change-password`, {
+    return apiFetch<{ message?: string }>(`${AUTH_BASE_URL}/change-password`, {
         method: 'POST',
         headers: JSON_HEADERS,
-        credentials: 'include',
+        silent: true,
         body: JSON.stringify({ ...data, revokeOtherSessions: true }),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function deleteAccount(): Promise<{ message?: string }> {
-    const response = await fetch(`${AUTH_BASE_URL}/delete-user`, {
+    return apiFetch<{ message?: string }>(`${AUTH_BASE_URL}/delete-user`, {
         method: 'POST',
         headers: JSON_HEADERS,
-        credentials: 'include',
+        silent: true,
         body: JSON.stringify({ callbackURL: `${window.location.origin}/login` }),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }

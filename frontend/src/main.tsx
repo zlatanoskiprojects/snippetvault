@@ -5,13 +5,16 @@ import './index.css'
 import App from './App'
 import { BrowserRouter } from "react-router-dom";
 import { ToastProvider } from './components/Toast'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root') as HTMLElement).render(
     <BrowserRouter>
         <ToastProvider>
-            <StrictMode>
-                <App />
-            </StrictMode>
+            <ErrorBoundary>
+                <StrictMode>
+                    <App />
+                </StrictMode>
+            </ErrorBoundary>
         </ToastProvider>
     </BrowserRouter>
 )

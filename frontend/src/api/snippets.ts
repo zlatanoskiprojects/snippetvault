@@ -1,4 +1,4 @@
-import { JSON_HEADERS, throwIfNotOk } from './utils';
+import { JSON_HEADERS, apiFetch } from './utils';
 import type { Snippet, SnippetVersion } from './types';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/snippets`;
@@ -14,82 +14,51 @@ export interface SnippetInput {
 }
 
 export async function getAllSnippets(): Promise<Snippet[]> {
-    const response = await fetch(BASE_URL, {
-        credentials: 'include',
-    });
-    await throwIfNotOk(response);
-    return response.json();
+    return apiFetch<Snippet[]>(BASE_URL, { silent: true });
 }
 
 export async function getSnippetById(id: number | string): Promise<Snippet> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-        credentials: 'include',
-    });
-    await throwIfNotOk(response);
-    return response.json();
+    return apiFetch<Snippet>(`${BASE_URL}/${id}`);
 }
 
 export async function createSnippet(data: SnippetInput): Promise<Snippet> {
-    const response = await fetch(BASE_URL, {
+    return apiFetch<Snippet>(BASE_URL, {
         method: 'POST',
         headers: JSON_HEADERS,
-        credentials: 'include',
         body: JSON.stringify(data),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function deleteSnippet(id: number | string): Promise<Snippet | null> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    return apiFetch<Snippet | null>(`${BASE_URL}/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
     });
-    await throwIfNotOk(response);
-    if (response.status === 204) return null;
-    return response.json();
 }
 
 export async function updateSnippet(id: number | string, data: Partial<SnippetInput>): Promise<Snippet> {
-    const response = await fetch(`${BASE_URL}/${id}`, {
+    return apiFetch<Snippet>(`${BASE_URL}/${id}`, {
         method: 'PATCH',
         headers: JSON_HEADERS,
-        credentials: 'include',
         body: JSON.stringify(data),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function getSnippetVersions(snippetId: number | string): Promise<SnippetVersion[]> {
-    const response = await fetch(`${BASE_URL}/${snippetId}/versions`, {
-        credentials: 'include',
-    });
-    await throwIfNotOk(response);
-    return response.json();
+    return apiFetch<SnippetVersion[]>(`${BASE_URL}/${snippetId}/versions`);
 }
 
 export async function getSnippetVersion(snippetId: number | string, versionId: number | string): Promise<SnippetVersion> {
-    const response = await fetch(`${BASE_URL}/${snippetId}/versions/${versionId}`, {
-        credentials: 'include',
-    });
-    await throwIfNotOk(response);
-    return response.json();
+    return apiFetch<SnippetVersion>(`${BASE_URL}/${snippetId}/versions/${versionId}`);
 }
 
 export async function deleteSnippetVersion(snippetId: number | string, versionId: number | string): Promise<void> {
-    const response = await fetch(`${BASE_URL}/${snippetId}/versions/${versionId}`, {
+    await apiFetch<void>(`${BASE_URL}/${snippetId}/versions/${versionId}`, {
         method: 'DELETE',
-        credentials: 'include',
     });
-    await throwIfNotOk(response);
 }
 
 export async function restoreSnippetVersion(snippetId: number | string, versionId: number | string): Promise<Snippet> {
-    const response = await fetch(`${BASE_URL}/${snippetId}/versions/${versionId}/restore`, {
+    return apiFetch<Snippet>(`${BASE_URL}/${snippetId}/versions/${versionId}/restore`, {
         method: 'POST',
-        credentials: 'include',
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
