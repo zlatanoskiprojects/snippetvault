@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Menu, Plus } from 'lucide-react'
 import CollectionCard, { type CollectionWithMeta } from '../components/CollectionCard'
 import Button from '../components/ui/Button'
 import CollectionDialog, {
@@ -11,9 +11,10 @@ import type { Collection } from '../api/types'
 
 interface CollectionsViewProps {
   onSelectCollection?: (collection: Collection) => void
+  onMenuClick?: () => void
 }
 
-export default function CollectionsView({ onSelectCollection }: CollectionsViewProps) {
+export default function CollectionsView({ onSelectCollection, onMenuClick }: CollectionsViewProps) {
   const { collections, loading, error, addCollection, editCollection, removeCollection } = useCollections()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Collection | null>(null)
@@ -47,11 +48,23 @@ export default function CollectionsView({ onSelectCollection }: CollectionsViewP
   return (
     <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
       <header className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
-        <div>
-          <h1 className="text-lg font-semibold text-white leading-tight">Collections</h1>
-          <p className="text-xs text-[#595e69] mt-0.5">{collections.length} collections</p>
+        <div className="flex items-center gap-2 min-w-0">
+          {onMenuClick && (
+            <Button
+              variant="secondary"
+              onClick={onMenuClick}
+              aria-label="Open menu"
+              className="lg:hidden w-[40px] h-[40px] p-0 shrink-0"
+            >
+              <Menu size={14} />
+            </Button>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold text-white leading-tight">Collections</h1>
+            <p className="text-xs text-[#595e69] mt-0.5">{collections.length} collections</p>
+          </div>
         </div>
-        <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs">
+        <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs shrink-0">
           <Plus size={14} /> New collection
         </Button>
       </header>

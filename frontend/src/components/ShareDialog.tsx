@@ -37,8 +37,8 @@ export default function ShareDialog({ open, onClose, snippet, onUpdate }: ShareD
           ? 'Snippet is now public and shareable.'
           : 'Snippet is now private.'
       )
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update visibility.')
+    } catch {
+      return
     } finally {
       setLoading(false)
     }

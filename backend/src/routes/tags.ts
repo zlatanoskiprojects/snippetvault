@@ -3,12 +3,13 @@ import { and, eq } from 'drizzle-orm';
 import db from '../lib/db';
 import { tag, snippet, snippetTag } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
 import { tagIdValidation, createTagValidation, tagSnippetValidation } from '../validators/tags';
 
 const router = Router();
 
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         const tags = await db.select().from(tag);
         return res.status(200).json(tags);
@@ -16,9 +17,9 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         console.log('Error fetching tags:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.get('/:id', authMiddleware, tagIdValidation, async (req: Request, res: Response) => {
+router.get('/:id', authMiddleware, tagIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -34,9 +35,9 @@ router.get('/:id', authMiddleware, tagIdValidation, async (req: Request, res: Re
         console.log('Error fetching tag:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.get('/:id/snippets', authMiddleware, tagIdValidation, async (req: Request, res: Response) => {
+router.get('/:id/snippets', authMiddleware, tagIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -78,9 +79,9 @@ router.get('/:id/snippets', authMiddleware, tagIdValidation, async (req: Request
         console.log('Error fetching snippets by tag:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/', authMiddleware, createTagValidation, async (req: Request, res: Response) => {
+router.post('/', authMiddleware, createTagValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -100,9 +101,9 @@ router.post('/', authMiddleware, createTagValidation, async (req: Request, res: 
         console.log('Error creating tag:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, async (req: Request, res: Response) => {
+router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -136,9 +137,9 @@ router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, as
         console.log('Error assigning tag to snippet:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, async (req: Request, res: Response) => {
+router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -168,6 +169,6 @@ router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, 
         console.log('Error removing tag from snippet:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 export default router;

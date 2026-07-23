@@ -6,3 +6,13 @@ export interface ToastContextValue {
 }
 
 export const ToastContext = createContext<ToastContextValue | null>(null)
+
+let handler: ToastContextValue | null = null
+
+export function setToastHandler(value: ToastContextValue | null) {
+  handler = value
+}
+
+export function notifyError(message: string) {
+  if (handler) handler.error(message)
+}

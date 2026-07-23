@@ -67,7 +67,7 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
           <Button
             variant="secondary"
             onClick={handleCopy}
-            className="h-auto text-[11px] px-2.5 py-1 rounded"
+            className="h-[40px] sm:h-auto text-[11px] px-2.5 py-1 rounded"
           >
             {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
           </Button>

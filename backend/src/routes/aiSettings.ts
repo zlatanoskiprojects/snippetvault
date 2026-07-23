@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import db from '../lib/db';
 import { userAiSettings } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
 import { createAiSettingsValidation, updateAiSettingsValidation, deleteAiSettingsValidation } from '../validators/aiSettings';
 
@@ -52,7 +53,7 @@ const mapSettings = (s: {
     updated_at: s.updatedAt,
 });
 
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         const rows = await db
             .select(SETTINGS_SELECTION)
@@ -66,9 +67,9 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         console.error('Error fetching AI settings:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/', authMiddleware, createAiSettingsValidation, async (req: Request, res: Response) => {
+router.post('/', authMiddleware, createAiSettingsValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -108,9 +109,9 @@ router.post('/', authMiddleware, createAiSettingsValidation, async (req: Request
         console.error('Error saving AI settings:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/', authMiddleware, deleteAiSettingsValidation, async (req: Request, res: Response) => {
+router.delete('/', authMiddleware, deleteAiSettingsValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -129,6 +130,6 @@ router.delete('/', authMiddleware, deleteAiSettingsValidation, async (req: Reque
         console.error('Error deleting AI settings:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 export default router;

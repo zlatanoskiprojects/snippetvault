@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
+import { Menu } from 'lucide-react'
 import CodeEditor from '../components/CodeEditor'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -22,9 +23,10 @@ interface NewSnippetProps {
   snippet?: Snippet | null
   onCancel: () => void
   onSaved: (snippet: Snippet) => void
+  onMenuClick?: () => void
 }
 
-export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetProps) {
+export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: NewSnippetProps) {
   const isEditing = Boolean(snippet)
   const toast = useToast()
   const { collections } = useCollections()
@@ -102,8 +104,8 @@ export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetPro
         toast.success('Snippet created.')
         onSaved({ ...created, tags: finalTags })
       }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Something went wrong.')
+    } catch {
+      return
     } finally {
       setSaving(false)
     }
@@ -111,7 +113,17 @@ export default function NewSnippet({ snippet, onCancel, onSaved }: NewSnippetPro
 
   return (
     <div className="flex flex-col h-full min-w-0">
-      <div className="flex items-center px-6 py-4 border-b border-[#2a2a2a] shrink-0">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#2a2a2a] shrink-0">
+        {onMenuClick && (
+          <Button
+            variant="secondary"
+            onClick={onMenuClick}
+            aria-label="Open menu"
+            className="lg:hidden w-[40px] h-[40px] p-0"
+          >
+            <Menu size={14} />
+          </Button>
+        )}
         <h1 className="text-lg font-semibold text-white">
           {isEditing ? 'Edit snippet' : 'Create new snippet'}
         </h1>

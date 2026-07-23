@@ -30,7 +30,7 @@ export function DocHeading({ id, level = 2, children }: DocHeadingProps) {
         href={`#${id}`}
         onClick={e => { e.preventDefault(); scrollToHeading(id) }}
         aria-label="Link to this section"
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-[#595e69] hover:text-[#6366f1] font-normal"
+        className="flex items-center justify-center w-10 h-10 -m-3 opacity-60 lg:opacity-0 lg:w-auto lg:h-auto lg:m-0 group-hover:opacity-100 transition-opacity duration-150 text-[#595e69] hover:text-[#6366f1] font-normal"
       >
         <Hash size={14} />
       </a>
@@ -86,7 +86,7 @@ export function DocCodeBlock({ code, language, filename }: DocCodeBlockProps) {
           variant="secondary"
           size="sm"
           onClick={handleCopy}
-          className="h-auto text-[11px] px-2.5 py-1 rounded"
+          className="h-[40px] sm:h-auto text-[11px] px-2.5 py-1 sm:py-1 rounded"
         >
           {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
         </Button>

@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { toNodeHandler } from 'better-auth/node';
-import path from 'path';
 import { auth } from './lib/auth';
 import snippetRoutes from './routes/snippets';
 import collectionRoutes from './routes/collections';
@@ -13,6 +12,8 @@ import aiSettingsRoutes from './routes/aiSettings';
 import profileRoutes from './routes/profile';
 import shareRoutes from './routes/share';
 import { apiLimiter, shareLimiter } from './middleware/rateLimit';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { ALLOWED_ORIGINS } from './constants/origins';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -30,15 +31,6 @@ app.use(helmet({
 }));
 const PORT = process.env.PORT || 3000;
 
-const ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-    'http://localhost:3000',
-    process.env.CLIENT_URL,
-].filter((origin): origin is string => Boolean(origin));
-
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || ALLOWED_ORIGINS.includes(origin)) {
@@ -49,6 +41,10 @@ app.use(cors({
     },
     credentials: true,
 }));
+
+app.get('/api/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 
 app.all('/api/auth/{*any}', toNodeHandler(auth));
 
@@ -64,12 +60,8 @@ app.use('/api', commentRoutes);
 app.use('/api', aiSettingsRoutes);
 app.use('/api/share', shareLimiter, shareRoutes);
 
-const frontendBuildPath = path.join(__dirname, '../../frontend/dist');
-app.use(express.static(frontendBuildPath));
-
-app.get('/{*path}', (req, res) => {
-    res.sendFile(path.join(frontendBuildPath, 'index.html'));
-});
+app.use('/api', notFoundHandler);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

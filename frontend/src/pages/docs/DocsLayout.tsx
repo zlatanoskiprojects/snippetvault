@@ -26,7 +26,7 @@ export default function DocsLayout({ slug, title, headings, children }: DocsLayo
   }, [slug])
 
   return (
-    <div className="h-full flex flex-col bg-[#0f0f0f] overflow-x-hidden">
+    <div className="h-dvh flex flex-col bg-[#0f0f0f] overflow-x-hidden">
       <LandingNavbar onGetStarted={() => navigate('/login')} />
 
       <div className="lg:hidden flex items-center gap-2 h-[44px] px-4 border-b border-[#2a2a2a]">
@@ -34,7 +34,7 @@ export default function DocsLayout({ slug, title, headings, children }: DocsLayo
           variant="secondary"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open docs menu"
-          className="w-[30px] h-[30px] p-0 shrink-0"
+          className="w-[40px] h-[40px] sm:w-[30px] sm:h-[30px] p-0 shrink-0"
         >
           <Menu size={14} />
         </Button>

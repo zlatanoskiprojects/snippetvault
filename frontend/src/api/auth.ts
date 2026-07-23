@@ -1,4 +1,4 @@
-import { JSON_HEADERS, throwIfNotOk } from './utils';
+import { JSON_HEADERS, apiFetch } from './utils';
 import type { User } from './types';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/auth`;
@@ -9,10 +9,10 @@ export interface AuthResponse {
 }
 
 export async function register(username: string, email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
-    const response = await fetch(`${BASE_URL}/sign-up/email`, {
+    return apiFetch<AuthResponse>(`${BASE_URL}/sign-up/email`, {
         method: 'POST',
         headers: captchaToken ? { ...JSON_HEADERS, 'x-captcha-response': captchaToken } : JSON_HEADERS,
-        credentials: 'include',
+        silent: true,
         body: JSON.stringify({
             name: username,
             email,
@@ -20,48 +20,40 @@ export async function register(username: string, email: string, password: string
             callbackURL: `${APP_URL}/dashboard`,
         }),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function login(email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
-    const response = await fetch(`${BASE_URL}/sign-in/email`, {
+    return apiFetch<AuthResponse>(`${BASE_URL}/sign-in/email`, {
         method: 'POST',
         headers: captchaToken ? { ...JSON_HEADERS, 'x-captcha-response': captchaToken } : JSON_HEADERS,
-        credentials: 'include',
+        silent: true,
         body: JSON.stringify({
             email,
             password,
             callbackURL: `${APP_URL}/dashboard`,
         }),
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function logout(): Promise<{ message?: string }> {
-    const response = await fetch(`${BASE_URL}/sign-out`, {
+    return apiFetch<{ message?: string }>(`${BASE_URL}/sign-out`, {
         method: 'POST',
-        credentials: 'include',
+        silent: true,
     });
-    await throwIfNotOk(response);
-    return response.json();
 }
 
 export async function socialLogin(provider: 'google' | 'github'): Promise<void> {
-    const response = await fetch(`${BASE_URL}/sign-in/social`, {
+    const data = await apiFetch<{ url?: string }>(`${BASE_URL}/sign-in/social`, {
         method: 'POST',
         headers: JSON_HEADERS,
-        credentials: 'include',
+        silent: true,
         body: JSON.stringify({
             provider,
             callbackURL: `${APP_URL}/dashboard`,
             errorCallbackURL: `${APP_URL}/login`,
         }),
     });
-    await throwIfNotOk(response);
 
-    const data = await response.json();
     if (data?.url) {
         window.location.href = data.url;
         return;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type ChangeEvent } from 'react'
-import { ArrowLeft, Pencil, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Menu, Pencil, Trash2, TriangleAlert } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -39,9 +39,10 @@ const EMPTY_PW: PasswordForm = { currentPassword: '', newPassword: '', confirmPa
 interface ProfileViewProps {
   snippets?: Snippet[]
   onBack?: () => void
+  onMenuClick?: () => void
 }
 
-export default function ProfileView({ snippets = [], onBack }: ProfileViewProps) {
+export default function ProfileView({ snippets = [], onBack, onMenuClick }: ProfileViewProps) {
   const { user, loading, error, saveProfile, changePassword, deleteAccount } = useUser()
   const toast = useToast()
   const { collections } = useCollections()
@@ -141,11 +142,21 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
   return (
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-[#0f0f0f]">
       <div className="flex items-center gap-3 px-6 py-3 border-b border-[#2a2a2a] shrink-0">
+        {onMenuClick && (
+          <Button
+            variant="secondary"
+            onClick={onMenuClick}
+            aria-label="Open menu"
+            className="lg:hidden w-[40px] h-[40px] p-0"
+          >
+            <Menu size={14} />
+          </Button>
+        )}
         {onBack && (
           <Button
             variant="ghost"
             onClick={onBack}
-            className="w-[28px] h-[28px] p-0"
+            className="w-[40px] h-[40px] sm:w-[28px] sm:h-[28px] p-0"
             aria-label="Go back"
           >
             <ArrowLeft size={16} />
@@ -178,7 +189,7 @@ export default function ProfileView({ snippets = [], onBack }: ProfileViewProps)
                   </div>
                   <Button
                     variant="secondary"
-                    className="absolute bottom-0 right-0 w-[30px] h-[30px] p-0 rounded-full"
+                    className="absolute bottom-0 right-0 w-[40px] h-[40px] sm:w-[30px] sm:h-[30px] p-0 rounded-full"
                   >
                     <Pencil size={12} />
                   </Button>

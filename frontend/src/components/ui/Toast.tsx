@@ -1,7 +1,7 @@
 import { Toast as BaseToast } from '@base-ui/react/toast'
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { ToastContext } from '../../contexts/ToastContext'
+import { useEffect, useMemo, type ReactNode } from 'react'
+import { ToastContext, setToastHandler } from '../../contexts/ToastContext'
 import type { ToastContextValue } from '../../contexts/ToastContext'
 import { cn } from '../../lib/utils'
 
@@ -16,14 +16,22 @@ const TYPE_CLASSES: Record<string, string> = {
 function ToastBridge({ children }: { children: ReactNode }) {
   const { add } = BaseToast.useToastManager()
 
-  const value: ToastContextValue = {
-    success: (message: string) => {
-      add({ type: 'success', description: message, timeout: AUTO_DISMISS_MS })
-    },
-    error: (message: string) => {
-      add({ type: 'error', description: message, timeout: AUTO_DISMISS_MS })
-    },
-  }
+  const value: ToastContextValue = useMemo(
+    () => ({
+      success: (message: string) => {
+        add({ type: 'success', description: message, timeout: AUTO_DISMISS_MS })
+      },
+      error: (message: string) => {
+        add({ type: 'error', description: message, timeout: AUTO_DISMISS_MS })
+      },
+    }),
+    [add]
+  )
+
+  useEffect(() => {
+    setToastHandler(value)
+    return () => setToastHandler(null)
+  }, [value])
 
   return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>
 }

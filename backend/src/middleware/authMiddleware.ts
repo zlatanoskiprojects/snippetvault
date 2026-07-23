@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { fromNodeHeaders } from 'better-auth/node';
 import { auth } from '../lib/auth';
+import { asyncHandler } from './errorHandler';
 
 
-const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const session = await auth.api.getSession({
             headers: fromNodeHeaders(req.headers),
@@ -19,6 +20,6 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
         console.error('Authentication error:', error);
         return res.status(401).json({ error: 'Not authenticated' });
     }
-};
+});
 
 export default authMiddleware;

@@ -28,7 +28,7 @@ export function Tab({ className, ...props }: TabsTabProps) {
   return (
     <BaseTabs.Tab
       className={cn(
-        'pb-2 text-sm font-normal text-[#9ba3af] outline-none transition-colors duration-150 hover:text-white data-[active]:text-white data-[active]:font-medium',
+        'py-2.5 sm:py-0 sm:pb-2 text-sm font-normal text-[#9ba3af] outline-none transition-colors duration-150 hover:text-white data-[active]:text-white data-[active]:font-medium',
         className
       )}
       {...props}

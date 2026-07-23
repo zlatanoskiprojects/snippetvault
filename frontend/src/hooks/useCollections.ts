@@ -47,7 +47,6 @@ export function useCollections() {
       toast.success('Collection created.')
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) navigate('/login')
-      else if (err instanceof Error) toast.error(err.message)
     }
   }, [fetchCollections, navigate, toast])
 
@@ -58,7 +57,6 @@ export function useCollections() {
       toast.success('Collection updated.')
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) navigate('/login')
-      else if (err instanceof Error) toast.error(err.message)
     }
   }, [fetchCollections, navigate, toast])
 
@@ -69,7 +67,6 @@ export function useCollections() {
       toast.success('Collection deleted.')
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) navigate('/login')
-      else if (err instanceof Error) toast.error(err.message)
     }
   }, [fetchCollections, navigate, toast])
 

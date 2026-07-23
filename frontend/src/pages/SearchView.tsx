@@ -97,7 +97,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
         <button
           onClick={() => { onQueryChange(''); onClose() }}
           aria-label="Close search"
-          className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+          className="flex items-center justify-center w-[40px] h-[40px] sm:w-[28px] sm:h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
         >
           <X size={14} />
         </button>

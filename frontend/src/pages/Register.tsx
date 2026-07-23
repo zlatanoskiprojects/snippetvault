@@ -82,7 +82,7 @@ function Register() {
 
           <Button
             variant="ghost"
-            className="w-full h-auto p-0 text-[#595e69] text-xs hover:text-[#9ba3af] hover:bg-transparent"
+            className="w-full h-auto py-3 text-[#595e69] text-xs hover:text-[#9ba3af] hover:bg-transparent"
           >
             Continue as guest
           </Button>
@@ -90,7 +90,7 @@ function Register() {
 
         <p className="text-center text-[#595e69] text-sm mt-5">
           Already have an account?{' '}
-          <Link to="/login" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+          <Link to="/login" className="inline-block py-2.5 -my-2.5 text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
             Sign in
           </Link>
         </p>

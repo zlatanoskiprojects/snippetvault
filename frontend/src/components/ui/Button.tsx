@@ -13,8 +13,8 @@ export const buttonVariants = cva(
         danger: 'bg-[#331212] hover:bg-[#3d1515] text-[#ef4444]',
       },
       size: {
-        sm: 'h-[30px] px-3 text-xs',
-        md: 'h-[36px] px-5 text-sm',
+        sm: 'h-[40px] px-3 text-xs sm:h-[30px]',
+        md: 'h-[40px] px-5 text-sm sm:h-[36px]',
       },
     },
     defaultVariants: {
