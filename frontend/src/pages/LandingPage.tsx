@@ -11,7 +11,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
     <div className="min-h-screen bg-[#0f0f0f] flex flex-col overflow-x-hidden">
       <LandingNavbar onGetStarted={onGetStarted} />
       <main className="flex-1 flex flex-col">
-        <LandingHero onGetStarted={onGetStarted} />
+        <LandingHero />
         <LandingAppPreview />
       </main>
     </div>

@@ -31,7 +31,7 @@ export default function CollectionCard({ collection, onEdit, onDelete, onSelect 
             <Button
               variant="secondary"
               size="sm"
-              className="h-[22px] px-2 text-[11px]"
+              className="h-[40px] sm:h-[22px] min-w-[40px] sm:min-w-0 px-2 text-[11px]"
               onClick={e => { e.stopPropagation(); onEdit?.() }}
             >
               Edit
@@ -39,7 +39,7 @@ export default function CollectionCard({ collection, onEdit, onDelete, onSelect 
             <Button
               variant="danger"
               size="sm"
-              className="h-[22px] px-2 text-[11px] bg-[#2b0c0c] border border-[#ef4444]/30 text-[#ef4444] hover:bg-[#ef4444] hover:text-white"
+              className="h-[40px] sm:h-[22px] px-2 text-[11px] bg-[#2b0c0c] border border-[#ef4444]/30 text-[#ef4444] hover:bg-[#ef4444] hover:text-white"
               onClick={e => { e.stopPropagation(); onDelete?.() }}
             >
               Delete

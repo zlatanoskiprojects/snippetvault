@@ -50,8 +50,8 @@ export default function Dashboard() {
       setSnippets(prev => prev.filter(s => s.id !== id))
       if (selectedSnippet?.id === id) setSelectedSnippet(null)
       toast.success('Snippet deleted.')
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete snippet.')
+    } catch {
+      return
     }
   }
 
@@ -123,7 +123,7 @@ export default function Dashboard() {
 
   return (
     <UserProvider>
-    <div className="flex h-full bg-[#0f0f0f] text-white overflow-hidden">
+    <div className="flex h-dvh bg-[#0f0f0f] text-white overflow-hidden">
       <div className="hidden lg:flex">
         <Sidebar
           snippets={snippets}
@@ -163,9 +163,9 @@ export default function Dashboard() {
             onSelectSnippet={(snippet: Snippet) => { setSearchQuery(''); setIsSearching(false); onSelectSnippet(snippet) }}
           />
         ) : view === 'profile' ? (
-          <ProfileView snippets={snippets} onBack={() => handleViewChange('list')} />
+          <ProfileView snippets={snippets} onBack={() => handleViewChange('list')} onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'collections' ? (
-          <CollectionsView onSelectCollection={handleSelectCollection} />
+          <CollectionsView onSelectCollection={handleSelectCollection} onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'list' ? (() => {
           const displayedSnippets = snippets
             .filter(s => !activeCollection || s.collection_id === activeCollection.id)
@@ -237,6 +237,7 @@ export default function Dashboard() {
               snippet={editingSnippet}
               onCancel={onCancelForm}
               onSaved={onSaved}
+              onMenuClick={() => setSidebarOpen(true)}
             />
           </div>
         )}

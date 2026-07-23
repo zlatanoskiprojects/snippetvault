@@ -27,7 +27,7 @@ export default function Dialog({ open, onOpenChange, title, children, className 
               <BaseDialog.Title className="text-lg font-semibold text-white">
                 {title}
               </BaseDialog.Title>
-              <BaseDialog.Close className="text-[#9ba3af] hover:text-white transition-colors duration-150 leading-none">
+              <BaseDialog.Close className="flex items-center justify-center w-10 h-10 -m-2 text-[#9ba3af] hover:text-white transition-colors duration-150 leading-none">
                 <X size={16} />
               </BaseDialog.Close>
             </div>

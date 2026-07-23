@@ -49,7 +49,7 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
     }, {})
   const tagList = Object.entries(tagItems).map(([label, count]) => ({ label, count }))
   return (
-    <aside className="w-48 bg-[#161616] border-r border-[#2a2a2a] flex flex-col h-full shrink-0">
+    <aside className="w-72 lg:w-48 bg-[#161616] border-r border-[#2a2a2a] flex flex-col h-full shrink-0">
       <div className="flex items-center gap-2 px-3 py-3">
         <div className="rounded-lg bg-[#6366f1] w-7 h-7 flex items-center justify-center shrink-0">
           <span className="text-white font-bold font-mono text-[11px]">&lt;/&gt;</span>
@@ -74,14 +74,14 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
       </div>
 
       <div className="mt-5 px-3">
-        <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Library</p>
+        <p className="text-xs lg:text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Library</p>
         {libraryItems.map((item) => {
           const isActive = activeView === item.view
           return (
             <div
               key={item.label}
               onClick={() => onViewChange?.(item.view)}
-              className={`flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition-colors duration-150 ${
+              className={`flex items-center justify-between px-2 py-2.5 lg:py-1.5 min-h-10 lg:min-h-0 rounded-md cursor-pointer transition-colors duration-150 ${
                 isActive ? 'bg-[#6366f1]' : 'hover:bg-white/5'
               }`}
             >
@@ -94,14 +94,14 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
       </div>
 
       <div className="mt-5 px-3">
-        <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Tags</p>
+        <p className="text-xs lg:text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-1">Tags</p>
         {tagList.map((tag, i) => {
           const isActive = activeTag === tag.label
           return (
             <div
               key={tag.label}
               onClick={() => onTagChange?.(tag.label)}
-              className={`flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition-colors duration-150 ${
+              className={`flex items-center justify-between px-2 py-2.5 lg:py-1.5 min-h-10 lg:min-h-0 rounded-md cursor-pointer transition-colors duration-150 ${
                 isActive ? 'bg-[#6366f1]' : 'hover:bg-white/5'
               }`}
             >
@@ -132,20 +132,20 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
             <span className={`text-[12px] font-medium truncate ${activeView === 'profile' ? 'text-white' : 'text-[#9ba3af]'}`}>
               {displayName}
             </span>
-            <span className="text-[10px] text-[#595e69] truncate">Profile &amp; Settings</span>
+            <span className="text-xs lg:text-[10px] text-[#595e69] truncate">Profile &amp; Settings</span>
           </div>
         </div>
         <div className="px-4 py-3 flex items-center justify-between">
           <button
             type="button"
-            className="text-xs text-[#595e69] hover:text-white flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0 transition-colors duration-150 focus:outline-none"
+            className="h-10 lg:h-auto text-xs text-[#595e69] hover:text-white flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0 transition-colors duration-150 focus:outline-none"
           >
             <Sun size={14} /> Light mode
           </button>
           <Button
             variant="ghost"
             onClick={handleLogout}
-            className="h-auto p-0 text-xs text-[#595e69] hover:text-[#ef4444] hover:bg-transparent"
+            className="h-10 sm:h-10 lg:h-auto px-0 text-xs text-[#595e69] hover:text-[#ef4444] hover:bg-transparent"
           >
             Sign out
           </Button>

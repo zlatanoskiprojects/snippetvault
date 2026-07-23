@@ -18,7 +18,7 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           <Button
             variant="ghost"
             onClick={onBack}
-            className="h-auto p-0 shrink-0 leading-none"
+            className="flex items-center justify-center w-10 h-10 -m-2 sm:w-auto sm:h-auto sm:m-0 sm:p-0 shrink-0 leading-none"
           >
             <ArrowLeft size={16} />
           </Button>
@@ -34,7 +34,7 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           variant="secondary"
           onClick={onMenuClick}
           aria-label="Open menu"
-          className="lg:hidden w-[30px] h-[30px] p-0"
+          className="lg:hidden w-[40px] h-[40px] p-0"
         >
           <Menu size={14} />
         </Button>
@@ -43,19 +43,19 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           variant="secondary"
           onClick={onSearch}
           aria-label="Search"
-          className="lg:hidden w-[30px] h-[30px] p-0"
+          className="lg:hidden w-[40px] h-[40px] p-0"
         >
           <Search size={13} />
         </Button>
 
-        <Button variant="secondary" size="sm" className="text-xs">
+        <Button variant="secondary" size="sm" className="text-xs min-w-[40px] sm:min-w-0">
           <SlidersHorizontal size={12} />
           <span className="hidden sm:inline">Filter</span>
         </Button>
 
-        <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs">
+        <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs min-w-[40px] sm:min-w-0">
           <span className="hidden sm:inline-flex items-center gap-1"><Plus size={14} /> New snippet</span>
-          <span className="sm:hidden flex items-center"><Plus size={14} /></span>
+          <span className="sm:hidden flex items-center justify-center"><Plus size={14} /></span>
         </Button>
       </div>
     </header>
