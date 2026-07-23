@@ -4,6 +4,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import db from '../lib/db';
 import { collection, snippet } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
 import {
     collectionIdValidation,
     createCollectionValidation,
@@ -18,7 +19,7 @@ interface CollectionUpdateFields {
     description?: string | null;
 }
 
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         const collections = await db
             .select({
@@ -45,9 +46,9 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         console.error('Error fetching collections:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/', authMiddleware, createCollectionValidation, async (req: Request, res: Response) => {
+router.post('/', authMiddleware, createCollectionValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -71,9 +72,9 @@ router.post('/', authMiddleware, createCollectionValidation, async (req: Request
         console.error('Error creating collection:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.patch('/:id', authMiddleware, updateCollectionValidation, async (req: Request, res: Response) => {
+router.patch('/:id', authMiddleware, updateCollectionValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -107,9 +108,9 @@ router.patch('/:id', authMiddleware, updateCollectionValidation, async (req: Req
         console.error('Error updating collection:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/:id', authMiddleware, collectionIdValidation, async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, collectionIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -129,9 +130,9 @@ router.delete('/:id', authMiddleware, collectionIdValidation, async (req: Reques
         console.error('Error deleting collection:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.patch('/:id/snippets/:snippetId', authMiddleware, assignSnippetValidation, async (req: Request, res: Response) => {
+router.patch('/:id/snippets/:snippetId', authMiddleware, assignSnippetValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -163,6 +164,6 @@ router.patch('/:id/snippets/:snippetId', authMiddleware, assignSnippetValidation
         console.error('Error assigning snippet to collection:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 export default router;

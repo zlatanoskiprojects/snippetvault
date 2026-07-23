@@ -4,6 +4,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import db from '../lib/db';
 import { users } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
 import { updateProfileValidation } from '../validators/profile';
 
 interface ProfileUpdateFields {
@@ -46,7 +47,7 @@ const mapUser = (u: {
     registered_at: u.registeredAt,
 });
 
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         const rows = await db.select(PROFILE_SELECTION).from(users).where(eq(users.id, req.userId as number));
         const user = rows[0];
@@ -58,9 +59,9 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         console.error('Error fetching profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, res: Response) => {
+router.patch('/', authMiddleware, updateProfileValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -123,9 +124,9 @@ router.patch('/', authMiddleware, updateProfileValidation, async (req: Request, 
         console.error('Error updating profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/', authMiddleware, async (req: Request, res: Response) => {
+router.delete('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         await db.delete(users).where(eq(users.id, req.userId as number));
         return res.status(200).json({ message: 'App profile deleted' });
@@ -133,6 +134,6 @@ router.delete('/', authMiddleware, async (req: Request, res: Response) => {
         console.error('Error deleting account:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 export default router;

@@ -3,6 +3,7 @@ import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import db from '../lib/db';
 import { snippet, snippetTag, tag, snippetVersion, collection } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
 import { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation } from '../validators/snippets';
 import crypto from 'crypto';
@@ -77,7 +78,7 @@ const mapVersion = (v: typeof snippetVersion.$inferSelect) => ({
     created_at: v.createdAt,
 });
 
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
 
     try {
         const userId = req.userId as number;
@@ -112,9 +113,9 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         console.log("Error fetching snippets:", error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.get('/:id', authMiddleware, snippetIdValidation, async (req: Request, res: Response) => {
+router.get('/:id', authMiddleware, snippetIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -137,9 +138,9 @@ router.get('/:id', authMiddleware, snippetIdValidation, async (req: Request, res
         console.log("Error fetching snippet", error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/', authMiddleware, createSnippetValidation, async (req: Request, res: Response) => {
+router.post('/', authMiddleware, createSnippetValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -172,9 +173,9 @@ router.post('/', authMiddleware, createSnippetValidation, async (req: Request, r
         console.log("Error creating snippet", error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/:id', authMiddleware, snippetIdValidation, async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, snippetIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const err = validationResult(req);
     if (!err.isEmpty()) {
         return res.status(400).json({ errors: err.array() });
@@ -195,7 +196,7 @@ router.delete('/:id', authMiddleware, snippetIdValidation, async (req: Request, 
         console.log("Error deleting snippet", error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 interface SnippetUpdateFields {
     title?: string;
@@ -207,7 +208,7 @@ interface SnippetUpdateFields {
     shareToken?: string | null;
 }
 
-router.patch('/:id', authMiddleware, updateSnippetValidation, async (req: Request, res: Response) => {
+router.patch('/:id', authMiddleware, updateSnippetValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -309,9 +310,9 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, async (req: Reques
         console.error('Error updating snippet:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.get('/:id/versions', authMiddleware, snippetIdValidation, async (req: Request, res: Response) => {
+router.get('/:id/versions', authMiddleware, snippetIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -344,9 +345,9 @@ router.get('/:id/versions', authMiddleware, snippetIdValidation, async (req: Req
         console.error('Error fetching versions:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.get('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, ...versionIdValidation], async (req: Request, res: Response) => {
+router.get('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, ...versionIdValidation], asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -371,9 +372,9 @@ router.get('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, 
         console.error('Error fetching version:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, ...versionIdValidation], async (req: Request, res: Response) => {
+router.delete('/:id/versions/:versionId', authMiddleware, [...snippetIdValidation, ...versionIdValidation], asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -398,9 +399,9 @@ router.delete('/:id/versions/:versionId', authMiddleware, [...snippetIdValidatio
         console.error('Error deleting version:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/:id/versions/:versionId/restore', authMiddleware, [...snippetIdValidation, ...versionIdValidation], async (req: Request, res: Response) => {
+router.post('/:id/versions/:versionId/restore', authMiddleware, [...snippetIdValidation, ...versionIdValidation], asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -459,6 +460,6 @@ router.post('/:id/versions/:versionId/restore', authMiddleware, [...snippetIdVal
         console.error('Error restoring version:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 export default router;

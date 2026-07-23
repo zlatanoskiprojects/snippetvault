@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../lib/db';
+import { asyncHandler } from '../middleware/errorHandler';
 import { and, eq, sql } from 'drizzle-orm';
 import { snippet,snippetTag,tag,users  } from '../db/schema';
 import {shareTokenValidation} from '../validators/snippets'
@@ -8,7 +9,7 @@ import {validationResult} from 'express-validator'
 
 const router = Router();
 
-router.get('/:token',shareTokenValidation,async (req:Request,res:Response)=>{
+router.get('/:token',shareTokenValidation,asyncHandler(async (req:Request,res:Response)=>{
 
     const errors = validationResult(req);
     if(!errors.isEmpty()){
@@ -55,6 +56,6 @@ router.get('/:token',shareTokenValidation,async (req:Request,res:Response)=>{
         return res.status(500).json({error:'Internal server error'})
     }
 
-})
+}))
 
 export default router;

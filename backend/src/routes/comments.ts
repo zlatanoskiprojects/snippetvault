@@ -3,6 +3,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import db from '../lib/db';
 import { comment, snippet } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
 import { commentIdValidation, createCommentValidation, updateCommentValidation } from '../validators/comments';
 
@@ -17,7 +18,7 @@ const mapComment = (c: typeof comment.$inferSelect) => ({
     updated_at: c.updatedAt,
 });
 
-router.get('/snippets/:snippetId/comments', authMiddleware, async (req: Request, res: Response) => {
+router.get('/snippets/:snippetId/comments', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         const snippetId = parseInt(req.params.snippetId as string);
 
@@ -36,9 +37,9 @@ router.get('/snippets/:snippetId/comments', authMiddleware, async (req: Request,
         console.error('Error fetching comments:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.post('/snippets/:snippetId/comments', authMiddleware, createCommentValidation, async (req: Request, res: Response) => {
+router.post('/snippets/:snippetId/comments', authMiddleware, createCommentValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -64,9 +65,9 @@ router.post('/snippets/:snippetId/comments', authMiddleware, createCommentValida
         console.error('Error creating comment:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.patch('/comments/:id', authMiddleware, updateCommentValidation, async (req: Request, res: Response) => {
+router.patch('/comments/:id', authMiddleware, updateCommentValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -94,9 +95,9 @@ router.patch('/comments/:id', authMiddleware, updateCommentValidation, async (re
         console.error('Error updating comment:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
-router.delete('/comments/:id', authMiddleware, commentIdValidation, async (req: Request, res: Response) => {
+router.delete('/comments/:id', authMiddleware, commentIdValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -115,6 +116,6 @@ router.delete('/comments/:id', authMiddleware, commentIdValidation, async (req: 
         console.error('Error deleting comment:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
-});
+}));
 
 export default router;
