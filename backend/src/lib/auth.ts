@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { captcha } from 'better-auth/plugins';
 import db from './db';
 import { authAccount, authSession, authVerification, users } from '../db/schema';
+import { ALLOWED_ORIGINS } from '../constants/origins';
 
 const captchaPlugins = process.env.TURNSTILE_SECRET_KEY
     ? [
@@ -48,11 +49,7 @@ const githubCredentials =
 export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-    trustedOrigins: [
-        process.env.CLIENT_URL || 'http://localhost:5173',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-    ],
+    trustedOrigins: ALLOWED_ORIGINS,
     database: drizzleAdapter(db, {
         provider: 'pg',
         schema: {
@@ -66,6 +63,11 @@ export const auth = betterAuth({
     advanced: {
         database: {
             generateId: 'serial',
+        },
+        defaultCookieAttributes: {
+            sameSite: 'none',
+            secure: true,
+            httpOnly: true,
         },
     },
     rateLimit: {
