@@ -7,3 +7,5 @@ A full-stack code snippet manager. Users sign in, then create, organize, version
 **Live at:** [snippetvault.me](https://snippetvault.me)
 
 Monorepo with two independently deployed apps: `backend/` (Express API) and `frontend/` (React SPA).
+
+MIT License - see [LICENSE](https://github.com/Zlatanoski/snippetvault/blob/stable/LICENSE) for details.
