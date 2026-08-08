@@ -27,7 +27,7 @@ export default function LandingHero() {
           Get Started
         </Link>
         <a
-          href="https://github.com"
+          href="https://github.com/Zlatanoski/snippetvault"
           className="w-full sm:w-auto bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-[#222] hover:text-white transition-colors duration-150 flex items-center justify-center gap-2"
         >
           <svg

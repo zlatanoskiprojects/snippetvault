@@ -1,6 +1,7 @@
 import LandingNavbar from '../components/landing/LandingNavbar'
 import LandingHero from '../components/landing/LandingHero'
 import LandingAppPreview from '../components/landing/LandingAppPreview'
+import LandingStory from '../components/landing/LandingStory'
 
 interface LandingPageProps {
   onGetStarted: () => void
@@ -13,6 +14,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
       <main className="flex-1 flex flex-col">
         <LandingHero />
         <LandingAppPreview />
+        <LandingStory />
       </main>
     </div>
   )
