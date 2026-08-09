@@ -43,7 +43,7 @@ export default function DocsToc({ headings, scrollRef }: DocsTocProps) {
   }
 
   return (
-    <nav>
+    <nav aria-label="On this page">
       <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-2">On this page</p>
       <div className="flex flex-col border-l border-[#2a2a2a]">
         {headings.map(heading => (

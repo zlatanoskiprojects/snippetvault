@@ -57,20 +57,20 @@ export default function SharedSnippetView() {
       <LandingNavbar showNavLinks={false} onGetStarted={() => navigate('/login')} />
 
       {loading && (
-        <div className="flex-1 flex items-center justify-center">
-          <Spinner />
-        </div>
+        <main className="flex-1 flex items-center justify-center">
+          <h1 aria-label="Loading shared snippet"><Spinner /></h1>
+        </main>
       )}
 
       {!loading && error && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-16 text-center">
-          <p className="text-[#9ba3af] text-sm max-w-sm">
+        <main className="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-16 text-center">
+          <h1 className="text-[#9ba3af] text-sm max-w-sm">
             This snippet doesn't exist or is no longer public.
-          </p>
+          </h1>
           <Button variant="primary" onClick={() => navigate('/')}>
             Back to Snippet Vault
           </Button>
-        </div>
+        </main>
       )}
 
       {!loading && !error && snippet && (

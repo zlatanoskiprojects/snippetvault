@@ -21,7 +21,7 @@ export default function LandingNavbar({ onGetStarted, showNavLinks = true }: Lan
       </div>
 
       {showNavLinks && (
-        <nav className="hidden md:flex items-center gap-8">
+        <nav aria-label="Primary" className="hidden md:flex items-center gap-8">
           <span className="flex items-center gap-1 text-[13px] text-[#9ba3af] hover:text-white transition-colors duration-150 cursor-pointer">
             Product <ChevronDown size={14} />
           </span>

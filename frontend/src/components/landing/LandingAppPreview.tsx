@@ -19,7 +19,7 @@ function navItemClass(active: boolean) {
 
 function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle }: MiniSidebarProps) {
   return (
-    <div className="hidden sm:flex w-[172px] shrink-0 bg-[#161616] border-r border-[#2a2a2a] flex-col p-3 gap-2">
+    <aside aria-label="Snippet preview filters" className="hidden sm:flex w-[172px] shrink-0 bg-[#161616] border-r border-[#2a2a2a] flex-col p-3 gap-2">
       <div className="flex items-center gap-1.5">
         <div className="bg-[#6366f1] rounded w-[26px] h-[26px] flex items-center justify-center shrink-0">
           <Code2 size={14} className="text-white" />
@@ -54,12 +54,12 @@ function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle }: MiniSid
               activeTag === tag.label ? 'bg-white/10 ring-1 ring-[#6366f1]' : 'hover:bg-white/5'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${tag.dotClass}`} />
+            <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full shrink-0 ${tag.dotClass}`} />
             <span className="text-[9px] text-[#9ba3af]">{tag.label}</span>
           </button>
         ))}
       </div>
-    </div>
+    </aside>
   )
 }
 
@@ -70,9 +70,9 @@ interface MiniTopBarProps {
 
 function MiniTopBar({ title, count }: MiniTopBarProps) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a] shrink-0">
+    <header className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a] shrink-0">
       <div>
-        <p className="text-[12px] font-medium text-white leading-none">{title}</p>
+        <h2 id="snippet-preview-heading" className="text-[12px] font-medium text-white leading-none">{title}</h2>
         <p className="text-[8px] text-[#595e69] mt-0.5">{count} snippet{count === 1 ? '' : 's'}</p>
       </div>
       <div className="flex items-center gap-1.5">
@@ -83,7 +83,7 @@ function MiniTopBar({ title, count }: MiniTopBarProps) {
           <Plus size={9} /> New snippet
         </div>
       </div>
-    </div>
+    </header>
   )
 }
 
@@ -108,7 +108,7 @@ function MiniSnippetRow({ snippet, expanded, onToggle }: MiniSnippetRowProps) {
           <p className="text-[8px] text-[#595e69] mt-0.5 truncate">{snippet.description}</p>
         </div>
         <div className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-medium ${snippet.badgeClass}`}>
-          <span className={`w-1 h-1 rounded-full shrink-0 ${snippet.dotClass}`} />
+          <span aria-hidden="true" className={`w-1 h-1 rounded-full shrink-0 ${snippet.dotClass}`} />
           {snippet.lang}
         </div>
       </button>
@@ -153,7 +153,7 @@ export default function LandingAppPreview() {
   }
 
   return (
-    <section className="flex justify-center px-6 pb-20 mt-4">
+    <section aria-labelledby="snippet-preview-heading" className="flex justify-center px-6 pb-20 mt-4">
       <div className="w-full max-w-[1048px] mx-auto">
         <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] overflow-hidden shadow-2xl">
           <div className="flex h-[360px] overflow-hidden">
@@ -174,6 +174,7 @@ export default function LandingAppPreview() {
                     type="text"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
+                    aria-label="Search demo snippets"
                     placeholder="Search snippets..."
                     className="bg-transparent text-[9px] text-white placeholder:text-[#595e69] outline-none w-full min-w-0"
                   />
@@ -188,7 +189,7 @@ export default function LandingAppPreview() {
                         activeTag === tag.label ? 'bg-white/10 ring-1 ring-[#6366f1] text-white' : 'bg-[#222] text-[#9ba3af]'
                       }`}
                     >
-                      <span className={`w-1 h-1 rounded-full shrink-0 ${tag.dotClass}`} />
+                      <span aria-hidden="true" className={`w-1 h-1 rounded-full shrink-0 ${tag.dotClass}`} />
                       {tag.label}
                     </button>
                   ))}

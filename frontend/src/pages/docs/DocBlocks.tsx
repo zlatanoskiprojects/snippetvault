@@ -25,11 +25,11 @@ export function DocHeading({ id, level = 2, children }: DocHeadingProps) {
 
   return (
     <Tag id={id} className={cn('group flex items-center gap-2', sizeClasses)}>
-      <span>{children}</span>
+      <span id={`${id}-label`}>{children}</span>
       <a
         href={`#${id}`}
         onClick={e => { e.preventDefault(); scrollToHeading(id) }}
-        aria-label="Link to this section"
+        aria-labelledby={`${id}-label`}
         className="flex items-center justify-center w-10 h-10 -m-3 opacity-60 lg:opacity-0 lg:w-auto lg:h-auto lg:m-0 group-hover:opacity-100 transition-opacity duration-150 text-[#595e69] hover:text-[#6366f1] font-normal"
       >
         <Hash size={14} />
@@ -47,7 +47,7 @@ export function DocList({ items }: { items: ReactNode[] }) {
     <ul className="mb-4 space-y-2">
       {items.map((item, i) => (
         <li key={i} className="flex gap-2 text-sm leading-6 text-[#9ba3af]">
-          <span className="mt-2 h-1 w-1 rounded-full bg-[#6366f1] shrink-0" />
+          <span aria-hidden="true" className="mt-2 h-1 w-1 rounded-full bg-[#6366f1] shrink-0" />
           <span>{item}</span>
         </li>
       ))}
@@ -114,9 +114,9 @@ export function DocCallout({ variant, title, children }: DocCalloutProps) {
       )}
     >
       {title && (
-        <p className={cn('text-xs font-semibold mb-1', isInfo ? 'text-[#6366f1]' : 'text-[#fba528]')}>
+        <h3 className={cn('text-xs font-semibold mb-1', isInfo ? 'text-[#6366f1]' : 'text-[#fba528]')}>
           {title}
-        </p>
+        </h3>
       )}
       <div className="leading-6">{children}</div>
     </div>
@@ -183,7 +183,7 @@ export function PrevNextNav({ prev, next }: PrevNextNavProps) {
   if (!prev && !next) return null
 
   return (
-    <div className="grid sm:grid-cols-2 gap-3 mt-12">
+    <nav aria-label="Documentation pagination" className="grid sm:grid-cols-2 gap-3 mt-12">
       {prev ? (
         <Link
           to={`/docs/${prev.slug}`}
@@ -202,6 +202,6 @@ export function PrevNextNav({ prev, next }: PrevNextNavProps) {
           <p className="text-sm text-white truncate">{next.title}</p>
         </Link>
       ) : <div />}
-    </div>
+    </nav>
   )
 }

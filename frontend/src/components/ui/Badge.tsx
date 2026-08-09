@@ -16,7 +16,7 @@ export default function Badge({ label, dotColor, textColor, bgColor, className, 
       {...props}
     >
       {dotColor && (
-        <span className="w-1.5 h-1.5 rounded-sm shrink-0" style={{ backgroundColor: dotColor }} />
+        <span aria-hidden="true" className="w-1.5 h-1.5 rounded-sm shrink-0" style={{ backgroundColor: dotColor }} />
       )}
       {label}
     </span>
