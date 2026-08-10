@@ -44,9 +44,9 @@ export default function Introduction() {
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>
-                <span className="h-1.5 w-1.5 rounded-full opacity-60 transition-opacity duration-200 group-hover:opacity-100" style={{ backgroundColor: feature.color }} />
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full opacity-60 transition-opacity duration-200 group-hover:opacity-100" style={{ backgroundColor: feature.color }} />
               </div>
-              <p className="mb-1.5 text-sm font-semibold text-white">{feature.title}</p>
+              <h3 className="mb-1.5 text-sm font-semibold text-white">{feature.title}</h3>
               <p className="text-xs leading-relaxed text-[#9ba3af]">{feature.description}</p>
             </div>
           </Card>

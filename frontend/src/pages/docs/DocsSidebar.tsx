@@ -9,7 +9,7 @@ interface DocsSidebarProps {
 
 export default function DocsSidebar({ onNavigate }: DocsSidebarProps) {
   return (
-    <nav>
+    <nav aria-label="Documentation">
       {DOCS_SECTIONS.map(section => (
         <div key={section.label}>
           <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider px-2 mb-1 mt-5 first:mt-0">
