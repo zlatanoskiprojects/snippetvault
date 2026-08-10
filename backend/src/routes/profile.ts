@@ -1,17 +1,19 @@
 import { Router, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, isNotNull, ne } from 'drizzle-orm';
+import { fromNodeHeaders } from 'better-auth/node';
 import db from '../lib/db';
-import { users } from '../db/schema';
+import { authAccount, users } from '../db/schema';
+import { auth } from '../lib/auth';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
-import { updateProfileValidation } from '../validators/profile';
+import { passwordSetupLimiter } from '../middleware/rateLimit';
+import { setPasswordValidation, updateProfileValidation } from '../validators/profile';
 
 interface ProfileUpdateFields {
     username?: string;
     displayName?: string | null;
     bio?: string | null;
-    email?: string;
 }
 
 const router = Router();
@@ -27,6 +29,20 @@ const PROFILE_SELECTION = {
     registeredAt: users.registeredAt,
 };
 
+const hasCredentialPassword = async (userId: number): Promise<boolean> => {
+    const rows = await db
+        .select({ id: authAccount.id })
+        .from(authAccount)
+        .where(and(
+            eq(authAccount.userId, userId),
+            eq(authAccount.providerId, 'credential'),
+            isNotNull(authAccount.password),
+        ))
+        .limit(1);
+
+    return rows.length > 0;
+};
+
 const mapUser = (u: {
     id: number;
     username: string;
@@ -36,7 +52,7 @@ const mapUser = (u: {
     bio: string | null;
     avatarUrl: string | null;
     registeredAt: Date;
-}) => ({
+}, hasPassword: boolean) => ({
     id: u.id,
     username: u.username,
     email: u.email,
@@ -45,6 +61,7 @@ const mapUser = (u: {
     bio: u.bio,
     avatar_url: u.avatarUrl,
     registered_at: u.registeredAt,
+    has_password: hasPassword,
 });
 
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
@@ -54,7 +71,8 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        return res.status(200).json({ user: mapUser(user) });
+        const hasPassword = await hasCredentialPassword(user.id);
+        return res.status(200).json({ user: mapUser(user, hasPassword) });
     } catch (error) {
         console.error('Error fetching profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -67,11 +85,14 @@ router.patch('/', authMiddleware, updateProfileValidation, asyncHandler(async (r
         return res.status(400).json({ errors: errors.array() });
     }
 
+    if (req.body.email !== undefined) {
+        return res.status(400).json({ error: 'Email changes require verification' });
+    }
+
     const fieldMap: Record<string, keyof ProfileUpdateFields> = {
         username: 'username',
         display_name: 'displayName',
         bio: 'bio',
-        email: 'email',
     };
     const updates: ProfileUpdateFields = {};
     for (const bodyField of Object.keys(fieldMap)) {
@@ -100,31 +121,36 @@ router.patch('/', authMiddleware, updateProfileValidation, asyncHandler(async (r
         }
     }
 
-    if (updates.email) {
-        updates.email = updates.email.trim().toLowerCase();
-        try {
-            const existing = await db
-                .select({ id: users.id })
-                .from(users)
-                .where(and(eq(users.email, updates.email), ne(users.id, req.userId as number)));
-            if (existing.length > 0) {
-                return res.status(409).json({ error: 'Email already in use' });
-            }
-        } catch (error) {
-            console.error('Error checking email uniqueness:', error);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-
     try {
         await db.update(users).set(updates).where(eq(users.id, req.userId as number));
         const rows = await db.select(PROFILE_SELECTION).from(users).where(eq(users.id, req.userId as number));
-        return res.status(200).json({ user: mapUser(rows[0]) });
+        const hasPassword = await hasCredentialPassword(req.userId as number);
+        return res.status(200).json({ user: mapUser(rows[0], hasPassword) });
     } catch (error) {
         console.error('Error updating profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }));
+
+router.post(
+    '/set-password',
+    passwordSetupLimiter,
+    authMiddleware,
+    setPasswordValidation,
+    asyncHandler(async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const result = await auth.api.setPassword({
+            body: { newPassword: req.body.newPassword },
+            headers: fromNodeHeaders(req.headers),
+        });
+
+        return res.status(200).json(result);
+    }),
+);
 
 router.delete('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {

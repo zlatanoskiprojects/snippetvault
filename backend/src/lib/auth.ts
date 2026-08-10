@@ -4,6 +4,7 @@ import { captcha } from 'better-auth/plugins';
 import db from './db';
 import { authAccount, authSession, authVerification, users } from '../db/schema';
 import { ALLOWED_ORIGINS } from '../constants/origins';
+import { sendEmail } from './email';
 
 const captchaPlugins = process.env.TURNSTILE_SECRET_KEY
     ? [
@@ -84,6 +85,29 @@ export const auth = betterAuth({
     },
     emailAndPassword: {
         enabled: true,
+        requireEmailVerification: true,
+    },
+    emailVerification: {
+        sendOnSignUp: true,
+        autoSignInAfterVerification: true,
+        expiresIn: 3600,
+        sendVerificationEmail: async ({ user, url, token }, request) => {
+            const emailRequest = sendEmail({
+                to: user.email,
+                subject: 'Verify your SnippetVault email',
+                text: `Click the link to verify your email: ${url}`,
+            });
+
+            const isEmailChange = request
+                ? new URL(request.url).pathname.endsWith('/change-email')
+                : false;
+
+            if (isEmailChange) {
+                await emailRequest;
+            } else {
+                void emailRequest.catch(() => undefined);
+            }
+        },
     },
     socialProviders: {
         ...googleCredentials,
@@ -96,6 +120,9 @@ export const auth = betterAuth({
             emailVerified: 'emailVerified',
             createdAt: 'registeredAt',
             updatedAt: 'updatedAt',
+        },
+        changeEmail: {
+            enabled: true,
         },
         additionalFields: {
             username: {

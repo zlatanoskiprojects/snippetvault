@@ -94,12 +94,6 @@ function LogIn() {
             </Button>
           </form>
 
-          <Button
-            variant="ghost"
-            className="w-full h-auto py-3 text-[#595e69] text-xs hover:text-[#9ba3af] hover:bg-transparent"
-          >
-            Continue as guest
-          </Button>
         </div>
 
         <p className="text-center text-[#595e69] text-sm mt-5">

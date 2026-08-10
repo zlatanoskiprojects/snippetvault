@@ -7,6 +7,7 @@ export interface User {
     bio: string | null;
     avatar_url: string | null;
     registered_at: string;
+    has_password: boolean;
 }
 
 export interface Collection {

@@ -43,7 +43,7 @@ interface ProfileViewProps {
 }
 
 export default function ProfileView({ snippets = [], onBack, onMenuClick }: ProfileViewProps) {
-  const { user, loading, error, saveProfile, changePassword, deleteAccount } = useUser()
+  const { user, loading, error, saveProfile, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
   const toast = useToast()
   const { collections } = useCollections()
 
@@ -87,15 +87,35 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   }
 
   const handleSave = async () => {
+    if (!baseline) return
+
+    const newEmail = form.email.trim().toLowerCase()
+    const emailChanged = newEmail !== baseline.email.toLowerCase()
+    const profileChanged =
+      form.username !== baseline.username ||
+      form.displayName !== baseline.displayName ||
+      form.bio !== baseline.bio
+
     setSaving(true)
-    await saveProfile({ username: form.username, display_name: form.displayName, bio: form.bio, email: form.email })
-    setSaving(false)
+    try {
+      if (profileChanged) {
+        await saveProfile({ username: form.username, display_name: form.displayName, bio: form.bio })
+      }
+      if (emailChanged) {
+        const requested = await changeEmail(newEmail)
+        if (requested) {
+          setForm(current => ({ ...current, email: baseline.email }))
+        }
+      }
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handlePwChange = (field: keyof PasswordForm) => (e: ChangeEvent<HTMLInputElement>) =>
     setPwForm(prev => ({ ...prev, [field]: e.target.value }))
 
-  const handlePasswordChange = async () => {
+  const handlePasswordSubmit = async () => {
     if (pwForm.newPassword !== pwForm.confirmPassword) {
       toast.error('New passwords do not match.')
       return
@@ -105,9 +125,17 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
       return
     }
     setPwSaving(true)
-    await changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
-    setPwSaving(false)
-    setPwForm(EMPTY_PW)
+    try {
+      if (user?.has_password) {
+        await changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
+        setPwForm(EMPTY_PW)
+      } else {
+        const created = await setPassword({ newPassword: pwForm.newPassword })
+        if (created) setPwForm(EMPTY_PW)
+      }
+    } finally {
+      setPwSaving(false)
+    }
   }
 
   const handleDeleteAccount = async () => {
@@ -121,7 +149,11 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   }
 
   const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
-  const pwReady = pwForm.currentPassword && pwForm.newPassword && pwForm.confirmPassword
+  const pwReady = Boolean(
+    (!user?.has_password || pwForm.currentPassword) &&
+    pwForm.newPassword &&
+    pwForm.confirmPassword
+  )
 
   if (loading) {
     return (
@@ -303,14 +335,22 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
         ) : activeTab === 'security' ? (
           <div className="flex flex-col gap-6 px-6 py-6 max-w-[480px]">
             <div className="flex flex-col gap-4">
-              <Field label="Current password">
-                <Input
-                  type="password"
-                  value={pwForm.currentPassword}
-                  onChange={handlePwChange('currentPassword')}
-                  className="text-[13px]"
-                />
-              </Field>
+              {!user?.has_password && (
+                <p className="text-sm text-[#9ba3af] leading-6">
+                  Add a password so you can sign in with your email as well as your linked provider.
+                </p>
+              )}
+
+              {user?.has_password && (
+                <Field label="Current password">
+                  <Input
+                    type="password"
+                    value={pwForm.currentPassword}
+                    onChange={handlePwChange('currentPassword')}
+                    className="text-[13px]"
+                  />
+                </Field>
+              )}
 
               <Field label="New password">
                 <Input
@@ -333,11 +373,13 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
 
             <Button
               variant="primary"
-              onClick={pwReady && !pwSaving ? handlePasswordChange : undefined}
+              onClick={pwReady && !pwSaving ? handlePasswordSubmit : undefined}
               disabled={!pwReady || pwSaving}
               className="h-[38px] px-5 text-[13px] self-start"
             >
-              {pwSaving ? 'Updating…' : 'Update password'}
+              {pwSaving
+                ? user?.has_password ? 'Updating…' : 'Creating…'
+                : user?.has_password ? 'Update password' : 'Create password'}
             </Button>
           </div>
         ) : (

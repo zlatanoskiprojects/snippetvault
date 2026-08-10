@@ -15,12 +15,6 @@ const updateProfileValidation: ValidationChain[] = [
     body('bio')
         .optional({ nullable: true })
         .isLength({ max: 1000 }).withMessage('Bio cannot exceed 1000 characters'),
-
-    body('email')
-        .optional()
-        .isString().trim()
-        .isEmail().withMessage('Invalid email address')
-        .isLength({ max: 255 }).withMessage('Email cannot exceed 255 characters'),
 ];
 
 const changePasswordValidation: ValidationChain[] = [
@@ -34,4 +28,11 @@ const changePasswordValidation: ValidationChain[] = [
         .isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
 ];
 
-export { updateProfileValidation, changePasswordValidation };
+const setPasswordValidation: ValidationChain[] = [
+    body('newPassword')
+        .isString()
+        .notEmpty().withMessage('New password is required')
+        .isLength({ min: 8, max: 128 }).withMessage('New password must be between 8 and 128 characters'),
+];
+
+export { updateProfileValidation, changePasswordValidation, setPasswordValidation };

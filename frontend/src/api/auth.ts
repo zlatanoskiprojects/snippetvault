@@ -22,6 +22,15 @@ export async function register(username: string, email: string, password: string
     });
 }
 
+export async function sendVerificationEmail(email: string): Promise<{ status: boolean }> {
+    return apiFetch<{ status: boolean }>(`${BASE_URL}/send-verification-email`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        silent: true,
+        body: JSON.stringify({ email }),
+    });
+}
+
 export async function login(email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
     return apiFetch<AuthResponse>(`${BASE_URL}/sign-in/email`, {
         method: 'POST',
