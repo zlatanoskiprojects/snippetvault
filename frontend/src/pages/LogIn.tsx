@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { login, socialLogin } from '../api/auth'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -12,7 +12,17 @@ function LogIn() {
   const [password, setPassword] = useState('')
   const [captchaToken, setCaptchaToken] = useState('')
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const toast = useToast()
+
+  useEffect(() => {
+    if (searchParams.get('emailChange') !== 'complete') return
+
+    toast.success('Your email has been changed. You may need to sign in again.')
+    const next = new URLSearchParams(searchParams)
+    next.delete('emailChange')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, setSearchParams, toast])
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()

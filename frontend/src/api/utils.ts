@@ -4,10 +4,18 @@ export const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 export class ApiError extends Error {
     status: number;
+    code?: string;
+    method?: 'password' | 'oauth';
 
-    constructor(message: string, status: number) {
+    constructor(
+        message: string,
+        status: number,
+        details?: { code?: string; method?: 'password' | 'oauth' },
+    ) {
         super(message);
         this.status = status;
+        this.code = details?.code;
+        this.method = details?.method;
     }
 }
 
@@ -58,9 +66,12 @@ export async function apiFetch<T>(url: string, options: ApiFetchOptions = {}): P
         const generic = response.status === 401 ? 'Unauthorized' : `Server error: ${response.status}`;
         const parsed = parseJson(body);
         const message = parsed?.message || parsed?.error || (Array.isArray(parsed?.errors) && parsed.errors[0]?.msg) || generic;
-        console.error(`[api] ${method} ${url} — ${response.status} ${response.statusText}`, body);
+        console.error(`[api] ${method} ${url} — ${response.status} ${response.statusText}`);
         if (!silent && response.status !== 401) notifyError(friendlyMessage(response.status));
-        throw new ApiError(message, response.status);
+        throw new ApiError(message, response.status, {
+            code: parsed?.code ?? parsed?.error,
+            method: parsed?.method,
+        });
     }
 
     if (!body) return null as T;
@@ -68,7 +79,7 @@ export async function apiFetch<T>(url: string, options: ApiFetchOptions = {}): P
     try {
         return JSON.parse(body) as T;
     } catch (err) {
-        console.error(`[api] ${method} ${url} — malformed JSON response`, err, body);
+        console.error(`[api] ${method} ${url} — malformed JSON response`, err);
         if (!silent) notifyError('The server sent an unexpected response.');
         throw new ApiError('Malformed response from server', response.status);
     }

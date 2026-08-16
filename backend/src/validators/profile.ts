@@ -30,6 +30,7 @@ const changePasswordValidation: ValidationChain[] = [
 
 const setPasswordValidation: ValidationChain[] = [
     body('newPassword')
+        .hide()
         .isString()
         .notEmpty().withMessage('New password is required')
         .isLength({ min: 8, max: 128 }).withMessage('New password must be between 8 and 128 characters'),

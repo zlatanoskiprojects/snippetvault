@@ -51,14 +51,17 @@ export async function logout(): Promise<{ message?: string }> {
     });
 }
 
-export async function socialLogin(provider: 'google' | 'github'): Promise<void> {
+export async function socialLogin(
+    provider: 'google' | 'github',
+    callbackURL = `${APP_URL}/dashboard`,
+): Promise<void> {
     const data = await apiFetch<{ url?: string }>(`${BASE_URL}/sign-in/social`, {
         method: 'POST',
         headers: JSON_HEADERS,
         silent: true,
         body: JSON.stringify({
             provider,
-            callbackURL: `${APP_URL}/dashboard`,
+            callbackURL,
             errorCallbackURL: `${APP_URL}/login`,
         }),
     });

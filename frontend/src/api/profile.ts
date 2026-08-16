@@ -24,6 +24,11 @@ export interface SetPasswordData {
     newPassword: string;
 }
 
+export interface ChangeEmailData {
+    newEmail: string;
+    currentPassword?: string;
+}
+
 export async function getProfile(): Promise<ProfileResponse> {
     return apiFetch<ProfileResponse>(BASE_URL, { silent: true });
 }
@@ -37,14 +42,14 @@ export async function updateProfile(data: UpdateProfileData): Promise<ProfileRes
     });
 }
 
-export async function changeEmail(newEmail: string): Promise<{ status: boolean }> {
+export async function changeEmail(data: ChangeEmailData): Promise<{ status: boolean }> {
     return apiFetch<{ status: boolean }>(`${AUTH_BASE_URL}/change-email`, {
         method: 'POST',
         headers: JSON_HEADERS,
         silent: true,
         body: JSON.stringify({
-            newEmail,
-            callbackURL: `${window.location.origin}/dashboard`,
+            ...data,
+            callbackURL: `${window.location.origin}/dashboard?emailChange=old-confirmed`,
         }),
     });
 }

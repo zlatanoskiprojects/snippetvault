@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Dialog as BaseDialog } from '@base-ui/react/dialog'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
@@ -20,8 +21,14 @@ import type { Collection } from '../api/types'
 type View = 'list' | 'new' | 'search' | 'collections' | 'profile'
 
 export default function Dashboard() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [view, setView] = useState<View>('list')
+  const [view, setView] = useState<View>(
+    searchParams.get('reauth') === 'email-change' ||
+      searchParams.get('reauth') === 'password-setup'
+      ? 'profile'
+      : 'list'
+  )
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const { snippets, setSnippets, loading, error } = useSnippets()
@@ -30,6 +37,15 @@ export default function Dashboard() {
   const [activeCollection, setActiveCollection] = useState<Collection | null>(null)
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const toast = useToast()
+
+  useEffect(() => {
+    if (searchParams.get('emailChange') !== 'old-confirmed') return
+
+    toast.success('Current email confirmed. Check your new email for the verification link.')
+    const next = new URLSearchParams(searchParams)
+    next.delete('emailChange')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, setSearchParams, toast])
 
   function onSelectSnippet(snippet: Snippet) {
     setSelectedSnippet(prev => prev?.id === snippet.id ? null : snippet)

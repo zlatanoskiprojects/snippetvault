@@ -8,6 +8,7 @@ export interface User {
     avatar_url: string | null;
     registered_at: string;
     has_password: boolean;
+    oauth_providers: Array<'google' | 'github'>;
 }
 
 export interface Collection {

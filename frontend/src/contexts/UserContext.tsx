@@ -9,6 +9,7 @@ import {
     deleteAccount as apiDeleteAccount,
     type UpdateProfileData,
     type ChangePasswordData,
+    type ChangeEmailData,
     type SetPasswordData,
 } from '../api/profile'
 import { logout as apiLogout } from '../api/auth'
@@ -21,11 +22,13 @@ export interface UserContextValue {
     loading: boolean
     error: string | null
     saveProfile: (data: UpdateProfileData) => Promise<void>
-    changeEmail: (newEmail: string) => Promise<boolean>
+    changeEmail: (data: ChangeEmailData) => Promise<boolean>
     changePassword: (data: ChangePasswordData) => Promise<void>
-    setPassword: (data: SetPasswordData) => Promise<boolean>
+    setPassword: (data: SetPasswordData) => Promise<SetPasswordResult>
     deleteAccount: () => Promise<void>
 }
+
+export type SetPasswordResult = 'created' | 'reauth-required' | 'failed'
 
 export const UserContext = createContext<UserContextValue | null>(null)
 
@@ -66,13 +69,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }, [navigate, toast])
 
-    const changeEmail = useCallback(async (newEmail: string) => {
+    const changeEmail = useCallback(async (data: ChangeEmailData) => {
         try {
-            await apiChangeEmail(newEmail)
-            toast.success("If this email is available, a verification link will arrive shortly. If it doesn't, the address may already belong to another account.")
+            await apiChangeEmail(data)
+            toast.success('A confirmation link was sent to your current email address.')
             return true
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) navigate('/login')
+            else if (
+                err instanceof ApiError &&
+                err.status === 403 &&
+                err.code === 'REAUTH_REQUIRED'
+            ) {
+                toast.error(err.method === 'password'
+                    ? 'Enter your current password to change your email.'
+                    : 'Re-authenticate with a linked provider to change your email.')
+            }
             else if (err instanceof Error) toast.error(err.message)
             return false
         }
@@ -94,11 +106,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
             await apiSetPassword(data)
             setUser(current => current ? { ...current, has_password: true } : current)
             toast.success('Password created. You can now sign in with email and password.')
-            return true
+            return 'created' as const
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) navigate('/login')
+            else if (
+                err instanceof ApiError &&
+                err.status === 403 &&
+                err.code === 'REAUTH_REQUIRED' &&
+                err.method === 'oauth'
+            ) {
+                toast.error('Re-authenticate with a linked provider before creating a password.')
+                return 'reauth-required' as const
+            }
+            else if (
+                err instanceof ApiError &&
+                err.status === 403 &&
+                err.message === 'Verify your email before setting a password'
+            ) toast.error(err.message)
             else if (err instanceof Error) toast.error(err.message)
-            return false
+            return 'failed' as const
         }
     }, [navigate, toast])
 

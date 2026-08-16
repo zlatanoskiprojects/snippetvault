@@ -7,8 +7,10 @@ import { authAccount, users } from '../db/schema';
 import { auth } from '../lib/auth';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
+import { requireTrustedOrigin } from '../middleware/originCheck';
 import { passwordSetupLimiter } from '../middleware/rateLimit';
 import { setPasswordValidation, updateProfileValidation } from '../validators/profile';
+import { isSessionFresh } from '../lib/sessionFreshness';
 
 interface ProfileUpdateFields {
     username?: string;
@@ -16,7 +18,22 @@ interface ProfileUpdateFields {
     bio?: string | null;
 }
 
-const router = Router();
+type OAuthProvider = 'google' | 'github';
+
+type ProfileAuth = Pick<typeof auth, 'api'>;
+
+export interface SessionFreshnessTrace {
+    path: '/api/profile/set-password';
+    sessionCreatedAt: Date | string;
+    checkedAt: number;
+    isFresh: boolean;
+}
+
+interface ProfileRouterOptions {
+    authClient?: ProfileAuth;
+    checkSessionFreshness?: typeof isSessionFresh;
+    onSessionFreshnessChecked?: (trace: SessionFreshnessTrace) => void;
+}
 
 const PROFILE_SELECTION = {
     id: users.id,
@@ -43,6 +60,19 @@ const hasCredentialPassword = async (userId: number): Promise<boolean> => {
     return rows.length > 0;
 };
 
+const getOAuthProviders = async (userId: number): Promise<OAuthProvider[]> => {
+    const rows = await db
+        .select({ providerId: authAccount.providerId })
+        .from(authAccount)
+        .where(eq(authAccount.userId, userId));
+
+    return [...new Set(rows
+        .map((row) => row.providerId)
+        .filter((providerId): providerId is OAuthProvider => (
+            providerId === 'google' || providerId === 'github'
+        )))];
+};
+
 const mapUser = (u: {
     id: number;
     username: string;
@@ -52,7 +82,7 @@ const mapUser = (u: {
     bio: string | null;
     avatarUrl: string | null;
     registeredAt: Date;
-}, hasPassword: boolean) => ({
+}, hasPassword: boolean, oauthProviders: OAuthProvider[]) => ({
     id: u.id,
     username: u.username,
     email: u.email,
@@ -62,7 +92,15 @@ const mapUser = (u: {
     avatar_url: u.avatarUrl,
     registered_at: u.registeredAt,
     has_password: hasPassword,
+    oauth_providers: oauthProviders,
 });
+
+export function createProfileRouter({
+    authClient = auth,
+    checkSessionFreshness = isSessionFresh,
+    onSessionFreshnessChecked,
+}: ProfileRouterOptions = {}) {
+const router = Router();
 
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
@@ -71,8 +109,11 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const hasPassword = await hasCredentialPassword(user.id);
-        return res.status(200).json({ user: mapUser(user, hasPassword) });
+        const [hasPassword, oauthProviders] = await Promise.all([
+            hasCredentialPassword(user.id),
+            getOAuthProviders(user.id),
+        ]);
+        return res.status(200).json({ user: mapUser(user, hasPassword, oauthProviders) });
     } catch (error) {
         console.error('Error fetching profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -124,8 +165,11 @@ router.patch('/', authMiddleware, updateProfileValidation, asyncHandler(async (r
     try {
         await db.update(users).set(updates).where(eq(users.id, req.userId as number));
         const rows = await db.select(PROFILE_SELECTION).from(users).where(eq(users.id, req.userId as number));
-        const hasPassword = await hasCredentialPassword(req.userId as number);
-        return res.status(200).json({ user: mapUser(rows[0], hasPassword) });
+        const [hasPassword, oauthProviders] = await Promise.all([
+            hasCredentialPassword(req.userId as number),
+            getOAuthProviders(req.userId as number),
+        ]);
+        return res.status(200).json({ user: mapUser(rows[0], hasPassword, oauthProviders) });
     } catch (error) {
         console.error('Error updating profile:', error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -134,8 +178,8 @@ router.patch('/', authMiddleware, updateProfileValidation, asyncHandler(async (r
 
 router.post(
     '/set-password',
+    requireTrustedOrigin,
     passwordSetupLimiter,
-    authMiddleware,
     setPasswordValidation,
     asyncHandler(async (req: Request, res: Response) => {
         const errors = validationResult(req);
@@ -143,7 +187,46 @@ router.post(
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const result = await auth.api.setPassword({
+        const session = await authClient.api.getSession({
+            headers: fromNodeHeaders(req.headers),
+            query: {
+                disableCookieCache: true,
+                disableRefresh: true,
+            },
+        });
+
+        if (!session?.user) {
+            return res.status(401).json({
+                error: 'Not authenticated',
+                code: 'UNAUTHORIZED',
+            });
+        }
+
+        if (!session.user.emailVerified) {
+            return res.status(403).json({
+                error: 'Verify your email before setting a password',
+            });
+        }
+
+        const checkedAt = Date.now();
+        const fresh = checkSessionFreshness(session.session.createdAt, checkedAt);
+        onSessionFreshnessChecked?.({
+            path: '/api/profile/set-password',
+            sessionCreatedAt: session.session.createdAt,
+            checkedAt,
+            isFresh: fresh,
+        });
+
+        if (!fresh) {
+            return res.status(403).json({
+                error: 'REAUTH_REQUIRED',
+                code: 'REAUTH_REQUIRED',
+                method: 'oauth',
+                message: 'Re-authentication is required before setting a password',
+            });
+        }
+
+        const result = await authClient.api.setPassword({
             body: { newPassword: req.body.newPassword },
             headers: fromNodeHeaders(req.headers),
         });
@@ -152,7 +235,7 @@ router.post(
     }),
 );
 
-router.delete('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+router.delete('/', requireTrustedOrigin, authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     try {
         await db.delete(users).where(eq(users.id, req.userId as number));
         return res.status(200).json({ message: 'App profile deleted' });
@@ -162,4 +245,7 @@ router.delete('/', authMiddleware, asyncHandler(async (req: Request, res: Respon
     }
 }));
 
-export default router;
+return router;
+}
+
+export default createProfileRouter();
