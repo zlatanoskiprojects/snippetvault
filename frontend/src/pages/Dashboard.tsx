@@ -25,7 +25,8 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [view, setView] = useState<View>(
     searchParams.get('reauth') === 'email-change' ||
-      searchParams.get('reauth') === 'password-setup'
+      searchParams.get('reauth') === 'password-setup' ||
+      searchParams.get('setup') === 'password'
       ? 'profile'
       : 'list'
   )

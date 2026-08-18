@@ -62,7 +62,10 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   ], [snippets, collections])
 
   const [activeTab, setActiveTab] = useState(
-    searchParams.get('reauth') === 'password-setup' ? 'security' : 'profile'
+    searchParams.get('reauth') === 'password-setup' ||
+      searchParams.get('setup') === 'password'
+      ? 'security'
+      : 'profile'
   )
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
@@ -187,10 +190,17 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
       pending = null
     }
 
+    const markerAge = pending && typeof pending.createdAt === 'number'
+      ? Date.now() - pending.createdAt
+      : Number.NaN
     if (
       !pending ||
+      typeof pending.userId !== 'number' ||
+      typeof pending.newEmail !== 'string' ||
       pending.userId !== user.id ||
-      Date.now() - pending.createdAt > EMAIL_CHANGE_REAUTH_MAX_AGE
+      !Number.isFinite(markerAge) ||
+      markerAge < 0 ||
+      markerAge > EMAIL_CHANGE_REAUTH_MAX_AGE
     ) {
       clearReauthState()
       toast.error('OAuth re-authentication could not be matched to this account. Try again.')
@@ -279,6 +289,9 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
         if (result === 'created') {
           setPwForm(EMPTY_PW)
           setPasswordReauthRequired(false)
+          const next = new URLSearchParams(searchParams)
+          next.delete('setup')
+          setSearchParams(next, { replace: true })
         } else if (result === 'reauth-required') {
           setPwForm(EMPTY_PW)
           setPasswordReauthRequired(true)
@@ -548,11 +561,11 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
             <div className="flex flex-col gap-4">
               {!user?.has_password && (
                 <p className="text-sm text-[#9ba3af] leading-6">
-                  Add a password so you can sign in with your email as well as your linked provider.
+                  Create a password to finish setting up your account and enable email sign-in.
                 </p>
               )}
 
-              {!user?.has_password && passwordReauthRequired && (
+              {user && !user.has_password && passwordReauthRequired && (
                 <div className="flex flex-col gap-2 rounded-lg border border-[#2a2a2a] bg-[#151515] p-3">
                   <p className="text-xs text-[#9ba3af]">
                     Your session is older than five minutes. Re-authenticate with a linked provider,
