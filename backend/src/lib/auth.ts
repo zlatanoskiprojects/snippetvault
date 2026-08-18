@@ -1,5 +1,6 @@
-import { betterAuth } from 'better-auth';
-import { isAPIError } from 'better-auth/api';
+import { randomBytes } from 'crypto';
+import { betterAuth, type BetterAuthPlugin } from 'better-auth';
+import { createAuthMiddleware, isAPIError } from 'better-auth/api';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { captcha } from 'better-auth/plugins';
 import { and, eq } from 'drizzle-orm';
@@ -29,6 +30,19 @@ const captchaPlugins = process.env.TURNSTILE_SECRET_KEY
           }),
       ]
     : [];
+
+const signupPasswordPlugin = {
+    id: 'signup-password',
+    hooks: {
+        before: [{
+            matcher: (context) => context.path === '/sign-up/email',
+            handler: createAuthMiddleware(async (context) => {
+                const body = context.body as { password: string };
+                body.password = randomBytes(32).toString('hex');
+            }),
+        }],
+    },
+} satisfies BetterAuthPlugin;
 
 type VerifyPasswordWithAuth = (password: string, headers: Headers) => Promise<boolean>;
 
@@ -80,7 +94,7 @@ export const auth = betterAuth({
             verification: authVerification,
         },
     }),
-    plugins: captchaPlugins,
+    plugins: [...captchaPlugins, signupPasswordPlugin],
     session: {
         freshAge: AUTH_FRESH_SESSION_SECONDS,
     },

@@ -12,7 +12,6 @@ const RESEND_COOLDOWN_SECONDS = 60
 function Register() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [captchaToken, setCaptchaToken] = useState('')
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   const [isResending, setIsResending] = useState(false)
@@ -38,7 +37,7 @@ function Register() {
     }
 
     try {
-      await register(cleanUsername, email, password, captchaToken)
+      await register(cleanUsername, email, captchaToken)
       setRegisteredEmail(email.trim())
       setResendCooldown(RESEND_COOLDOWN_SECONDS)
     } catch (err) {
@@ -116,15 +115,6 @@ function Register() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="h-[40px]"
-                />
-              </Field>
-              <Field label="Password">
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Create a password"
                   className="h-[40px]"
                 />
               </Field>

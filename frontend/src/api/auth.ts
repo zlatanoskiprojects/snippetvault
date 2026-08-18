@@ -8,7 +8,7 @@ export interface AuthResponse {
     user: User;
 }
 
-export async function register(username: string, email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
+export async function register(username: string, email: string, captchaToken?: string): Promise<AuthResponse> {
     return apiFetch<AuthResponse>(`${BASE_URL}/sign-up/email`, {
         method: 'POST',
         headers: captchaToken ? { ...JSON_HEADERS, 'x-captcha-response': captchaToken } : JSON_HEADERS,
@@ -16,8 +16,8 @@ export async function register(username: string, email: string, password: string
         body: JSON.stringify({
             name: username,
             email,
-            password,
-            callbackURL: `${APP_URL}/dashboard`,
+            password: '',
+            callbackURL: `${APP_URL}/dashboard?setup=password`,
         }),
     });
 }
