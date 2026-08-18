@@ -38,12 +38,12 @@ export default function LandingNavbar({ onGetStarted, showNavLinks = true }: Lan
       )}
 
       <div className="flex items-center gap-3">
-        <button
-          type="button"
+        <a
+          href="https://github.com/sponsors/Zlatanoski"
           className="hidden sm:flex bg-[#262147] text-[#6366f1] text-[12px] font-medium px-4 h-[40px] sm:h-[28px] rounded-md hover:bg-[#2e2660] transition-colors duration-150 items-center"
         >
           Sponsor
-        </button>
+        </a>
         <button
           type="button"
           onClick={onGetStarted}
@@ -104,13 +104,13 @@ export default function LandingNavbar({ onGetStarted, showNavLinks = true }: Lan
 
               <div className="h-px bg-[#2a2a2a] my-2" />
 
-              <button
-                type="button"
+              <a
+                href="https://github.com/sponsors/Zlatanoski"
                 onClick={() => setDrawerOpen(false)}
                 className="flex items-center h-[44px] px-2 rounded-md bg-[#262147] text-[#6366f1] text-sm font-medium hover:bg-[#2e2660] transition-colors duration-150"
               >
                 Sponsor
-              </button>
+              </a>
               <button
                 type="button"
                 onClick={() => { setDrawerOpen(false); onGetStarted?.() }}
