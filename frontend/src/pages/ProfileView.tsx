@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, type ChangeEvent } from 'react'
+import { useState, useEffect, useMemo, useRef, type ChangeEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Menu, Pencil, Trash2, TriangleAlert } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import Button from '../components/ui/Button'
@@ -13,6 +14,7 @@ import { useUser } from '../hooks/useUser'
 import { useToast } from '../hooks/useToast'
 import { useCollections } from '../hooks/useCollections'
 import type { Snippet } from '../api/types'
+import { socialLogin } from '../api/auth'
 
 const TABS = [
   { key: 'profile',     label: 'Profile'      },
@@ -35,6 +37,10 @@ interface PasswordForm {
 
 const EMPTY_FORM: ProfileForm = { username: '', displayName: '', email: '', bio: '' }
 const EMPTY_PW: PasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' }
+const EMAIL_CHANGE_REAUTH_KEY = 'snippetvault.email-change-reauth'
+const EMAIL_CHANGE_REAUTH_MAX_AGE = 10 * 60 * 1000
+const PASSWORD_SETUP_REAUTH_KEY = 'snippetvault.password-setup-reauth'
+const PASSWORD_SETUP_REAUTH_MAX_AGE = 10 * 60 * 1000
 
 interface ProfileViewProps {
   snippets?: Snippet[]
@@ -43,9 +49,10 @@ interface ProfileViewProps {
 }
 
 export default function ProfileView({ snippets = [], onBack, onMenuClick }: ProfileViewProps) {
-  const { user, loading, error, saveProfile, changePassword, deleteAccount } = useUser()
+  const { user, loading, error, saveProfile, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
   const toast = useToast()
   const { collections } = useCollections()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const stats = useMemo(() => [
     { value: snippets.length,                                                    label: 'Total snippets',  accentColor: '#3d77fc' },
@@ -54,13 +61,21 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
     { value: new Set(snippets.flatMap(s => s.tags || [])).size,                  label: 'Tags used',       accentColor: '#fba528' },
   ], [snippets, collections])
 
-  const [activeTab, setActiveTab] = useState('profile')
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get('reauth') === 'password-setup' ? 'security' : 'profile'
+  )
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [emailCurrentPassword, setEmailCurrentPassword] = useState('')
+  const [oauthReauthing, setOauthReauthing] = useState(false)
   const [pwForm, setPwForm] = useState<PasswordForm>(EMPTY_PW)
   const [pwSaving, setPwSaving] = useState(false)
+  const [passwordReauthRequired, setPasswordReauthRequired] = useState(false)
+  const [passwordOauthReauthing, setPasswordOauthReauthing] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const emailRetryStarted = useRef(false)
+  const passwordRetryStarted = useRef(false)
 
   useEffect(() => {
     if (user) {
@@ -78,24 +93,174 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
     : null
 
   const isDirty = baseline !== null && JSON.stringify(form) !== JSON.stringify(baseline)
+  const emailChanged = baseline !== null &&
+    form.email.trim().toLowerCase() !== baseline.email.toLowerCase()
 
   const handleChange = (field: keyof ProfileForm) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   const handleDiscard = () => {
     if (baseline) setForm(baseline)
+    setEmailCurrentPassword('')
   }
 
   const handleSave = async () => {
+    if (!baseline) return
+
+    const newEmail = form.email.trim().toLowerCase()
+    const profileChanged =
+      form.username !== baseline.username ||
+      form.displayName !== baseline.displayName ||
+      form.bio !== baseline.bio
+
     setSaving(true)
-    await saveProfile({ username: form.username, display_name: form.displayName, bio: form.bio, email: form.email })
-    setSaving(false)
+    try {
+      if (profileChanged) {
+        await saveProfile({ username: form.username, display_name: form.displayName, bio: form.bio })
+      }
+      if (emailChanged) {
+        if (!user?.has_password) {
+          toast.error('Re-authenticate with a linked provider to change your email.')
+          return
+        }
+        if (!emailCurrentPassword) {
+          toast.error('Enter your current password to change your email.')
+          return
+        }
+        const requested = await changeEmail({
+          newEmail,
+          currentPassword: emailCurrentPassword,
+        })
+        if (requested) {
+          setForm(current => ({ ...current, email: baseline.email }))
+          setEmailCurrentPassword('')
+        }
+      }
+    } finally {
+      setSaving(false)
+    }
   }
+
+  const handleEmailOAuthReauth = async (provider: 'google' | 'github') => {
+    if (!user || !emailChanged) return
+
+    const newEmail = form.email.trim().toLowerCase()
+    sessionStorage.setItem(EMAIL_CHANGE_REAUTH_KEY, JSON.stringify({
+      userId: user.id,
+      newEmail,
+      createdAt: Date.now(),
+    }))
+
+    setOauthReauthing(true)
+    try {
+      await socialLogin(
+        provider,
+        `${window.location.origin}/dashboard?reauth=email-change`,
+      )
+    } catch (err) {
+      sessionStorage.removeItem(EMAIL_CHANGE_REAUTH_KEY)
+      setOauthReauthing(false)
+      toast.error(err instanceof Error ? err.message : 'Re-authentication failed.')
+    }
+  }
+
+  useEffect(() => {
+    if (
+      searchParams.get('reauth') !== 'email-change' ||
+      !user ||
+      emailRetryStarted.current
+    ) return
+
+    emailRetryStarted.current = true
+    const clearReauthState = () => {
+      sessionStorage.removeItem(EMAIL_CHANGE_REAUTH_KEY)
+      const next = new URLSearchParams(searchParams)
+      next.delete('reauth')
+      setSearchParams(next, { replace: true })
+    }
+
+    let pending: { userId: number; newEmail: string; createdAt: number } | null = null
+    try {
+      const value = sessionStorage.getItem(EMAIL_CHANGE_REAUTH_KEY)
+      pending = value ? JSON.parse(value) : null
+    } catch {
+      pending = null
+    }
+
+    if (
+      !pending ||
+      pending.userId !== user.id ||
+      Date.now() - pending.createdAt > EMAIL_CHANGE_REAUTH_MAX_AGE
+    ) {
+      clearReauthState()
+      toast.error('OAuth re-authentication could not be matched to this account. Try again.')
+      return
+    }
+
+    setSaving(true)
+    void changeEmail({ newEmail: pending.newEmail })
+      .then((requested) => {
+        if (requested) {
+          setForm(current => ({ ...current, email: user.email }))
+        }
+      })
+      .finally(() => {
+        clearReauthState()
+        setSaving(false)
+        setOauthReauthing(false)
+      })
+  }, [changeEmail, searchParams, setSearchParams, toast, user])
+
+  useEffect(() => {
+    if (
+      searchParams.get('reauth') !== 'password-setup' ||
+      !user ||
+      passwordRetryStarted.current
+    ) return
+
+    passwordRetryStarted.current = true
+    const clearReauthState = () => {
+      sessionStorage.removeItem(PASSWORD_SETUP_REAUTH_KEY)
+      const next = new URLSearchParams(searchParams)
+      next.delete('reauth')
+      setSearchParams(next, { replace: true })
+    }
+
+    let pending: { userId: number; createdAt: number } | null = null
+    try {
+      const value = sessionStorage.getItem(PASSWORD_SETUP_REAUTH_KEY)
+      pending = value ? JSON.parse(value) : null
+    } catch {
+      pending = null
+    }
+
+    setActiveTab('security')
+    const markerAge = pending && typeof pending.createdAt === 'number'
+      ? Date.now() - pending.createdAt
+      : Number.NaN
+    if (
+      !pending ||
+      typeof pending.userId !== 'number' ||
+      pending.userId !== user.id ||
+      !Number.isFinite(markerAge) ||
+      markerAge < 0 ||
+      markerAge > PASSWORD_SETUP_REAUTH_MAX_AGE
+    ) {
+      clearReauthState()
+      toast.error('OAuth re-authentication could not be matched to this account. Try again.')
+      return
+    }
+
+    clearReauthState()
+    setPasswordReauthRequired(false)
+    setPasswordOauthReauthing(false)
+    toast.success('Re-authentication complete. Enter your new password again.')
+  }, [searchParams, setSearchParams, toast, user])
 
   const handlePwChange = (field: keyof PasswordForm) => (e: ChangeEvent<HTMLInputElement>) =>
     setPwForm(prev => ({ ...prev, [field]: e.target.value }))
 
-  const handlePasswordChange = async () => {
+  const handlePasswordSubmit = async () => {
     if (pwForm.newPassword !== pwForm.confirmPassword) {
       toast.error('New passwords do not match.')
       return
@@ -105,9 +270,45 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
       return
     }
     setPwSaving(true)
-    await changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
-    setPwSaving(false)
+    try {
+      if (user?.has_password) {
+        await changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword })
+        setPwForm(EMPTY_PW)
+      } else {
+        const result = await setPassword({ newPassword: pwForm.newPassword })
+        if (result === 'created') {
+          setPwForm(EMPTY_PW)
+          setPasswordReauthRequired(false)
+        } else if (result === 'reauth-required') {
+          setPwForm(EMPTY_PW)
+          setPasswordReauthRequired(true)
+        }
+      }
+    } finally {
+      setPwSaving(false)
+    }
+  }
+
+  const handlePasswordOAuthReauth = async (provider: 'google' | 'github') => {
+    if (!user || user.has_password) return
+
+    sessionStorage.setItem(PASSWORD_SETUP_REAUTH_KEY, JSON.stringify({
+      userId: user.id,
+      createdAt: Date.now(),
+    }))
     setPwForm(EMPTY_PW)
+    setPasswordOauthReauthing(true)
+
+    try {
+      await socialLogin(
+        provider,
+        `${window.location.origin}/dashboard?reauth=password-setup`,
+      )
+    } catch (err) {
+      sessionStorage.removeItem(PASSWORD_SETUP_REAUTH_KEY)
+      setPasswordOauthReauthing(false)
+      toast.error(err instanceof Error ? err.message : 'Re-authentication failed.')
+    }
   }
 
   const handleDeleteAccount = async () => {
@@ -121,7 +322,11 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   }
 
   const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
-  const pwReady = pwForm.currentPassword && pwForm.newPassword && pwForm.confirmPassword
+  const pwReady = Boolean(
+    (!user?.has_password || pwForm.currentPassword) &&
+    pwForm.newPassword &&
+    pwForm.confirmPassword
+  )
 
   if (loading) {
     return (
@@ -229,6 +434,44 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
                   />
                 </Field>
 
+                {emailChanged && user?.has_password && (
+                  <Field label="Current password">
+                    <Input
+                      type="password"
+                      value={emailCurrentPassword}
+                      onChange={event => setEmailCurrentPassword(event.target.value)}
+                      placeholder="Required to change your email"
+                      className="text-[13px]"
+                    />
+                  </Field>
+                )}
+
+                {emailChanged && !user?.has_password && (
+                  <div className="flex flex-col gap-2 rounded-lg border border-[#2a2a2a] bg-[#151515] p-3">
+                    <p className="text-xs text-[#9ba3af]">
+                      Re-authenticate with a linked provider to continue.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {user?.oauth_providers.map(provider => (
+                        <Button
+                          key={provider}
+                          variant="secondary"
+                          onClick={() => handleEmailOAuthReauth(provider)}
+                          disabled={oauthReauthing}
+                          className="h-[34px] px-3 text-[12px] capitalize"
+                        >
+                          Continue with {provider}
+                        </Button>
+                      ))}
+                    </div>
+                    {user?.oauth_providers.length === 0 && (
+                      <p className="text-xs text-[#ef4444]">
+                        No linked OAuth provider is available for re-authentication.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <Field label="Bio">
                   <Textarea
                     value={form.bio}
@@ -303,14 +546,49 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
         ) : activeTab === 'security' ? (
           <div className="flex flex-col gap-6 px-6 py-6 max-w-[480px]">
             <div className="flex flex-col gap-4">
-              <Field label="Current password">
-                <Input
-                  type="password"
-                  value={pwForm.currentPassword}
-                  onChange={handlePwChange('currentPassword')}
-                  className="text-[13px]"
-                />
-              </Field>
+              {!user?.has_password && (
+                <p className="text-sm text-[#9ba3af] leading-6">
+                  Add a password so you can sign in with your email as well as your linked provider.
+                </p>
+              )}
+
+              {!user?.has_password && passwordReauthRequired && (
+                <div className="flex flex-col gap-2 rounded-lg border border-[#2a2a2a] bg-[#151515] p-3">
+                  <p className="text-xs text-[#9ba3af]">
+                    Your session is older than five minutes. Re-authenticate with a linked provider,
+                    then enter the new password again.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {user.oauth_providers.map(provider => (
+                      <Button
+                        key={provider}
+                        variant="secondary"
+                        onClick={() => handlePasswordOAuthReauth(provider)}
+                        disabled={passwordOauthReauthing}
+                        className="h-[34px] px-3 text-[12px] capitalize"
+                      >
+                        Continue with {provider}
+                      </Button>
+                    ))}
+                  </div>
+                  {user.oauth_providers.length === 0 && (
+                    <p className="text-xs text-[#ef4444]">
+                      No linked OAuth provider is available for re-authentication.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {user?.has_password && (
+                <Field label="Current password">
+                  <Input
+                    type="password"
+                    value={pwForm.currentPassword}
+                    onChange={handlePwChange('currentPassword')}
+                    className="text-[13px]"
+                  />
+                </Field>
+              )}
 
               <Field label="New password">
                 <Input
@@ -333,11 +611,13 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
 
             <Button
               variant="primary"
-              onClick={pwReady && !pwSaving ? handlePasswordChange : undefined}
+              onClick={pwReady && !pwSaving ? handlePasswordSubmit : undefined}
               disabled={!pwReady || pwSaving}
               className="h-[38px] px-5 text-[13px] self-start"
             >
-              {pwSaving ? 'Updating…' : 'Update password'}
+              {pwSaving
+                ? user?.has_password ? 'Updating…' : 'Creating…'
+                : user?.has_password ? 'Update password' : 'Create password'}
             </Button>
           </div>
         ) : (

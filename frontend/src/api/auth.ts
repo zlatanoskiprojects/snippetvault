@@ -22,6 +22,15 @@ export async function register(username: string, email: string, password: string
     });
 }
 
+export async function sendVerificationEmail(email: string): Promise<{ status: boolean }> {
+    return apiFetch<{ status: boolean }>(`${BASE_URL}/send-verification-email`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        silent: true,
+        body: JSON.stringify({ email }),
+    });
+}
+
 export async function login(email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
     return apiFetch<AuthResponse>(`${BASE_URL}/sign-in/email`, {
         method: 'POST',
@@ -42,14 +51,17 @@ export async function logout(): Promise<{ message?: string }> {
     });
 }
 
-export async function socialLogin(provider: 'google' | 'github'): Promise<void> {
+export async function socialLogin(
+    provider: 'google' | 'github',
+    callbackURL = `${APP_URL}/dashboard`,
+): Promise<void> {
     const data = await apiFetch<{ url?: string }>(`${BASE_URL}/sign-in/social`, {
         method: 'POST',
         headers: JSON_HEADERS,
         silent: true,
         body: JSON.stringify({
             provider,
-            callbackURL: `${APP_URL}/dashboard`,
+            callbackURL,
             errorCallbackURL: `${APP_URL}/login`,
         }),
     });

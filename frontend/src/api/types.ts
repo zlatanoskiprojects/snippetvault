@@ -7,6 +7,8 @@ export interface User {
     bio: string | null;
     avatar_url: string | null;
     registered_at: string;
+    has_password: boolean;
+    oauth_providers: Array<'google' | 'github'>;
 }
 
 export interface Collection {

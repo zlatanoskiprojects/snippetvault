@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Code2, LayoutGrid, Lock, Plus, Search, Star } from 'lucide-react'
 import { SNIPPETS, TAGS, type DemoSnippet } from './demoData'
 
@@ -9,6 +10,17 @@ interface MiniSidebarProps {
   onFilterChange: (f: Filter) => void
   activeTag: string | null
   onTagToggle: (tag: string) => void
+  revealDelay: number
+  shouldReduceMotion: boolean | null
+}
+
+function revealProps(shouldReduceMotion: boolean | null, delay: number) {
+  return shouldReduceMotion ? {} : {
+    initial: { opacity: 0, y: 16 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.2 },
+    transition: { duration: 0.5, ease: 'easeOut' as const, delay },
+  }
 }
 
 function navItemClass(active: boolean) {
@@ -17,9 +29,13 @@ function navItemClass(active: boolean) {
     : 'flex items-center gap-1.5 px-1.5 py-0.5 w-full text-left hover:bg-white/5 transition-colors duration-150 rounded'
 }
 
-function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle }: MiniSidebarProps) {
+function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDelay, shouldReduceMotion }: MiniSidebarProps) {
   return (
-    <aside aria-label="Snippet preview filters" className="hidden sm:flex w-[172px] shrink-0 bg-[#161616] border-r border-[#2a2a2a] flex-col p-3 gap-2">
+    <motion.aside
+      {...revealProps(shouldReduceMotion, revealDelay)}
+      aria-label="Snippet preview filters"
+      className="hidden sm:flex w-[172px] shrink-0 bg-[#161616] border-r border-[#2a2a2a] flex-col p-3 gap-2"
+    >
       <div className="flex items-center gap-1.5">
         <div className="bg-[#6366f1] rounded w-[26px] h-[26px] flex items-center justify-center shrink-0">
           <Code2 size={14} className="text-white" />
@@ -59,18 +75,23 @@ function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle }: MiniSid
           </button>
         ))}
       </div>
-    </aside>
+    </motion.aside>
   )
 }
 
 interface MiniTopBarProps {
   title: string
   count: number
+  revealDelay: number
+  shouldReduceMotion: boolean | null
 }
 
-function MiniTopBar({ title, count }: MiniTopBarProps) {
+function MiniTopBar({ title, count, revealDelay, shouldReduceMotion }: MiniTopBarProps) {
   return (
-    <header className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a] shrink-0">
+    <motion.header
+      {...revealProps(shouldReduceMotion, revealDelay)}
+      className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a] shrink-0"
+    >
       <div>
         <h2 id="snippet-preview-heading" className="text-[12px] font-medium text-white leading-none">{title}</h2>
         <p className="text-[8px] text-[#595e69] mt-0.5">{count} snippet{count === 1 ? '' : 's'}</p>
@@ -83,7 +104,7 @@ function MiniTopBar({ title, count }: MiniTopBarProps) {
           <Plus size={9} /> New snippet
         </div>
       </div>
-    </header>
+    </motion.header>
   )
 }
 
@@ -91,11 +112,16 @@ interface MiniSnippetRowProps {
   snippet: DemoSnippet
   expanded: boolean
   onToggle: () => void
+  revealDelay: number
+  shouldReduceMotion: boolean | null
 }
 
-function MiniSnippetRow({ snippet, expanded, onToggle }: MiniSnippetRowProps) {
+function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduceMotion }: MiniSnippetRowProps) {
   return (
-    <div className="border-b border-[#2a2a2a]">
+    <motion.div
+      {...revealProps(shouldReduceMotion, revealDelay)}
+      className="border-b border-[#2a2a2a]"
+    >
       <button
         type="button"
         onClick={onToggle}
@@ -117,11 +143,12 @@ function MiniSnippetRow({ snippet, expanded, onToggle }: MiniSnippetRowProps) {
           {snippet.code}
         </pre>
       )}
-    </div>
+    </motion.div>
   )
 }
 
 export default function LandingAppPreview() {
+  const shouldReduceMotion = useReducedMotion()
   const [filter, setFilter] = useState<Filter>('all')
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -162,12 +189,22 @@ export default function LandingAppPreview() {
               onFilterChange={handleFilterChange}
               activeTag={activeTag}
               onTagToggle={handleTagToggle}
+              revealDelay={0}
+              shouldReduceMotion={shouldReduceMotion}
             />
 
             <div className="flex-1 flex flex-col min-w-0">
-              <MiniTopBar title={filterLabel} count={visibleSnippets.length} />
+              <MiniTopBar
+                title={filterLabel}
+                count={visibleSnippets.length}
+                revealDelay={0.08}
+                shouldReduceMotion={shouldReduceMotion}
+              />
 
-              <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[#2a2a2a] shrink-0">
+              <motion.div
+                {...revealProps(shouldReduceMotion, 0.16)}
+                className="flex items-center gap-1.5 px-3 py-2 border-b border-[#2a2a2a] shrink-0"
+              >
                 <div className="flex-1 min-w-0 flex items-center gap-1 bg-[#222] rounded px-2 py-1">
                   <Search size={9} className="text-[#595e69] shrink-0" />
                   <input
@@ -194,18 +231,25 @@ export default function LandingAppPreview() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {visibleSnippets.length === 0 ? (
-                  <p className="text-[9px] text-[#595e69] text-center py-6">No snippets</p>
+                  <motion.p
+                    {...revealProps(shouldReduceMotion, 0.24)}
+                    className="text-[9px] text-[#595e69] text-center py-6"
+                  >
+                    No snippets
+                  </motion.p>
                 ) : (
-                  visibleSnippets.map(s => (
+                  visibleSnippets.map((s, index) => (
                     <MiniSnippetRow
                       key={s.id}
                       snippet={s}
                       expanded={expandedId === s.id}
                       onToggle={() => setExpandedId(current => (current === s.id ? null : s.id))}
+                      revealDelay={0.24 + index * 0.08}
+                      shouldReduceMotion={shouldReduceMotion}
                     />
                   ))
                 )}

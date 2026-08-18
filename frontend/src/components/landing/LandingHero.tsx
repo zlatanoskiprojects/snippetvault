@@ -1,34 +1,57 @@
 import { Cloud } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
+const MotionLink = motion.create(Link)
+
 export default function LandingHero() {
+  const shouldReduceMotion = useReducedMotion()
+
+  function revealProps(delay: number) {
+    return shouldReduceMotion ? {} : {
+      initial: { opacity: 0, y: 16 },
+      whileInView: { opacity: 1, y: 0 },
+      viewport: { once: true, amount: 0.2 },
+      transition: { duration: 0.5, ease: 'easeOut' as const, delay },
+    }
+  }
+
   return (
     <section className="flex flex-col items-center text-center px-6 pt-20 pb-16">
-      <h1 className="text-5xl md:text-6xl lg:text-[72px] font-bold leading-tight max-w-4xl mx-auto">
+      <motion.h1
+        {...revealProps(0)}
+        className="text-5xl md:text-6xl lg:text-[72px] font-bold leading-tight max-w-4xl mx-auto"
+      >
         <span className="text-white">Save code. Understand it. </span>
         <span className="text-[#6366f1]">Reuse it faster.</span>
-      </h1>
+      </motion.h1>
 
-      <p className="text-[#9ba3af] text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-6">
+      <motion.p
+        {...revealProps(0.08)}
+        className="text-[#9ba3af] text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-6"
+      >
         SnippetVault gives developers a smarter snippet workspace with local hosting, SaaS availability, and AI-powered code explanation.
-      </p>
+      </motion.p>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10 w-full sm:w-auto">
-        <Link
+        <MotionLink
+          {...revealProps(0.16)}
           to="/login"
           aria-label="Open SnippetVault Cloud sign-in"
           className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-[#222] hover:text-white transition-colors duration-150"
         >
           <Cloud size={16} /> Cloud
-        </Link>
-        <Link
+        </MotionLink>
+        <MotionLink
+          {...revealProps(0.24)}
           to="/docs/quick-start"
           aria-label="Read the SnippetVault Quick Start guide"
           className="w-full sm:w-auto bg-[#6366f1] hover:bg-indigo-500 text-white text-sm font-medium px-8 h-[44px] rounded-lg transition-colors duration-150 flex items-center justify-center"
         >
           Get Started
-        </Link>
-        <a
+        </MotionLink>
+        <motion.a
+          {...revealProps(0.32)}
           href="https://github.com/Zlatanoski/snippetvault"
           aria-label="View SnippetVault on GitHub"
           className="w-full sm:w-auto bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-[#222] hover:text-white transition-colors duration-150 flex items-center justify-center gap-2"
@@ -50,7 +73,7 @@ export default function LandingHero() {
             <path d="M9 18c-4.51 2-5-2-7-2" />
           </svg>
           GitHub
-        </a>
+        </motion.a>
       </div>
     </section>
   )

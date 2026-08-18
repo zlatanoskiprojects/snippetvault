@@ -48,7 +48,9 @@ export const authAccount = pgTable('auth_account', {
     password: text('password'),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+    unique('auth_account_provider_account_unique').on(table.providerId, table.accountId),
+]);
 
 export const authVerification = pgTable('auth_verification', {
     id: serial('id').primaryKey(),
@@ -57,6 +59,24 @@ export const authVerification = pgTable('auth_verification', {
     expiresAt: timestamp('expiresAt', { withTimezone: true }).notNull(),
     createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const pendingEmailChange = pgTable('pending_email_change', {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    oldEmail: varchar('old_email', { length: 255 }).notNull(),
+    newEmail: varchar('new_email', { length: 255 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+    unique('pending_email_change_user_id_unique').on(table.userId),
+]);
+
+export const emailChangeRateLimit = pgTable('email_change_rate_limit', {
+    userId: integer('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+    windowStartedAt: timestamp('window_started_at', { withTimezone: true }).notNull(),
+    requestCount: integer('request_count').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const collection = pgTable('collection', {
