@@ -2,6 +2,7 @@ import LandingNavbar from '../components/landing/LandingNavbar'
 import LandingHero from '../components/landing/LandingHero'
 import LandingAppPreview from '../components/landing/LandingAppPreview'
 import LandingStory from '../components/landing/LandingStory'
+import LandingFooter from '../components/landing/LandingFooter'
 
 interface LandingPageProps {
   onGetStarted: () => void
@@ -16,6 +17,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
         <LandingAppPreview />
         <LandingStory />
       </main>
+      <LandingFooter />
     </div>
   )
 }
