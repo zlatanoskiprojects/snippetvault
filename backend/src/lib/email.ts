@@ -1,6 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function requireEnvironmentVariable(name: 'RESEND_API_KEY' | 'EMAIL_FROM'): string {
+    const value = process.env[name]?.trim();
+    if (!value) {
+        throw new Error(`${name} must be set`);
+    }
+    return value;
+}
+
+const resendApiKey = requireEnvironmentVariable('RESEND_API_KEY');
+const emailFrom = requireEnvironmentVariable('EMAIL_FROM');
+const resend = new Resend(resendApiKey);
 
 export async function sendEmail({
     to,
@@ -13,7 +23,7 @@ export async function sendEmail({
 }): Promise<string> {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'SnippetVault <noreply@snippetvault.me>',
+            from: emailFrom,
             to,
             subject,
             text,

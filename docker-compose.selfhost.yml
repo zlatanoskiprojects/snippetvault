@@ -16,9 +16,7 @@ services:
       start_period: 5s
 
   migrate:
-    build:
-      context: ./backend
-      target: migrate
+    image: ghcr.io/zlatanoski/snippetvault-migrate:${SNIPPETVAULT_VERSION}
     environment:
       DATABASE_URL: postgresql://snippetvault:${POSTGRES_PASSWORD}@postgres:5432/snippetvault
     depends_on:
@@ -27,14 +25,13 @@ services:
     command: pnpm migrate
 
   backend:
-    build:
-      context: ./backend
+    image: ghcr.io/zlatanoski/snippetvault-backend:${SNIPPETVAULT_VERSION}
     restart: unless-stopped
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://snippetvault:${POSTGRES_PASSWORD}@postgres:5432/snippetvault
-      CLIENT_URL: ${CLIENT_URL:-http://localhost:8080}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:8080}
+      CLIENT_URL: ${CLIENT_URL:?CLIENT_URL must be set}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL must be set}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}
       AI_KEY_SECRET: ${AI_KEY_SECRET:-}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
@@ -51,16 +48,28 @@ services:
         condition: service_completed_successfully
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: /api
+    image: ghcr.io/zlatanoski/snippetvault-frontend:${SNIPPETVAULT_VERSION}
     restart: unless-stopped
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.selfhost", "--adapter", "caddyfile"]
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN must be set}
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

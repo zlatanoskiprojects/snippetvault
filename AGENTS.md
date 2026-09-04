@@ -10,49 +10,44 @@ SnippetVault is a full-stack code snippet manager. Users authenticate, then crea
 
 ### Backend (`cd backend`)
 ```bash
-npm run dev        # start with nodemon + ts-node (auto-restart on changes)
-npm start          # run compiled build/index.js
-npm run build      # tsc compile to build/
-npm run typecheck  # tsc --noEmit
+pnpm dev        # start with nodemon + ts-node (auto-restart on changes)
+pnpm start      # run compiled build/index.js
+pnpm build      # tsc compile to build/
+pnpm typecheck  # tsc --noEmit
 ```
 
 ### Frontend (`cd frontend`)
 ```bash
-npm run dev      # Vite dev server (http://localhost:5173)
-npm run build    # production build (vite build — no tsc step, so run tsc manually to typecheck)
-npm run lint     # ESLint
-npm run preview  # preview production build
+pnpm dev                    # Vite dev server (http://localhost:5173)
+pnpm build                  # production build
+pnpm exec tsc --noEmit      # typecheck
+pnpm lint                   # ESLint
+pnpm preview                # preview production build
 ```
 
 There are no tests yet.
 
 ## Environment Setup
 
-Two `.env` files are involved:
+- **Repo root `.env`** — private configuration consumed by Docker Compose. The local stack uses `docker-compose.yml`; the public HTTPS stack uses `docker-compose.selfhost.yml`. These modes require different URL values and should not share one unchanged `.env`.
+- **`.env.selfhost.example`** — committed template for the public self-hosted stack. PostgreSQL passwords must contain at least 32 cryptographically random characters from `A-Z`, `a-z`, `0-9`, `_`, and `-` because they are embedded directly in `DATABASE_URL`.
+- **`backend/.env`** — private environment used when running or deploying the backend outside Docker Compose. Do not commit or copy it into Docker images.
+- **`backend/.env.example`** — documentation for environment variables understood by the backend.
+- **`frontend/.env.production`** — official `snippetvault.me` frontend build configuration. Docker self-hosted builds use the `VITE_API_URL=/api` build argument instead.
 
-- **Repo root `.env`** — consumed by `docker-compose.yml` (`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`). `docker compose up -d db` starts Postgres 16 on host port **5433** (container 5432) and seeds it from `backend/drizzle/0000_wise_shen.sql` on first start. See `quickstart.md` for the full local-dev walkthrough.
-- **`backend/.env`** — used by the app:
-```
-PORT=3000
-DATABASE_URL=postgresql://user:password@localhost:5433/snippetvault
-CLIENT_URL=http://localhost:5173
-BETTER_AUTH_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=placeholder
-GOOGLE_CLIENT_SECRET=placeholder
-GITHUB_CLIENT_ID=placeholder
-GITHUB_CLIENT_SECRET=placeholder
-```
-Social provider credentials are optional — `backend/src/lib/auth.ts` only registers a Google/GitHub provider when both its env vars are set and not the literal string `placeholder`. `backend/.env.example` is stale (it still lists `SESSION_SECRET`, which is no longer used).
+`docker compose up --build` starts PostgreSQL, runs the one-shot Drizzle `migrate` service, starts the private backend after migrations succeed, and serves the frontend at `http://localhost:8080`. PostgreSQL and the backend are not published to host ports. The HTTPS stack uses `docker compose -f docker-compose.selfhost.yml up -d --build` and publishes only ports 80 and 443 through the frontend Caddy server.
+
+Social provider credentials are optional — `backend/src/lib/auth.ts` only registers a Google/GitHub provider when both its environment variables are set and are not the literal string `placeholder`.
 
 Schema is defined in Drizzle (`backend/src/db/schema.ts`); `backend/drizzle.config.ts` + `backend/drizzle/` hold generated migrations. The Drizzle schema is authoritative.
 
-The root `package.json`/`pnpm-lock.yaml` only hold stray CodeMirror deps — the real manifests are `backend/package.json` and `frontend/package.json` (installed with npm).
+The root `package.json`/`pnpm-lock.yaml` only hold stray CodeMirror dependencies. Install the backend and frontend independently with pnpm using their respective manifests and lockfiles.
 
 ## Architecture
 
 ### Backend
 
-- **Entry point**: `backend/src/index.ts` — applies `helmet` + the CORS allowlist, mounts the Better Auth handler at `/api/auth/{*any}` **before** `express.json()` (Better Auth needs the raw body — keep that ordering), then mounts resource routers under `/api/`, then serves the built frontend (`dist/frontend-build`) as static files with a catch-all route, so the backend can serve the SPA in production
+- **Entry point**: `backend/src/index.ts` — applies `helmet` + the CORS allowlist, exposes `GET /api/health`, mounts the Better Auth handler at `/api/auth/{*any}` **before** `express.json()` (Better Auth needs the raw body — keep that ordering), then mounts resource routers under `/api/`. It does not serve the frontend; the official frontend is deployed separately and Docker builds serve it through Caddy
 - **Database**: `backend/src/lib/db.ts` exports a Drizzle instance (`db`, default export) wrapping a `pg` `Pool`. Every route imports `db` from `../lib/db` and builds queries with Drizzle's query builder (`eq`, `and`, `or`, `ilike`, `sql`, etc. from `drizzle-orm`) — no raw SQL strings except inside `sql\`...\`` fragments
 - **Schema ↔ API casing convention**: Drizzle table columns are camelCase (`userId`, `collectionId`, `createdAt`). Every route maps query results through a local `mapX`/`mapXWithY` function that translates fields to snake_case before sending JSON (`user_id`, `collection_id`, `created_at`) — the wire format is intentionally snake_case even though the ORM layer is camelCase. Keep new endpoints consistent with this
 - **Auth**: [Better Auth](https://better-auth.com) (`better-auth` package), session-based. Configured in `backend/src/lib/auth.ts`: Drizzle adapter (`provider: 'pg'`, serial integer IDs), email+password enabled, optional Google/GitHub social providers, and custom field mapping onto the existing `users` table (`name`→`displayName`, `image`→`avatarUrl`, `createdAt`→`registeredAt`) plus a `databaseHooks.user.create.before` hook that derives `username` from the signup name. Auth state lives in the `auth_session`/`auth_account`/`auth_verification` tables. `backend/src/middleware/authMiddleware.ts` resolves the session via `auth.api.getSession(fromNodeHeaders(req.headers))` and sets `req.userId` (a `number`) for downstream handlers. There is no custom `routes/auth.ts` — Better Auth serves all `/api/auth/*` endpoints itself. (`express-session`, `connect-pg-simple`, and `bcryptjs` remain in `package.json` but are vestigial — do not build on them)
@@ -205,3 +200,81 @@ Each code language has a colored dot + text + dark tinted background:
 - **Snippet rows:** `hover:bg-[#1f1f1f] cursor-pointer` — entire row is clickable
 - **Responsiveness:** Sidebar collapses to a drawer on mobile (`lg:` breakpoint for persistent sidebar)
 - **Truncation:** Always use `truncate` + `min-w-0` on flex children that hold text — never let rows overflow horizontally
+
+## Deploy Agent — SnippetVault (AWS)
+
+This section defines how Codex should behave when the user asks to **deploy**,
+**redeploy**, or **check deployment health** for SnippetVault. Follow it exactly
+when a deploy task is requested — do not improvise flags or skip steps.
+
+### Scope & permissions
+
+- You have permission to run `pnpm`, `aws`, `eb`, and `curl` commands without
+  asking for confirmation on each one, as long as they match the commands
+  listed below. Destructive or unlisted AWS commands (e.g. anything that
+  deletes a resource, changes IAM, or modifies billing) always require
+  explicit user approval first.
+- These tasks require network access. If it is unavailable, stop and report
+  the blocker instead of continuing with partial deployment steps.
+
+### Environment
+
+- Frontend: React/Vite app, S3 bucket `snippetvault-frontend` (region
+  `eu-central-1`), CloudFront distribution `E2SYZG5BTAFCXA`, live at
+  `https://snippetvault.me`.
+- Backend: Node/Express on Elastic Beanstalk (Node 22 platform), live at
+  `https://api.snippetvault.me`. Deployed via `eb deploy` from the backend
+  repo root (must contain `.elasticbeanstalk/config.yml`).
+
+### Task: Deploy frontend
+
+Run, in order, and inspect the output of each before proceeding to the next:
+
+1. `pnpm build` — must exit 0. If it fails, stop and report the build
+   error; do not attempt to deploy a stale `dist/`.
+2. `aws s3 sync dist/ s3://snippetvault-frontend --delete --no-cli-pager` —
+   review the sync output; if it uploads 0 files, something is wrong (empty
+   or missing `dist/`) — stop and report rather than invalidating a
+   nonexistent deploy.
+3. `aws cloudfront create-invalidation --distribution-id E2SYZG5BTAFCXA --paths "/*" --no-cli-pager` —
+   capture the `Invalidation.Id` from the JSON output.
+4. Poll `aws cloudfront get-invalidation --distribution-id E2SYZG5BTAFCXA --id <id> --no-cli-pager`
+   every ~10s until `Invalidation.Status` is `Completed`. Don't poll more
+   than once every 10 seconds. If it's not done after ~10 minutes, report
+   that it's taking unusually long rather than continuing to poll silently.
+5. `curl -s -o /dev/null -w "%{http_code}" https://snippetvault.me` — confirm
+   `200`. If not, report the actual status code and do not assume success.
+
+### Task: Deploy backend
+
+1. Verify the Elastic Beanstalk environment defines every required backend
+   variable, including `RESEND_API_KEY` and `EMAIL_FROM`, without printing
+   their values. Stop if either is missing.
+2. `eb deploy` from the backend repo root. Watch the output live — EB CLI
+   streams deploy events; if it reports a failed health transition or a
+   deployment abort, stop and surface the actual error text, don't just say
+   "deploy failed."
+3. Poll `eb status` every ~10s until it reports `Status: Ready` and
+   `Health: Green`. If health is `Yellow` or `Red`, run `eb health --refresh`
+   and/or `eb logs` to pull the actual cause before reporting back — don't
+   just say "unhealthy," say why.
+4. `curl -s -o /dev/null -w "%{http_code}" https://api.snippetvault.me/api/health`
+   and confirm `200`.
+
+### Task: Full deploy
+
+Do frontend first, then backend, in the sequence above. If frontend fails,
+stop — do not proceed to backend deploy.
+
+### Task: Status check only (no deploy)
+
+Run the `curl` checks against both URLs and `eb status`, report current
+state. Do not run `pnpm build`, `s3 sync`, `eb deploy`, or create any
+CloudFront invalidation for a status-only check.
+
+### Reporting back
+
+After any deploy task, give a short pass/fail summary per component
+(frontend / backend), not a raw transcript of every command. Include the
+actual HTTP status codes and EB health status in the summary. If something
+failed, include the specific error, not just which step it was.
