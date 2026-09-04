@@ -16,9 +16,7 @@ services:
       start_period: 5s
 
   migrate:
-    build:
-      context: ./backend
-      target: migrate
+    image: ghcr.io/zlatanoski/snippetvault-migrate:${SNIPPETVAULT_VERSION}
     environment:
       DATABASE_URL: postgresql://snippetvault:${POSTGRES_PASSWORD}@postgres:5432/snippetvault
     depends_on:
@@ -27,8 +25,7 @@ services:
     command: pnpm migrate
 
   backend:
-    build:
-      context: ./backend
+    image: ghcr.io/zlatanoski/snippetvault-backend:${SNIPPETVAULT_VERSION}
     restart: unless-stopped
     environment:
       PORT: 3000
@@ -51,10 +48,7 @@ services:
         condition: service_completed_successfully
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: /api
+    image: ghcr.io/zlatanoski/snippetvault-frontend:${SNIPPETVAULT_VERSION}
     restart: unless-stopped
     command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.selfhost", "--adapter", "caddyfile"]
     environment:
