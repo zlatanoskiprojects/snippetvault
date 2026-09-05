@@ -38,28 +38,28 @@ export default function Select<T extends string | number>({
       <BaseSelect.Trigger
         id={id}
         className={cn(
-          'w-full h-[38px] flex items-center justify-between gap-2 bg-[#222] border border-[#2a2a2a] rounded-md text-sm text-white px-3 cursor-pointer transition-colors duration-150 focus:outline-none focus:border-[#6366f1] data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed',
+          'w-full h-[38px] flex items-center justify-between gap-2 bg-control border border-border-default rounded-md text-sm text-primary px-3 cursor-pointer transition-colors duration-150 focus:outline-none focus:border-accent data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed',
           className
         )}
         {...rest}
       >
         <BaseSelect.Value placeholder={placeholder} className="truncate" />
-        <BaseSelect.Icon className="shrink-0 text-[#595e69] leading-none">
+        <BaseSelect.Icon className="shrink-0 text-muted leading-none">
           <ChevronDown size={14} />
         </BaseSelect.Icon>
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner className="z-50 outline-none" sideOffset={4}>
-          <BaseSelect.Popup className="min-w-[var(--anchor-width)] max-h-[280px] overflow-y-auto bg-[#1a1a1a] border border-[#2a2a2a] rounded-md py-1 shadow-lg shadow-black/40 outline-none">
+          <BaseSelect.Popup className="min-w-[var(--anchor-width)] max-h-[280px] overflow-y-auto bg-surface border border-border-default rounded-md py-1 shadow-lg shadow-overlay/40 outline-none">
             <BaseSelect.List>
               {options.map(option => (
                 <BaseSelect.Item
                   key={option.value}
                   value={option.value}
-                  className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-[#9ba3af] cursor-pointer select-none outline-none transition-colors duration-150 data-[highlighted]:bg-white/5 data-[highlighted]:text-white data-[selected]:text-[#6366f1]"
+                  className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-secondary cursor-pointer select-none outline-none transition-colors duration-150 data-[highlighted]:bg-interactive-overlay/5 data-[highlighted]:text-primary data-[selected]:text-accent"
                 >
                   <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
-                  <BaseSelect.ItemIndicator className="shrink-0 text-[#6366f1]">
+                  <BaseSelect.ItemIndicator className="shrink-0 text-accent">
                     <Check size={14} />
                   </BaseSelect.ItemIndicator>
                 </BaseSelect.Item>

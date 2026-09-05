@@ -10,7 +10,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ accentColor, accentClassName = 'h-[3px]', className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg overflow-hidden', className)}
+      className={cn('bg-surface border border-border-default rounded-lg overflow-hidden', className)}
       {...props}
     >
       {accentColor && (

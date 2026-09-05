@@ -12,7 +12,7 @@ interface TopBarProps {
 
 export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSearch, title = 'All snippets', onBack }: TopBarProps) {
   return (
-    <header className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a]">
+    <header className="flex items-end justify-between px-6 py-3 border-b border-border-default">
       <div className="flex items-center gap-2 min-w-0">
         {onBack && (
           <Button
@@ -24,8 +24,8 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           </Button>
         )}
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-white leading-tight truncate">{title}</h1>
-          <p className="text-xs text-[#595e69] mt-0.5">{snippetCount} snippets</p>
+          <h1 className="text-lg font-semibold text-primary leading-tight truncate">{title}</h1>
+          <p className="text-xs text-muted mt-0.5">{snippetCount} snippets</p>
         </div>
       </div>
 

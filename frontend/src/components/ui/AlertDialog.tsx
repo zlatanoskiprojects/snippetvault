@@ -29,14 +29,14 @@ export default function ConfirmDialog({
   return (
     <BaseAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseAlertDialog.Portal>
-        <BaseAlertDialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+        <BaseAlertDialog.Backdrop className="fixed inset-0 z-50 bg-overlay/60 backdrop-blur-sm transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
         <BaseAlertDialog.Viewport className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <BaseAlertDialog.Popup className="w-full max-w-md bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg outline-none p-6 flex flex-col gap-2 transition-all duration-150 data-[starting-style]:opacity-0 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[ending-style]:scale-95">
-            <BaseAlertDialog.Title className="text-[15px] font-semibold text-white">
+          <BaseAlertDialog.Popup className="w-full max-w-md bg-surface border border-border-default rounded-lg outline-none p-6 flex flex-col gap-2 transition-all duration-150 data-[starting-style]:opacity-0 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[ending-style]:scale-95">
+            <BaseAlertDialog.Title className="text-[15px] font-semibold text-primary">
               {title}
             </BaseAlertDialog.Title>
             {description && (
-              <BaseAlertDialog.Description className="text-[13px] text-[#9ba3af] leading-relaxed">
+              <BaseAlertDialog.Description className="text-[13px] text-secondary leading-relaxed">
                 {description}
               </BaseAlertDialog.Description>
             )}
@@ -48,7 +48,7 @@ export default function ConfirmDialog({
                 variant={danger ? 'danger' : 'primary'}
                 onClick={onConfirm}
                 disabled={confirming}
-                className={cn('w-full sm:w-auto', danger && 'bg-[#3d1414] hover:bg-[#4a1a1a] text-[#ef4444]')}
+                className={cn('w-full sm:w-auto', danger && 'bg-danger-action hover:bg-danger-action-hover text-danger')}
               >
                 {confirmLabel}
               </Button>

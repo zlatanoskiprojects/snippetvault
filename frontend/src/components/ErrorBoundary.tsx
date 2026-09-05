@@ -23,15 +23,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (!this.state.hasError) return this.props.children
 
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-app flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
-          <h1 className="text-white text-lg font-semibold">Something went wrong</h1>
-          <p className="text-[#9ba3af] text-sm mt-2">
+          <h1 className="text-primary text-lg font-semibold">Something went wrong</h1>
+          <p className="text-secondary text-sm mt-2">
             An unexpected error occurred while rendering this page.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-6 rounded-md bg-[#6366f1] hover:bg-indigo-500 transition-colors duration-150 text-white text-sm px-4 py-2"
+            className="mt-6 rounded-md bg-accent hover:bg-accent-hover transition-colors duration-150 text-on-accent text-sm px-4 py-2"
           >
             Reload page
           </button>

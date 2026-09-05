@@ -13,7 +13,7 @@ export interface TabsListProps extends ComponentProps<typeof BaseTabs.List> {}
 export function TabsList({ className, children, ...props }: TabsListProps) {
   return (
     <BaseTabs.List
-      className={cn('relative flex items-end gap-8 border-b border-[#2a2a2a]', className)}
+      className={cn('relative flex items-end gap-8 border-b border-border-default', className)}
       {...props}
     >
       {children}
@@ -28,7 +28,7 @@ export function Tab({ className, ...props }: TabsTabProps) {
   return (
     <BaseTabs.Tab
       className={cn(
-        'py-2.5 sm:py-0 sm:pb-2 text-sm font-normal text-[#9ba3af] outline-none transition-colors duration-150 hover:text-white data-[active]:text-white data-[active]:font-medium',
+        'py-2.5 sm:py-0 sm:pb-2 text-sm font-normal text-secondary outline-none transition-colors duration-150 hover:text-primary data-[active]:text-primary data-[active]:font-medium',
         className
       )}
       {...props}
@@ -40,7 +40,7 @@ function TabsIndicator({ className }: { className?: string }) {
   return (
     <BaseTabs.Indicator
       className={cn(
-        'absolute bottom-0 h-[2px] bg-[#6366f1] rounded-full transition-all duration-150 [left:var(--active-tab-left)] [width:var(--active-tab-width)]',
+        'absolute bottom-0 h-[2px] bg-accent rounded-full transition-all duration-150 [left:var(--active-tab-left)] [width:var(--active-tab-width)]',
         className
       )}
     />

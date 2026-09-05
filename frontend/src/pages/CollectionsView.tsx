@@ -47,7 +47,7 @@ export default function CollectionsView({ onSelectCollection, onMenuClick }: Col
 
   return (
     <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
-      <header className="flex items-end justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
+      <header className="flex items-end justify-between px-6 py-3 border-b border-border-default shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           {onMenuClick && (
             <Button
@@ -60,8 +60,8 @@ export default function CollectionsView({ onSelectCollection, onMenuClick }: Col
             </Button>
           )}
           <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-white leading-tight">Collections</h1>
-            <p className="text-xs text-[#595e69] mt-0.5">{collections.length} collections</p>
+            <h1 className="text-lg font-semibold text-primary leading-tight">Collections</h1>
+            <p className="text-xs text-muted mt-0.5">{collections.length} collections</p>
           </div>
         </div>
         <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs shrink-0">
@@ -71,11 +71,11 @@ export default function CollectionsView({ onSelectCollection, onMenuClick }: Col
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-[#595e69] text-sm">Loading collections…</p>
+          <p className="text-muted text-sm">Loading collections…</p>
         </div>
       ) : error ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-[#ef4444] text-sm">Failed to load collections: {error}</p>
+          <p className="text-danger text-sm">Failed to load collections: {error}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6 overflow-y-auto">
@@ -83,7 +83,7 @@ export default function CollectionsView({ onSelectCollection, onMenuClick }: Col
             const collectionWithMeta: CollectionWithMeta = {
               ...collection,
               snippetCount: 0,
-              accentColor: '#6366f1',
+              accentColor: 'var(--color-accent)',
             }
             return (
               <CollectionCard

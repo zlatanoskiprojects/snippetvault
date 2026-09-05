@@ -55,10 +55,10 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   const [searchParams, setSearchParams] = useSearchParams()
 
   const stats = useMemo(() => [
-    { value: snippets.length,                                                    label: 'Total snippets',  accentColor: '#3d77fc' },
-    { value: snippets.filter(s => s.visibility === 'public').length,             label: 'Public snippets', accentColor: '#22c55e' },
-    { value: collections.length,                                                  label: 'Collections',     accentColor: '#8c5af3' },
-    { value: new Set(snippets.flatMap(s => s.tags || [])).size,                  label: 'Tags used',       accentColor: '#fba528' },
+    { value: snippets.length,                                                    label: 'Total snippets',  accentColor: 'var(--color-category-blue)' },
+    { value: snippets.filter(s => s.visibility === 'public').length,             label: 'Public snippets', accentColor: 'var(--color-category-green)' },
+    { value: collections.length,                                                  label: 'Collections',     accentColor: 'var(--color-category-purple)' },
+    { value: new Set(snippets.flatMap(s => s.tags || [])).size,                  label: 'Tags used',       accentColor: 'var(--color-category-orange)' },
   ], [snippets, collections])
 
   const [activeTab, setActiveTab] = useState(
@@ -343,23 +343,23 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-[#0f0f0f]">
-        <Spinner className="text-white" />
+      <div className="flex flex-1 items-center justify-center bg-app">
+        <Spinner className="text-primary" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="flex flex-1 flex-col min-w-0 p-6 bg-[#0f0f0f]">
+      <div className="flex flex-1 flex-col min-w-0 p-6 bg-app">
         <Alert>Failed to load profile: {error}</Alert>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-[#0f0f0f]">
-      <div className="flex items-center gap-3 px-6 py-3 border-b border-[#2a2a2a] shrink-0">
+    <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-app">
+      <div className="flex items-center gap-3 px-6 py-3 border-b border-border-default shrink-0">
         {onMenuClick && (
           <Button
             variant="secondary"
@@ -380,7 +380,7 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
             <ArrowLeft size={16} />
           </Button>
         )}
-        <span className="text-lg font-semibold text-white">Profile &amp; Settings</span>
+        <span className="text-lg font-semibold text-primary">Profile &amp; Settings</span>
       </div>
 
       <TabsRoot
@@ -402,8 +402,8 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
             <div className="flex-1 max-w-[480px] flex flex-col gap-6">
               <div className="flex items-start gap-4">
                 <div className="relative w-[80px] h-[80px] shrink-0">
-                  <div className="w-[80px] h-[80px] rounded-full bg-[#2e2457] flex items-center justify-center">
-                    <span className="text-[#6366f1] text-[22px] font-bold">{avatarLetter}</span>
+                  <div className="w-[80px] h-[80px] rounded-full bg-avatar flex items-center justify-center">
+                    <span className="text-accent text-[22px] font-bold">{avatarLetter}</span>
                   </div>
                   <Button
                     variant="secondary"
@@ -414,8 +414,8 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
                 </div>
 
                 <div className="flex flex-col gap-1 pt-1">
-                  <span className="text-[15px] font-medium text-white">@{user?.username}</span>
-                  <span className="text-xs text-[#595e69]">{user?.email}</span>
+                  <span className="text-[15px] font-medium text-primary">@{user?.username}</span>
+                  <span className="text-xs text-muted">{user?.email}</span>
                 </div>
               </div>
 
@@ -460,8 +460,8 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
                 )}
 
                 {emailChanged && !user?.has_password && (
-                  <div className="flex flex-col gap-2 rounded-lg border border-[#2a2a2a] bg-[#151515] p-3">
-                    <p className="text-xs text-[#9ba3af]">
+                  <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-muted p-3">
+                    <p className="text-xs text-secondary">
                       Re-authenticate with a linked provider to continue.
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -478,7 +478,7 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
                       ))}
                     </div>
                     {user?.oauth_providers.length === 0 && (
-                      <p className="text-xs text-[#ef4444]">
+                      <p className="text-xs text-danger">
                         No linked OAuth provider is available for re-authentication.
                       </p>
                     )}
@@ -512,19 +512,19 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
                 </Button>
               </div>
 
-              <div className="w-full bg-[#1c0d0d] border border-[#611a1a] rounded-lg px-4 py-4 mt-2">
+              <div className="w-full bg-danger-zone border border-danger-zone-border rounded-lg px-4 py-4 mt-2">
                 <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5 text-[#ef4444] text-[14px] font-medium">
+                  <span className="flex items-center gap-1.5 text-danger text-[14px] font-medium">
                     <TriangleAlert size={14} /> Danger Zone
                   </span>
                 </div>
-                <p className="text-[#595e69] text-xs mt-1">
+                <p className="text-muted text-xs mt-1">
                   Permanently delete your account and all associated data.
                 </p>
                 <Button
                   variant="danger"
                   onClick={() => setDeleteConfirmOpen(true)}
-                  className="bg-[#3d1414] hover:bg-[#4a1a1a] text-[12px] h-[34px] px-3 mt-3"
+                  className="bg-danger-action hover:bg-danger-action-hover text-[12px] h-[34px] px-3 mt-3"
                 >
                   <Trash2 size={14} /> Delete account
                 </Button>
@@ -543,7 +543,7 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
             </div>
 
             <div className="w-full lg:w-[420px] xl:w-[500px] shrink-0 flex flex-col gap-4">
-              <div className="text-[15px] font-medium text-white mb-2">Your stats</div>
+              <div className="text-[15px] font-medium text-primary mb-2">Your stats</div>
               <div className="grid grid-cols-2 gap-3">
                 {stats.map(stat => (
                   <StatCard
@@ -560,14 +560,14 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
           <div className="flex flex-col gap-6 px-6 py-6 max-w-[480px]">
             <div className="flex flex-col gap-4">
               {!user?.has_password && (
-                <p className="text-sm text-[#9ba3af] leading-6">
+                <p className="text-sm text-secondary leading-6">
                   Create a password to finish setting up your account and enable email sign-in.
                 </p>
               )}
 
               {user && !user.has_password && passwordReauthRequired && (
-                <div className="flex flex-col gap-2 rounded-lg border border-[#2a2a2a] bg-[#151515] p-3">
-                  <p className="text-xs text-[#9ba3af]">
+                <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-muted p-3">
+                  <p className="text-xs text-secondary">
                     Your session is older than five minutes. Re-authenticate with a linked provider,
                     then enter the new password again.
                   </p>
@@ -585,7 +585,7 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
                     ))}
                   </div>
                   {user.oauth_providers.length === 0 && (
-                    <p className="text-xs text-[#ef4444]">
+                    <p className="text-xs text-danger">
                       No linked OAuth provider is available for re-authentication.
                     </p>
                   )}
@@ -634,7 +634,7 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
             </Button>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-48 text-[#595e69] text-sm">
+          <div className="flex items-center justify-center h-48 text-muted text-sm">
             This section is coming soon.
           </div>
         )}

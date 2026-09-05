@@ -61,24 +61,24 @@ export default function ShareDialog({ open, onClose, snippet, onUpdate }: ShareD
     >
       <div className="flex flex-col gap-5 px-6 py-5">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-6 gap-3 text-[#9ba3af]">
+          <div className="flex flex-col items-center justify-center py-6 gap-3 text-secondary">
             <Spinner size="sm" />
             <span className="text-xs">Updating link visibility...</span>
           </div>
         ) : isPublic ? (
           <>
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[#9ba3af] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+              <span className="text-xs font-medium text-secondary flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success-status animate-pulse" />
                 Public Link
               </span>
-              <p className="text-[12px] text-[#595e69] leading-relaxed">
+              <p className="text-[12px] text-muted leading-relaxed">
                 Anyone with this link can view this snippet. No login required.
               </p>
             </div>
 
             <div className="flex gap-2">
-              <div className="flex-1 bg-[#121212] border border-[#2a2a2a] rounded-md px-3 h-[38px] flex items-center text-xs text-white overflow-x-auto whitespace-nowrap scrollbar-none">
+              <div className="flex-1 bg-panel-header border border-border-default rounded-md px-3 h-[38px] flex items-center text-xs text-primary overflow-x-auto whitespace-nowrap scrollbar-none">
                 {shareLink}
               </div>
               <Button
@@ -90,12 +90,12 @@ export default function ShareDialog({ open, onClose, snippet, onUpdate }: ShareD
               </Button>
             </div>
 
-            <div className="border-t border-[#2a2a2a] my-1" />
+            <div className="border-t border-border-default my-1" />
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <div className="flex flex-col">
-                <span className="text-xs font-semibold text-white">Revoke sharing?</span>
-                <span className="text-[11px] text-[#595e69]">Make private to disable this link.</span>
+                <span className="text-xs font-semibold text-primary">Revoke sharing?</span>
+                <span className="text-[11px] text-muted">Make private to disable this link.</span>
               </div>
               <Button
                 variant="danger"
@@ -110,11 +110,11 @@ export default function ShareDialog({ open, onClose, snippet, onUpdate }: ShareD
         ) : (
           <>
             <div className="flex flex-col gap-2 py-2 text-center items-center">
-              <div className="w-12 h-12 rounded-full bg-[#222] border border-[#2a2a2a] flex items-center justify-center mb-1 select-none text-[#9ba3af]">
+              <div className="w-12 h-12 rounded-full bg-control border border-border-default flex items-center justify-center mb-1 select-none text-secondary">
                 <Lock size={20} />
               </div>
-              <span className="text-sm font-semibold text-white">This snippet is private</span>
-              <p className="text-xs text-[#9ba3af] max-w-[280px] leading-relaxed">
+              <span className="text-sm font-semibold text-primary">This snippet is private</span>
+              <p className="text-xs text-secondary max-w-[280px] leading-relaxed">
                 To share this snippet with others, you need to make it public.
               </p>
             </div>

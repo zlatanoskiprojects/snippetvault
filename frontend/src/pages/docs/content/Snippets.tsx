@@ -30,9 +30,9 @@ export default function Snippets() {
           <><InlineCode>language</InlineCode> — required, picked from the supported language list below.</>,
           <><InlineCode>code</InlineCode> — required, up to 65,000 characters.</>,
           <><InlineCode>collection</InlineCode> — optional. Snippets don't need a collection; see{' '}
-            <Link to="/docs/collections" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">Collections</Link>.
+            <Link to="/docs/collections" className="text-accent hover:text-accent-text-hover transition-colors duration-150">Collections</Link>.
           </>,
-          <>tags — optional at creation time; see <Link to="/docs/tags" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">Tags</Link>.</>,
+          <>tags — optional at creation time; see <Link to="/docs/tags" className="text-accent hover:text-accent-text-hover transition-colors duration-150">Tags</Link>.</>,
         ]}
       />
 
@@ -59,7 +59,7 @@ export default function Snippets() {
         Every snippet has a <InlineCode>visibility</InlineCode> of <InlineCode>private</InlineCode>{' '}
         (the default) or <InlineCode>public</InlineCode>. Switching a snippet to public generates a
         share link you can hand out without giving someone access to your account — see{' '}
-        <Link to="/docs/public-sharing" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+        <Link to="/docs/public-sharing" className="text-accent hover:text-accent-text-hover transition-colors duration-150">
           Public Sharing
         </Link>{' '}
         for the details.
@@ -69,7 +69,7 @@ export default function Snippets() {
       <DocParagraph>
         Editing a snippet reuses the same form. If the edit changes the code, a version snapshot of
         the previous code may be saved automatically — see{' '}
-        <Link to="/docs/version-history" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+        <Link to="/docs/version-history" className="text-accent hover:text-accent-text-hover transition-colors duration-150">
           Version History
         </Link>. Deleting a snippet is permanent and only works on snippets you own.
       </DocParagraph>

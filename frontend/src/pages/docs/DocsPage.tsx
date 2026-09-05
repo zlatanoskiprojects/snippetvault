@@ -18,8 +18,8 @@ export default function DocsPage() {
 
   return (
     <DocsLayout slug={page.slug} title={page.title} headings={page.headings}>
-      <h1 className="text-2xl font-semibold text-white">{page.title}</h1>
-      <p className="text-sm text-[#9ba3af] mt-1 mb-2">{page.description}</p>
+      <h1 className="text-2xl font-semibold text-primary">{page.title}</h1>
+      <p className="text-sm text-secondary mt-1 mb-2">{page.description}</p>
       <PageComponent />
       <PrevNextNav prev={prev} next={next} />
     </DocsLayout>

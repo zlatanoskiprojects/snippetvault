@@ -10,7 +10,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, invalid, ...props }, ref) => (
     <textarea
       ref={ref}
-      className={cn(inputBase, 'h-[60px] py-2 resize-none', invalid && 'border-[#ef4444]', className)}
+      className={cn(inputBase, 'h-[60px] py-2 resize-none', invalid && 'border-danger', className)}
       {...props}
     />
   )

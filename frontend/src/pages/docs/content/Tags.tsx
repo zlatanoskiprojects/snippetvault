@@ -51,7 +51,7 @@ export default function Tags() {
         The dashboard's Search view lets you multi-select tag chips (snippets must match every
         selected tag) alongside a text query. Tag names are also one of the fields the backend's
         optional <InlineCode>?q=</InlineCode> search parameter matches against — see{' '}
-        <Link to="/docs/search" className="text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+        <Link to="/docs/search" className="text-accent hover:text-accent-text-hover transition-colors duration-150">
           Search
         </Link>{' '}
         for how the two relate.

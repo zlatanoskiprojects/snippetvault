@@ -140,7 +140,7 @@ export default function Dashboard() {
 
   return (
     <UserProvider>
-    <div className="flex h-dvh bg-[#0f0f0f] text-white overflow-hidden">
+    <div className="flex h-dvh bg-app text-primary overflow-hidden">
       <div className="hidden lg:flex">
         <Sidebar
           snippets={snippets}
@@ -158,7 +158,7 @@ export default function Dashboard() {
 
       <BaseDialog.Root open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <BaseDialog.Portal>
-          <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+          <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-overlay/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
           <BaseDialog.Popup className="fixed left-0 top-0 z-40 h-full lg:hidden outline-none transition-transform duration-150 data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full">
             <Sidebar
               snippets={snippets}
@@ -189,7 +189,7 @@ export default function Dashboard() {
             .filter(s => !activeTag || (s.tags || []).includes(activeTag))
           return loading ? (
             <div className="flex flex-1 items-center justify-center">
-              <Spinner className="text-white" />
+              <Spinner className="text-primary" />
             </div>
           ) : error ? (
             <div className="flex flex-1 flex-col min-w-0 p-6">
@@ -197,7 +197,7 @@ export default function Dashboard() {
             </div>
           ) : selectedSnippet ? (
             <>
-              <div className="flex-1 min-w-0 overflow-y-auto border-r border-[#2a2a2a]">
+              <div className="flex-1 min-w-0 overflow-y-auto border-r border-border-default">
                 <SnippetList
                   snippets={displayedSnippets}
                   selectedSnippetId={selectedSnippet.id}
@@ -205,7 +205,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="hidden lg:flex w-[44%] lg:w-[520px] xl:w-[656px] shrink-0 flex-col bg-[#101010]">
+              <div className="hidden lg:flex w-[44%] lg:w-[520px] xl:w-[656px] shrink-0 flex-col bg-panel">
                 <SnippetDetailPanel
                   key={selectedSnippet.id}
                   snippet={selectedSnippet}
@@ -217,7 +217,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="fixed inset-0 z-40 bg-[#101010] flex flex-col lg:hidden">
+              <div className="fixed inset-0 z-40 bg-panel flex flex-col lg:hidden">
                 <SnippetDetailPanel
                   key={selectedSnippet.id}
                   snippet={selectedSnippet}

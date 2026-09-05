@@ -44,8 +44,8 @@ export default function DocsToc({ headings, scrollRef }: DocsTocProps) {
 
   return (
     <nav aria-label="On this page">
-      <p className="text-[9px] font-medium text-[#595e69] uppercase tracking-wider mb-2">On this page</p>
-      <div className="flex flex-col border-l border-[#2a2a2a]">
+      <p className="text-[9px] font-medium text-muted uppercase tracking-wider mb-2">On this page</p>
+      <div className="flex flex-col border-l border-border-default">
         {headings.map(heading => (
           <a
             key={heading.id}
@@ -53,7 +53,7 @@ export default function DocsToc({ headings, scrollRef }: DocsTocProps) {
             onClick={e => { e.preventDefault(); handleClick(heading.id) }}
             className={cn(
               'block -ml-px border-l pl-3 py-1 text-[13px] transition-colors duration-150',
-              activeId === heading.id ? 'text-[#6366f1] border-[#6366f1]' : 'text-[#595e69] hover:text-[#9ba3af] border-transparent'
+              activeId === heading.id ? 'text-accent border-accent' : 'text-muted hover:text-secondary border-transparent'
             )}
           >
             {heading.label}

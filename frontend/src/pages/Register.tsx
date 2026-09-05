@@ -61,27 +61,27 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-app flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px]">
 
         <div className="flex flex-col items-center mb-7">
-          <div className="rounded-lg bg-[#6366f1] w-9 h-9 flex items-center justify-center mb-3">
-            <span className="text-[13px] font-bold font-mono text-white">&lt;/&gt;</span>
+          <div className="rounded-lg bg-accent w-9 h-9 flex items-center justify-center mb-3">
+            <span className="text-[13px] font-bold font-mono text-on-accent">&lt;/&gt;</span>
           </div>
-          <h1 className="text-lg font-semibold text-white">Snippet Vault</h1>
-          <p className="text-sm text-[#595e69] mt-1">
+          <h1 className="text-lg font-semibold text-primary">Snippet Vault</h1>
+          <p className="text-sm text-muted mt-1">
             {registeredEmail ? 'Verify your email' : 'Create your account'}
           </p>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 flex flex-col gap-4">
+        <div className="bg-surface border border-border-default rounded-xl p-6 flex flex-col gap-4">
           {registeredEmail ? (
             <div className="flex flex-col items-center gap-4 text-center" aria-live="polite">
               <div>
-                <h2 className="text-base font-semibold text-white">Check your email</h2>
-                <p className="text-sm text-[#9ba3af] mt-2 leading-6">
+                <h2 className="text-base font-semibold text-primary">Check your email</h2>
+                <p className="text-sm text-secondary mt-2 leading-6">
                   We sent a verification link to{' '}
-                  <span className="font-medium text-white break-all">{registeredEmail}</span>.
+                  <span className="font-medium text-primary break-all">{registeredEmail}</span>.
                   Open it to finish creating your account.
                 </p>
               </div>
@@ -129,9 +129,9 @@ function Register() {
 
         </div>
 
-        <p className="text-center text-[#595e69] text-sm mt-5">
+        <p className="text-center text-muted text-sm mt-5">
           Already have an account?{' '}
-          <Link to="/login" className="inline-block py-2.5 -my-2.5 text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+          <Link to="/login" className="inline-block py-2.5 -my-2.5 text-accent hover:text-accent-text-hover transition-colors duration-150">
             Sign in
           </Link>
         </p>

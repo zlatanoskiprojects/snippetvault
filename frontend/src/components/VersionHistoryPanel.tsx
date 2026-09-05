@@ -86,46 +86,46 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#101010]">
-      <div className="flex items-center justify-between gap-3 px-4 h-[56px] bg-[#121212] border-b border-[#2a2a2a] shrink-0 min-w-0">
+    <div className="flex flex-col h-full bg-panel">
+      <div className="flex items-center justify-between gap-3 px-4 h-[56px] bg-panel-header border-b border-border-default shrink-0 min-w-0">
         <div className="flex items-center gap-2 min-w-0 shrink-0">
           <Button variant="ghost" size="sm" onClick={onBack} className="flex items-center justify-center w-10 h-10 -m-2 sm:w-auto sm:h-auto sm:m-0 sm:p-0 text-sm">
             <ArrowLeft size={16} />
           </Button>
-          <span className="text-[13px] font-medium text-white whitespace-nowrap">Version History</span>
+          <span className="text-[13px] font-medium text-primary whitespace-nowrap">Version History</span>
         </div>
-        <span className="text-[12px] text-[#595e69] truncate min-w-0">{snippet.title}</span>
+        <span className="text-[12px] text-muted truncate min-w-0">{snippet.title}</span>
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <div className={`w-full md:w-[220px] shrink-0 border-r border-[#2a2a2a] overflow-y-auto flex-col ${selectedVersion ? 'hidden md:flex' : 'flex'}`}>
+        <div className={`w-full md:w-[220px] shrink-0 border-r border-border-default overflow-y-auto flex-col ${selectedVersion ? 'hidden md:flex' : 'flex'}`}>
           {loading ? (
             <div className="flex flex-1 items-center justify-center p-4">
-              <Spinner size="sm" className="text-[#9ba3af]" />
+              <Spinner size="sm" className="text-secondary" />
             </div>
           ) : versions.length === 0 ? (
             <div className="flex flex-1 items-center justify-center p-4">
-              <p className="text-[13px] text-[#595e69] text-center">No versions saved yet.<br />Edit code to create one.</p>
+              <p className="text-[13px] text-muted text-center">No versions saved yet.<br />Edit code to create one.</p>
             </div>
           ) : (
             versions.map(v => (
               <button
                 key={v.id}
                 onClick={() => handleSelectVersion(v)}
-                className={`w-full text-left px-4 py-3 border-b border-[#2a2a2a] transition-colors duration-150 ${
-                  selectedVersion?.id === v.id ? 'bg-[#1e1e2e]' : 'hover:bg-white/5'
+                className={`w-full text-left px-4 py-3 border-b border-border-default transition-colors duration-150 ${
+                  selectedVersion?.id === v.id ? 'bg-surface-selected-strong' : 'hover:bg-interactive-overlay/5'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className={`text-[12px] font-medium ${selectedVersion?.id === v.id ? 'text-[#6366f1]' : 'text-white'}`}>
+                  <span className={`text-[12px] font-medium ${selectedVersion?.id === v.id ? 'text-accent' : 'text-primary'}`}>
                     v{v.version_number}
                   </span>
-                  <span className="text-[11px] text-[#595e69]">{timeAgo(v.created_at)}</span>
+                  <span className="text-[11px] text-muted">{timeAgo(v.created_at)}</span>
                 </div>
                 {v.change_note ? (
-                  <p className="text-[11px] text-[#9ba3af] truncate">{v.change_note}</p>
+                  <p className="text-[11px] text-secondary truncate">{v.change_note}</p>
                 ) : (
-                  <p className="text-[11px] text-[#595e69] italic">No note</p>
+                  <p className="text-[11px] text-muted italic">No note</p>
                 )}
               </button>
             ))
@@ -135,7 +135,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
         <div className={`flex-col flex-1 min-w-0 min-h-0 ${selectedVersion ? 'flex' : 'hidden md:flex'}`}>
           {selectedVersion ? (
             <>
-              <div className="px-4 py-2 border-b border-[#2a2a2a] flex items-center justify-between gap-2 shrink-0 min-w-0">
+              <div className="px-4 py-2 border-b border-border-default flex items-center justify-between gap-2 shrink-0 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <Button
                     variant="ghost"
@@ -145,17 +145,17 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
                   >
                     <ArrowLeft size={16} />
                   </Button>
-                  <span className="text-[12px] font-medium text-white shrink-0">v{selectedVersion.version_number}</span>
+                  <span className="text-[12px] font-medium text-primary shrink-0">v{selectedVersion.version_number}</span>
                   {selectedVersion.change_note && (
-                    <span className="text-[12px] text-[#9ba3af] truncate">{selectedVersion.change_note}</span>
+                    <span className="text-[12px] text-secondary truncate">{selectedVersion.change_note}</span>
                   )}
                 </div>
-                <span className="text-[11px] text-[#595e69] shrink-0">{new Date(selectedVersion.created_at).toLocaleString()}</span>
+                <span className="text-[11px] text-muted shrink-0">{new Date(selectedVersion.created_at).toLocaleString()}</span>
               </div>
               <div className="flex-1 overflow-hidden mx-3 my-3 min-h-0">
                 {loadingPreview ? (
                   <div className="flex h-full items-center justify-center">
-                    <Spinner size="sm" className="text-[#9ba3af]" />
+                    <Spinner size="sm" className="text-secondary" />
                   </div>
                 ) : (
                   <CodeEditor language={language} code={previewCode ?? ''} editable={false} label={null} />
@@ -164,13 +164,13 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
             </>
           ) : (
             <div className="flex flex-1 items-center justify-center">
-              <p className="text-[13px] text-[#595e69]">Select a version to preview</p>
+              <p className="text-[13px] text-muted">Select a version to preview</p>
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-5 h-[56px] border-t border-[#2a2a2a] shrink-0 bg-[#101010]">
+      <div className="flex items-center justify-between px-5 h-[56px] border-t border-border-default shrink-0 bg-panel">
         <Button variant="secondary" onClick={onBack} className="h-[40px] sm:h-[36px] px-4 text-[13px]">
           Back
         </Button>
@@ -180,7 +180,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
               variant="danger"
               onClick={() => setDeleteConfirmOpen(true)}
               disabled={deleting}
-              className="h-[40px] sm:h-[36px] px-4 text-[13px] bg-[#2a0a0a] border border-[#5c1a1a] hover:bg-red-900/40 text-red-400 hover:text-red-300"
+              className="h-[40px] sm:h-[36px] px-4 text-[13px] bg-danger-restore border border-danger-restore-border hover:bg-danger-strong/40 text-danger-soft hover:text-danger-soft-hover"
             >
               {deleting ? 'Deleting…' : 'Delete'}
             </Button>

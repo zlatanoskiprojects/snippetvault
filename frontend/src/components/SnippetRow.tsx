@@ -32,16 +32,16 @@ export default function SnippetRow({ snippet, isSelected = false, onSelect }: Sn
   return (
     <div
       className={[
-        'flex items-start justify-between py-4 border-b border-[#2a2a2a] bg-[#1a1a1a] cursor-pointer transition-colors duration-150',
+        'flex items-start justify-between py-4 border-b border-border-default bg-surface cursor-pointer transition-colors duration-150',
         isSelected
-          ? 'bg-[#1c1c38] border-l-[3px] border-l-[#6366f1] pl-[21px] pr-6'
-          : 'hover:bg-[#1f1f1f] px-6',
+          ? 'bg-surface-selected border-l-[3px] border-l-accent pl-[21px] pr-6'
+          : 'hover:bg-surface-hover px-6',
       ].join(' ')}
       onClick={() => onSelect?.(snippet)}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{snippet.title}</p>
-        <p className="text-xs text-[#595e69] mt-0.5 truncate">{snippet.description}</p>
+        <p className="text-sm font-medium text-primary truncate">{snippet.title}</p>
+        <p className="text-xs text-muted mt-0.5 truncate">{snippet.description}</p>
         <div className="flex flex-wrap gap-1.5 mt-3">
           {tags.map((tag) => (
             <TagPill key={tag} label={tag} />
@@ -50,7 +50,7 @@ export default function SnippetRow({ snippet, isSelected = false, onSelect }: Sn
       </div>
       <div className="flex flex-col items-end gap-2 ml-6 shrink-0">
         <LanguageBadge language={snippet.language} />
-        <span className="text-[10px] text-[#595e69]">{displayTime}</span>
+        <span className="text-[10px] text-muted">{displayTime}</span>
       </div>
     </div>
   )

@@ -10,7 +10,7 @@ interface SnippetListProps {
 export default function SnippetList({ snippets = [], selectedSnippetId, onSelectSnippet }: SnippetListProps) {
   if (snippets.length === 0) {
     return (
-      <div className="px-6 py-12 text-center text-sm text-[#595e69]">
+      <div className="px-6 py-12 text-center text-sm text-muted">
         No snippets yet. Create your first one.
       </div>
     )

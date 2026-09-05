@@ -92,12 +92,12 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
 
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[#2a2a2a] shrink-0">
-        <h1 className="text-lg font-semibold text-white">Search snippets</h1>
+      <div className="flex items-center justify-between px-6 py-3 border-b border-border-default shrink-0">
+        <h1 className="text-lg font-semibold text-primary">Search snippets</h1>
         <button
           onClick={() => { onQueryChange(''); onClose() }}
           aria-label="Close search"
-          className="flex items-center justify-center w-[40px] h-[40px] sm:w-[28px] sm:h-[28px] rounded-md text-[#9ba3af] hover:text-white hover:bg-white/5 transition-colors duration-150"
+          className="flex items-center justify-center w-[40px] h-[40px] sm:w-[28px] sm:h-[28px] rounded-md text-secondary hover:text-primary hover:bg-interactive-overlay/5 transition-colors duration-150"
         >
           <X size={14} />
         </button>
@@ -112,11 +112,11 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
           onChange={e => onQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Search by title, description, tags, or code..."
-          className="w-full h-[48px] bg-[#222] border-2 border-[#6366f1] rounded-lg text-sm text-white px-4 outline-none placeholder-[#595e69]"
+          className="w-full h-[48px] bg-control border-2 border-accent rounded-lg text-sm text-primary px-4 outline-none placeholder-muted"
         />
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-[#595e69] shrink-0 w-[60px]">Language:</span>
+          <span className="text-xs text-muted shrink-0 w-[60px]">Language:</span>
           {LANG_CHIPS.map(chip => (
             <button
               key={chip.value}
@@ -124,8 +124,8 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
               onClick={() => toggleLang(chip.value)}
               className={
                 activeLang === chip.value
-                  ? 'bg-[#6366f1] text-white text-xs px-3 h-[28px] rounded-md font-medium transition-colors duration-150'
-                  : 'bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-xs px-3 h-[28px] rounded-md hover:bg-[#222] hover:text-white transition-colors duration-150 cursor-pointer'
+                  ? 'bg-accent text-on-accent text-xs px-3 h-[28px] rounded-md font-medium transition-colors duration-150'
+                  : 'bg-surface border border-border-default text-secondary text-xs px-3 h-[28px] rounded-md hover:bg-control-hover hover:text-primary transition-colors duration-150 cursor-pointer'
               }
             >
               {chip.label}
@@ -134,7 +134,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-[#595e69] shrink-0 w-[60px]">Tags:</span>
+          <span className="text-xs text-muted shrink-0 w-[60px]">Tags:</span>
           {tagChips.map(tag => (
             <button
               key={tag}
@@ -142,8 +142,8 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
               onClick={() => toggleTag(tag)}
               className={
                 activeTags.includes(tag)
-                  ? 'bg-[#6366f1] text-white text-xs px-3 h-[28px] rounded-md transition-colors duration-150'
-                  : 'bg-[#242424] text-[#9ba3af] text-xs px-3 h-[28px] rounded-md hover:bg-[#2a2a2a] hover:text-white transition-colors duration-150 cursor-pointer'
+                  ? 'bg-accent text-on-accent text-xs px-3 h-[28px] rounded-md transition-colors duration-150'
+                  : 'bg-tag text-secondary text-xs px-3 h-[28px] rounded-md hover:bg-interactive-strong hover:text-primary transition-colors duration-150 cursor-pointer'
               }
             >
               {tag}
@@ -152,7 +152,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-[#595e69] shrink-0 w-[60px]">Sort by:</span>
+          <span className="text-xs text-muted shrink-0 w-[60px]">Sort by:</span>
           {SORT_CHIPS.map(chip => (
             <button
               key={chip.value}
@@ -160,8 +160,8 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
               onClick={() => setActiveSort(chip.value)}
               className={
                 activeSort === chip.value
-                  ? 'bg-[#2e295c] text-[#6366f1] text-xs px-3 h-[28px] rounded-md font-medium transition-colors duration-150'
-                  : 'bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-xs px-3 h-[28px] rounded-md hover:bg-[#222] transition-colors duration-150 cursor-pointer'
+                  ? 'bg-accent-selection text-accent text-xs px-3 h-[28px] rounded-md font-medium transition-colors duration-150'
+                  : 'bg-surface border border-border-default text-secondary text-xs px-3 h-[28px] rounded-md hover:bg-control-hover transition-colors duration-150 cursor-pointer'
               }
             >
               {chip.label}
@@ -169,14 +169,14 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
           ))}
         </div>
 
-        <div className="border-t border-[#2a2a2a] mt-1" />
-        <p className="text-xs text-[#595e69] -mt-1">{filtered.length} results</p>
+        <div className="border-t border-border-default mt-1" />
+        <p className="text-xs text-muted -mt-1">{filtered.length} results</p>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Spinner className="text-white" />
+            <Spinner className="text-primary" />
           </div>
         ) : error ? (
           <div className="px-6 py-4">
@@ -184,8 +184,8 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-[#595e69] text-sm">No snippets match your search.</p>
-            <p className="text-[#595e69] text-xs mt-1">Try different keywords or clear your filters.</p>
+            <p className="text-muted text-sm">No snippets match your search.</p>
+            <p className="text-muted text-xs mt-1">Try different keywords or clear your filters.</p>
           </div>
         ) : (
           filtered.map(snippet => (

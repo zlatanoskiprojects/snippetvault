@@ -60,10 +60,10 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {label && <p className="text-xs text-[#9ba3af] mb-2">{label}</p>}
-      <div className="flex flex-col bg-[#0d0d0d] rounded-lg overflow-hidden flex-1 min-h-[300px]">
-        <div className="flex items-center justify-between px-3 h-[40px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
-          <span className="text-xs text-[#595e69] font-medium">{language || 'TypeScript'}</span>
+      {label && <p className="text-xs text-secondary mb-2">{label}</p>}
+      <div className="flex flex-col bg-editor rounded-lg overflow-hidden flex-1 min-h-[300px]">
+        <div className="flex items-center justify-between px-3 h-[40px] bg-panel-header border-b border-border-default shrink-0">
+          <span className="text-xs text-muted font-medium">{language || 'TypeScript'}</span>
           <Button
             variant="secondary"
             onClick={handleCopy}
