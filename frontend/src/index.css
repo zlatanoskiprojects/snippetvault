@@ -94,6 +94,9 @@
 }
 
 :root {
+  color-scheme: dark;
+
+  /* Theme-dependent surfaces */
   --theme-app: #0f0f0f;
   --theme-sidebar: #161616;
   --theme-surface: #1a1a1a;
@@ -107,29 +110,41 @@
   --theme-surface-hover: #1f1f1f;
   --theme-surface-selected: #1c1c38;
   --theme-surface-selected-strong: #1e1e2e;
-  --theme-feature-surface: #1c1c1c;
-  --theme-feature-surface-hover: #202020;
-  --theme-accent-surface: #262147;
-  --theme-accent-surface-hover: #2e2660;
-  --theme-accent-selection: #2e295c;
-  --theme-avatar: #2e2457;
-  --theme-border-default: #2a2a2a;
-  --theme-border-hover: #3a3a3a;
-  --theme-feature-border: #303030;
-  --theme-feature-border-hover: #454545;
+
+  /* Theme-dependent text */
   --theme-text-primary: #ffffff;
-  --theme-on-accent: #ffffff;
-  --theme-on-danger: #ffffff;
   --theme-text-secondary: #9ba3af;
   --theme-text-muted: #595e69;
   --theme-code-text: #d4d4d8;
+
+  /* Theme-dependent structure */
+  --theme-border-default: #2a2a2a;
+  --theme-border-hover: #3a3a3a;
+  --theme-divider: #2a2a2a;
+
+  /* Theme-dependent interaction surfaces */
+  --theme-interactive-overlay: #ffffff;
+  --theme-interactive-strong: #2a2a2a;
+  --theme-overlay: #000000;
+  --theme-avatar: #2e2457;
+
+  /* Theme-dependent special surfaces */
+  --theme-feature-surface: #1c1c1c;
+  --theme-feature-surface-hover: #202020;
+  --theme-feature-border: #303030;
+  --theme-feature-border-hover: #454545;
+  --theme-accent-surface: #262147;
+  --theme-accent-surface-hover: #2e2660;
+  --theme-accent-selection: #2e295c;
+
+  /* Stable brand colors */
   --theme-accent: #6366f1;
   --theme-accent-hover: oklch(58.5% 0.233 277.117);
   --theme-accent-text-hover: oklch(67.3% 0.182 276.935);
-  --theme-interactive-overlay: #ffffff;
-  --theme-interactive-strong: #2a2a2a;
-  --theme-divider: #2a2a2a;
-  --theme-overlay: #000000;
+  --theme-on-accent: #ffffff;
+  --theme-accent-badge: rgba(99, 102, 241, 0.12);
+
+  /* Stable feedback colors unless contrast later requires overrides */
   --theme-danger: #ef4444;
   --theme-danger-subtle: #2b0c0c;
   --theme-danger-surface: #331212;
@@ -143,16 +158,22 @@
   --theme-danger-strong: oklch(39.6% 0.141 25.723);
   --theme-danger-soft: oklch(70.4% 0.191 22.216);
   --theme-danger-soft-hover: oklch(80.8% 0.114 19.571);
+  --theme-on-danger: #ffffff;
+
   --theme-success: #22c55e;
   --theme-success-surface: #1a3d1a;
   --theme-success-status: #10b981;
   --theme-warning: #fba528;
+
+  /* Stable category colors */
   --theme-category-blue: #3d77fc;
   --theme-category-green: #22c55e;
   --theme-category-purple: #8c5af3;
   --theme-category-orange: #fba528;
   --theme-category-red: #ef4444;
   --theme-category-indigo: #6366f1;
+
+  /* Stable language badge colors */
   --theme-language-ts: #3d77fc;
   --theme-language-ts-surface: #0b152d;
   --theme-language-py: #22c55e;
@@ -171,6 +192,8 @@
   --theme-language-go-surface: #002b33;
   --theme-language-rust: #ce422b;
   --theme-language-rust-surface: #2b0d06;
+
+  /* Stable decorative/feature colors */
   --theme-feature-blue: #818cf8;
   --theme-feature-blue-surface: #818cf814;
   --theme-feature-blue-border: #818cf836;
@@ -183,104 +206,59 @@
   --theme-feature-purple: #a78bfa;
   --theme-feature-purple-surface: #a78bfa14;
   --theme-feature-purple-border: #a78bfa36;
-  --theme-accent-badge: rgba(99, 102, 241, 0.12);
+
+  /* Theme-dependent shadows */
   --theme-shadow-subtle: rgba(0, 0, 0, 0.1);
   --theme-shadow-raised: rgba(0, 0, 0, 0.2);
 }
 
-[data-theme="night"] {
-  --theme-app: #0f0f0f;
-  --theme-sidebar: #161616;
-  --theme-surface: #1a1a1a;
-  --theme-panel: #101010;
-  --theme-panel-header: #121212;
-  --theme-control: #222222;
-  --theme-control-hover: #222222;
-  --theme-tag: #242424;
-  --theme-editor: #0d0d0d;
-  --theme-surface-muted: #151515;
-  --theme-surface-hover: #1f1f1f;
-  --theme-surface-selected: #1c1c38;
-  --theme-surface-selected-strong: #1e1e2e;
-  --theme-feature-surface: #1c1c1c;
-  --theme-feature-surface-hover: #202020;
-  --theme-accent-surface: #262147;
-  --theme-accent-surface-hover: #2e2660;
-  --theme-accent-selection: #2e295c;
-  --theme-avatar: #2e2457;
-  --theme-border-default: #2a2a2a;
-  --theme-border-hover: #3a3a3a;
-  --theme-feature-border: #303030;
-  --theme-feature-border-hover: #454545;
-  --theme-text-primary: #ffffff;
-  --theme-on-accent: #ffffff;
-  --theme-on-danger: #ffffff;
-  --theme-text-secondary: #9ba3af;
-  --theme-text-muted: #595e69;
-  --theme-code-text: #d4d4d8;
-  --theme-accent: #6366f1;
-  --theme-accent-hover: oklch(58.5% 0.233 277.117);
-  --theme-accent-text-hover: oklch(67.3% 0.182 276.935);
-  --theme-interactive-overlay: #ffffff;
-  --theme-interactive-strong: #2a2a2a;
-  --theme-divider: #2a2a2a;
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --theme-app: #f7f7f8;
+  --theme-sidebar: #ffffff;
+  --theme-surface: #ffffff;
+  --theme-panel: #fafafa;
+  --theme-panel-header: #f7f7f8;
+  --theme-control: #f1f1f3;
+  --theme-control-hover: #e8e8ec;
+  --theme-tag: #ececef;
+  --theme-editor: #ffffff;
+  --theme-surface-muted: #f4f4f5;
+  --theme-surface-hover: #f1f1f3;
+  --theme-surface-selected: #eeeeff;
+  --theme-surface-selected-strong: #e8e8fa;
+
+  /* Text */
+  --theme-text-primary: #18181b;
+  --theme-text-secondary: #52525b;
+  --theme-text-muted: #71717a;
+  --theme-code-text: #27272a;
+
+  /* Structure */
+  --theme-border-default: #dddde3;
+  --theme-border-hover: #c8c8d0;
+  --theme-divider: #dddde3;
+
+  /* Interactions */
+  --theme-interactive-overlay: #000000;
+  --theme-interactive-strong: #e4e4e7;
   --theme-overlay: #000000;
-  --theme-danger: #ef4444;
-  --theme-danger-subtle: #2b0c0c;
-  --theme-danger-surface: #331212;
-  --theme-danger-surface-hover: #3d1515;
-  --theme-danger-action: #3d1414;
-  --theme-danger-action-hover: #4a1a1a;
-  --theme-danger-zone: #1c0d0d;
-  --theme-danger-zone-border: #611a1a;
-  --theme-danger-restore: #2a0a0a;
-  --theme-danger-restore-border: #5c1a1a;
-  --theme-danger-strong: oklch(39.6% 0.141 25.723);
-  --theme-danger-soft: oklch(70.4% 0.191 22.216);
-  --theme-danger-soft-hover: oklch(80.8% 0.114 19.571);
-  --theme-success: #22c55e;
-  --theme-success-surface: #1a3d1a;
-  --theme-success-status: #10b981;
-  --theme-warning: #fba528;
-  --theme-category-blue: #3d77fc;
-  --theme-category-green: #22c55e;
-  --theme-category-purple: #8c5af3;
-  --theme-category-orange: #fba528;
-  --theme-category-red: #ef4444;
-  --theme-category-indigo: #6366f1;
-  --theme-language-ts: #3d77fc;
-  --theme-language-ts-surface: #0b152d;
-  --theme-language-py: #22c55e;
-  --theme-language-py-surface: #062311;
-  --theme-language-sh: #8c5af3;
-  --theme-language-sh-surface: #19102c;
-  --theme-language-sql: #ef4444;
-  --theme-language-sql-surface: #2b0c0c;
-  --theme-language-js: #fba528;
-  --theme-language-js-surface: #1f1200;
-  --theme-language-java: #f89820;
-  --theme-language-java-surface: #2b1a02;
-  --theme-language-cpp: #3d9fdb;
-  --theme-language-cpp-surface: #001b2e;
-  --theme-language-go: #00add8;
-  --theme-language-go-surface: #002b33;
-  --theme-language-rust: #ce422b;
-  --theme-language-rust-surface: #2b0d06;
-  --theme-feature-blue: #818cf8;
-  --theme-feature-blue-surface: #818cf814;
-  --theme-feature-blue-border: #818cf836;
-  --theme-feature-green: #4ade80;
-  --theme-feature-green-surface: #4ade8014;
-  --theme-feature-green-border: #4ade8036;
-  --theme-feature-yellow: #fbbf24;
-  --theme-feature-yellow-surface: #fbbf2414;
-  --theme-feature-yellow-border: #fbbf2436;
-  --theme-feature-purple: #a78bfa;
-  --theme-feature-purple-surface: #a78bfa14;
-  --theme-feature-purple-border: #a78bfa36;
-  --theme-accent-badge: rgba(99, 102, 241, 0.12);
-  --theme-shadow-subtle: rgba(0, 0, 0, 0.1);
-  --theme-shadow-raised: rgba(0, 0, 0, 0.2);
+  --theme-avatar: #eeecff;
+
+  /* Special surfaces */
+  --theme-feature-surface: #fafafa;
+  --theme-feature-surface-hover: #f4f4f5;
+  --theme-feature-border: #e2e2e6;
+  --theme-feature-border-hover: #ccccd3;
+  --theme-accent-surface: #eeecff;
+  --theme-accent-surface-hover: #e5e1ff;
+  --theme-accent-selection: #e8e7ff;
+
+  /* Shadows */
+  --theme-shadow-subtle: rgba(0, 0, 0, 0.08);
+  --theme-shadow-raised: rgba(0, 0, 0, 0.12);
 }
 
 @utility z-toast {

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, Search, Sun } from 'lucide-react'
+import { ChevronDown, Moon, Search, Sun } from 'lucide-react'
 import { logout } from '../api/auth'
 import { useUser } from '../hooks/useUser'
+import { useThemeStore } from '../store/theme'
 import Input from './ui/Input'
 import Button from './ui/Button'
 import type { Snippet } from '../api/types'
@@ -36,6 +37,8 @@ interface SidebarProps {
 export default function Sidebar({ snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }: SidebarProps) {
   const navigate = useNavigate()
   const { user } = useUser()
+  const theme = useThemeStore((state) => state.theme)
+  const toggleTheme = useThemeStore((state) => state.toggleTheme)
 
   const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
   const displayName = user?.display_name || user?.username || '…'
@@ -48,6 +51,17 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
       navigate('/login')
     }
   }
+
+  function handleThemeToggle() {
+    if ('startViewTransition' in document) {
+      document.startViewTransition(() => {
+        toggleTheme()
+      })
+    } else {
+      toggleTheme()
+    }
+  }
+
   const tagItems = snippets
     .flatMap(s => s.tags || [])
     .reduce<Record<string, number>>((acc, tag) => {
@@ -145,9 +159,11 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
         <div className="px-4 py-3 flex items-center justify-between">
           <button
             type="button"
+            onClick={handleThemeToggle}
             className="h-10 lg:h-auto text-xs text-muted hover:text-primary flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0 transition-colors duration-150 focus:outline-none"
           >
-            <Sun size={14} /> Light mode
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
           <Button
             variant="ghost"
