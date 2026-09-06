@@ -113,7 +113,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
 
   return (
     <div className="flex flex-col h-full min-w-0">
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#2a2a2a] shrink-0">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-border-default shrink-0">
         {onMenuClick && (
           <Button
             variant="secondary"
@@ -124,7 +124,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
             <Menu size={14} />
           </Button>
         )}
-        <h1 className="text-lg font-semibold text-white">
+        <h1 className="text-lg font-semibold text-primary">
           {isEditing ? 'Edit snippet' : 'Create new snippet'}
         </h1>
       </div>
@@ -151,7 +151,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
           </Field>
 
           {isEditing && (
-            <Field label={<>Change note <span className="text-[#595e69]">(optional)</span></>}>
+            <Field label={<>Change note <span className="text-muted">(optional)</span></>}>
               <Input
                 type="text"
                 value={changeNote}
@@ -172,18 +172,18 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
           </div>
 
           <div>
-            <label className="block text-xs text-[#9ba3af] mb-1.5 font-normal">Tags</label>
-            <div className="min-h-[38px] bg-[#222] border border-[#2a2a2a] rounded-md px-2 py-1.5 flex flex-wrap gap-1.5 items-center focus-within:border-[#6366f1] transition-colors duration-150">
+            <label className="block text-xs text-secondary mb-1.5 font-normal">Tags</label>
+            <div className="min-h-[38px] bg-control border border-border-default rounded-md px-2 py-1.5 flex flex-wrap gap-1.5 items-center focus-within:border-accent transition-colors duration-150">
               {tags.map((tag, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1 bg-[#242424] text-[#595e69] text-[10px] px-2 py-0.5 rounded"
+                  className="flex items-center gap-1 bg-tag text-muted text-[10px] px-2 py-0.5 rounded"
                 >
                   {tag}
                   <Button
                     variant="ghost"
                     onClick={() => removeTag(i)}
-                    className="h-auto p-0 text-[#595e69] hover:text-white hover:bg-transparent leading-none ml-0.5"
+                    className="h-auto p-0 text-muted hover:text-primary hover:bg-transparent leading-none ml-0.5"
                   >
                     ×
                   </Button>

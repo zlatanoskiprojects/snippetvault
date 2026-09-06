@@ -9,8 +9,8 @@ const AUTO_DISMISS_MS = 3000
 const MAX_TOASTS = 5
 
 const TYPE_CLASSES: Record<string, string> = {
-  success: 'bg-[#1a3d1a] border-[#22c55e] text-[#22c55e]',
-  error: 'bg-[#331212] border-[#ef4444] text-[#ef4444]',
+  success: 'bg-success-surface border-success text-success',
+  error: 'bg-danger-surface border-danger text-danger',
 }
 
 function ToastBridge({ children }: { children: ReactNode }) {
@@ -48,7 +48,7 @@ function ToastList() {
             key={toast.id}
             toast={toast}
             className={cn(
-              'flex items-start gap-3 border rounded-md px-4 py-3 min-w-[260px] max-w-[360px] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)] transition-all duration-150 data-[starting-style]:opacity-0 data-[starting-style]:translate-y-1 data-[ending-style]:opacity-0',
+              'flex items-start gap-3 border rounded-md px-4 py-3 min-w-[260px] max-w-[360px] shadow-[0_10px_15px_-3px_var(--theme-shadow-subtle),0_4px_6px_-4px_var(--theme-shadow-subtle)] transition-all duration-150 data-[starting-style]:opacity-0 data-[starting-style]:translate-y-1 data-[ending-style]:opacity-0',
               typeClass
             )}
           >

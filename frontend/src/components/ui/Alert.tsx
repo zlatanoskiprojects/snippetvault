@@ -8,7 +8,7 @@ export default function Alert({ className, ...props }: AlertProps) {
     <div
       role="alert"
       className={cn(
-        'bg-[#331212] border border-[#ef4444]/30 text-[#ef4444] text-sm rounded-md px-4 py-3',
+        'bg-danger-surface border border-danger/30 text-danger text-sm rounded-md px-4 py-3',
         className
       )}
       {...props}

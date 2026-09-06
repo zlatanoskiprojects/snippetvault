@@ -68,8 +68,8 @@ export default function SnippetDetailPanel({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#101010]">
-      <div className="flex items-center justify-between px-4 h-[56px] bg-[#121212] border-b border-[#2a2a2a] shrink-0">
+    <div className="flex flex-col h-full bg-panel">
+      <div className="flex items-center justify-between px-4 h-[56px] bg-panel-header border-b border-border-default shrink-0">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -78,12 +78,12 @@ export default function SnippetDetailPanel({
           >
             <ArrowLeft size={16} />
           </Button>
-          <span className="text-[13px] font-medium text-[#9ba3af]">Editor 1</span>
+          <span className="text-[13px] font-medium text-secondary">Editor 1</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-[#222] border border-[#2a2a2a] rounded-md text-xs text-white px-3 h-[28px] flex items-center gap-1 select-none">
+          <div className="bg-control border border-border-default rounded-md text-xs text-primary px-3 h-[28px] flex items-center gap-1 select-none">
             {LANG_NAMES[snippet.language] ?? snippet.language}
-            <ChevronDown size={14} className="text-[#9ba3af]" />
+            <ChevronDown size={14} className="text-secondary" />
           </div>
           <Button
             variant="ghost"
@@ -98,7 +98,7 @@ export default function SnippetDetailPanel({
 
       <div className="px-5 pt-4 pb-3 shrink-0">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-xl font-semibold text-white leading-tight min-w-0 truncate">
+          <h2 className="text-xl font-semibold text-primary leading-tight min-w-0 truncate">
             {snippet.title}
           </h2>
           <div className="shrink-0">
@@ -106,7 +106,7 @@ export default function SnippetDetailPanel({
           </div>
         </div>
 
-        <p className="text-[13px] text-[#595e69] mt-2 leading-relaxed">{snippet.description}</p>
+        <p className="text-[13px] text-muted mt-2 leading-relaxed">{snippet.description}</p>
 
         <div className="flex flex-wrap gap-1.5 mt-3">
           {(snippet.tags || []).map((tag) => (
@@ -114,14 +114,14 @@ export default function SnippetDetailPanel({
           ))}
         </div>
 
-        <div className="border-t border-[#2a2a2a] mt-4" />
+        <div className="border-t border-border-default mt-4" />
       </div>
 
       <div className="flex flex-col flex-1 overflow-hidden mx-3 my-3 min-h-0">
         <CodeEditor language={snippet.language} code={snippet.code} editable={false} label={null} />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-t border-[#2a2a2a] shrink-0 bg-[#101010] sm:h-[56px] sm:flex-nowrap sm:py-0">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-t border-border-default shrink-0 bg-panel sm:h-[56px] sm:flex-nowrap sm:py-0">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="primary"

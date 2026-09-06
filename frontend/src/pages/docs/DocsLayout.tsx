@@ -26,10 +26,10 @@ export default function DocsLayout({ slug, title, headings, children }: DocsLayo
   }, [slug])
 
   return (
-    <div className="h-dvh flex flex-col bg-[#0f0f0f] overflow-x-hidden">
+    <div className="h-dvh flex flex-col bg-app overflow-x-hidden">
       <LandingNavbar onGetStarted={() => navigate('/login')} />
 
-      <nav aria-label="Documentation controls" className="lg:hidden flex items-center gap-2 h-[44px] px-4 border-b border-[#2a2a2a]">
+      <nav aria-label="Documentation controls" className="lg:hidden flex items-center gap-2 h-[44px] px-4 border-b border-border-default">
         <Button
           variant="secondary"
           onClick={() => setDrawerOpen(true)}
@@ -38,19 +38,19 @@ export default function DocsLayout({ slug, title, headings, children }: DocsLayo
         >
           <Menu size={14} />
         </Button>
-        <span className="text-sm text-white truncate min-w-0">{title}</span>
+        <span className="text-sm text-primary truncate min-w-0">{title}</span>
       </nav>
 
       <div className="flex flex-1 min-h-0">
-        <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-[#2a2a2a] bg-[#161616] overflow-y-auto py-6 px-3">
+        <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-border-default bg-sidebar overflow-y-auto py-6 px-3">
           <DocsSidebar />
         </aside>
 
         <BaseDialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
           <BaseDialog.Portal>
-            <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
+            <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-overlay/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
             <BaseDialog.Popup className="fixed left-0 top-0 z-40 h-full lg:hidden outline-none transition-transform duration-150 data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full">
-              <aside className="w-60 bg-[#161616] border-r border-[#2a2a2a] overflow-y-auto py-6 px-3 h-full">
+              <aside className="w-60 bg-sidebar border-r border-border-default overflow-y-auto py-6 px-3 h-full">
                 <DocsSidebar onNavigate={() => setDrawerOpen(false)} />
               </aside>
             </BaseDialog.Popup>

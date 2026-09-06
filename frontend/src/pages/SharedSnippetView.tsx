@@ -53,7 +53,7 @@ export default function SharedSnippetView() {
   }, [token])
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex flex-col">
+    <div className="min-h-screen bg-app flex flex-col">
       <LandingNavbar showNavLinks={false} onGetStarted={() => navigate('/login')} />
 
       {loading && (
@@ -64,7 +64,7 @@ export default function SharedSnippetView() {
 
       {!loading && error && (
         <main className="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-16 text-center">
-          <h1 className="text-[#9ba3af] text-sm max-w-sm">
+          <h1 className="text-secondary text-sm max-w-sm">
             This snippet doesn't exist or is no longer public.
           </h1>
           <Button variant="primary" onClick={() => navigate('/')}>
@@ -76,7 +76,7 @@ export default function SharedSnippetView() {
       {!loading && !error && snippet && (
         <main className="mx-auto w-full max-w-4xl px-4 sm:px-6 py-8">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="text-xl sm:text-2xl font-semibold text-white leading-tight min-w-0 truncate">
+            <h1 className="text-xl sm:text-2xl font-semibold text-primary leading-tight min-w-0 truncate">
               {snippet.title}
             </h1>
             <div className="shrink-0">
@@ -85,7 +85,7 @@ export default function SharedSnippetView() {
           </div>
 
           {snippet.description && (
-            <p className="text-sm text-[#9ba3af] mt-2 leading-relaxed">
+            <p className="text-sm text-secondary mt-2 leading-relaxed">
               {snippet.description}
             </p>
           )}
@@ -98,14 +98,14 @@ export default function SharedSnippetView() {
             </div>
           )}
 
-          <p className="text-xs text-[#595e69] mt-4">
+          <p className="text-xs text-muted mt-4">
             Created {formatDate(snippet.created_at)}
             {snippet.updated_at !== snippet.created_at && ` · Updated ${formatDate(snippet.updated_at)}`}
           </p>
 
-          <div className="mt-4 inline-flex items-center gap-1.5 rounded bg-[#242424] border border-[#2a2a2a] px-2.5 py-1 text-xs text-[#9ba3af]">
+          <div className="mt-4 inline-flex items-center gap-1.5 rounded bg-tag border border-border-default px-2.5 py-1 text-xs text-secondary">
             Shared by:
-            <span className="text-white font-medium">{snippet.owner_name}</span>
+            <span className="text-primary font-medium">{snippet.owner_name}</span>
           </div>
 
           <div className="mt-6 min-w-0">

@@ -18,16 +18,16 @@ export default function Field({ label, error, hint, className, children }: Field
 
   return (
     <BaseField.Root invalid={Boolean(error)} className={cn('flex flex-col gap-1.5', className)}>
-      <BaseField.Label htmlFor={controlId} className="text-xs text-[#9ba3af] font-normal">
+      <BaseField.Label htmlFor={controlId} className="text-xs text-secondary font-normal">
         {label}
       </BaseField.Label>
       {control}
       {error ? (
-        <BaseField.Error match className="text-[11px] text-[#ef4444]">
+        <BaseField.Error match className="text-[11px] text-danger">
           {error}
         </BaseField.Error>
       ) : hint ? (
-        <span className="text-[11px] text-[#595e69]">{hint}</span>
+        <span className="text-[11px] text-muted">{hint}</span>
       ) : null}
     </BaseField.Root>
   )

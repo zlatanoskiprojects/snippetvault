@@ -6,13 +6,16 @@ import App from './App'
 import { BrowserRouter } from "react-router-dom";
 import { ToastProvider } from './components/Toast'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import ThemeProvider from './components/providers/ThemeProvider'
 
 createRoot(document.getElementById('root') as HTMLElement).render(
     <BrowserRouter>
         <ToastProvider>
             <ErrorBoundary>
                 <StrictMode>
-                    <App />
+                    <ThemeProvider>
+                        <App />
+                    </ThemeProvider>
                 </StrictMode>
             </ErrorBoundary>
         </ToastProvider>

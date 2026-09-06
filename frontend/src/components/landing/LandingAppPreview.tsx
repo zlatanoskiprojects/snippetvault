@@ -25,8 +25,8 @@ function revealProps(shouldReduceMotion: boolean | null, delay: number) {
 
 function navItemClass(active: boolean) {
   return active
-    ? 'flex items-center gap-1.5 bg-[#6366f1] rounded px-1.5 py-0.5 w-full text-left'
-    : 'flex items-center gap-1.5 px-1.5 py-0.5 w-full text-left hover:bg-white/5 transition-colors duration-150 rounded'
+    ? 'flex items-center gap-1.5 bg-accent rounded px-1.5 py-0.5 w-full text-left'
+    : 'flex items-center gap-1.5 px-1.5 py-0.5 w-full text-left hover:bg-interactive-overlay/5 transition-colors duration-150 rounded'
 }
 
 function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDelay, shouldReduceMotion }: MiniSidebarProps) {
@@ -34,32 +34,32 @@ function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDel
     <motion.aside
       {...revealProps(shouldReduceMotion, revealDelay)}
       aria-label="Snippet preview filters"
-      className="hidden sm:flex w-[172px] shrink-0 bg-[#161616] border-r border-[#2a2a2a] flex-col p-3 gap-2"
+      className="hidden sm:flex w-[172px] shrink-0 bg-sidebar border-r border-border-default flex-col p-3 gap-2"
     >
       <div className="flex items-center gap-1.5">
-        <div className="bg-[#6366f1] rounded w-[26px] h-[26px] flex items-center justify-center shrink-0">
-          <Code2 size={14} className="text-white" />
+        <div className="bg-accent rounded w-[26px] h-[26px] flex items-center justify-center shrink-0">
+          <Code2 size={14} className="text-on-accent" />
         </div>
-        <span className="text-[10px] font-medium text-white">Snippet Vault</span>
+        <span className="text-[10px] font-medium text-primary">Snippet Vault</span>
       </div>
 
-      <p className="text-[7px] font-medium text-[#595e69] mt-2 tracking-wider">LIBRARY</p>
+      <p className="text-[7px] font-medium text-muted mt-2 tracking-wider">LIBRARY</p>
       <div className="flex flex-col gap-0.5">
         <button type="button" className={navItemClass(filter === 'all')} onClick={() => onFilterChange('all')}>
-          <LayoutGrid size={9} className={filter === 'all' ? 'text-white shrink-0' : 'text-[#9ba3af] shrink-0'} />
-          <span className={`text-[9px] ${filter === 'all' ? 'text-white' : 'text-[#9ba3af]'}`}>All snippets</span>
+          <LayoutGrid size={9} className={filter === 'all' ? 'text-on-accent shrink-0' : 'text-secondary shrink-0'} />
+          <span className={`text-[9px] ${filter === 'all' ? 'text-on-accent' : 'text-secondary'}`}>All snippets</span>
         </button>
         <button type="button" className={navItemClass(filter === 'favourites')} onClick={() => onFilterChange('favourites')}>
-          <Star size={9} className={filter === 'favourites' ? 'text-white shrink-0' : 'text-[#9ba3af] shrink-0'} />
-          <span className={`text-[9px] ${filter === 'favourites' ? 'text-white' : 'text-[#9ba3af]'}`}>Favourites</span>
+          <Star size={9} className={filter === 'favourites' ? 'text-on-accent shrink-0' : 'text-secondary shrink-0'} />
+          <span className={`text-[9px] ${filter === 'favourites' ? 'text-on-accent' : 'text-secondary'}`}>Favourites</span>
         </button>
         <button type="button" className={navItemClass(filter === 'private')} onClick={() => onFilterChange('private')}>
-          <Lock size={9} className={filter === 'private' ? 'text-white shrink-0' : 'text-[#9ba3af] shrink-0'} />
-          <span className={`text-[9px] ${filter === 'private' ? 'text-white' : 'text-[#9ba3af]'}`}>Private</span>
+          <Lock size={9} className={filter === 'private' ? 'text-on-accent shrink-0' : 'text-secondary shrink-0'} />
+          <span className={`text-[9px] ${filter === 'private' ? 'text-on-accent' : 'text-secondary'}`}>Private</span>
         </button>
       </div>
 
-      <p className="text-[7px] font-medium text-[#595e69] mt-2 tracking-wider">TAGS</p>
+      <p className="text-[7px] font-medium text-muted mt-2 tracking-wider">TAGS</p>
       <div className="flex flex-col gap-0.5">
         {TAGS.map(tag => (
           <button
@@ -67,11 +67,11 @@ function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDel
             type="button"
             onClick={() => onTagToggle(tag.label)}
             className={`flex items-center gap-1.5 px-1.5 py-0.5 w-full text-left rounded transition-colors duration-150 ${
-              activeTag === tag.label ? 'bg-white/10 ring-1 ring-[#6366f1]' : 'hover:bg-white/5'
+              activeTag === tag.label ? 'bg-interactive-overlay/10 ring-1 ring-accent' : 'hover:bg-interactive-overlay/5'
             }`}
           >
             <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full shrink-0 ${tag.dotClass}`} />
-            <span className="text-[9px] text-[#9ba3af]">{tag.label}</span>
+            <span className="text-[9px] text-secondary">{tag.label}</span>
           </button>
         ))}
       </div>
@@ -90,17 +90,17 @@ function MiniTopBar({ title, count, revealDelay, shouldReduceMotion }: MiniTopBa
   return (
     <motion.header
       {...revealProps(shouldReduceMotion, revealDelay)}
-      className="flex items-center justify-between px-3 py-2 border-b border-[#2a2a2a] shrink-0"
+      className="flex items-center justify-between px-3 py-2 border-b border-border-default shrink-0"
     >
       <div>
-        <h2 id="snippet-preview-heading" className="text-[12px] font-medium text-white leading-none">{title}</h2>
-        <p className="text-[8px] text-[#595e69] mt-0.5">{count} snippet{count === 1 ? '' : 's'}</p>
+        <h2 id="snippet-preview-heading" className="text-[12px] font-medium text-primary leading-none">{title}</h2>
+        <p className="text-[8px] text-muted mt-0.5">{count} snippet{count === 1 ? '' : 's'}</p>
       </div>
       <div className="flex items-center gap-1.5">
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] rounded text-[8px] px-2 h-[20px] flex items-center">
+        <div className="bg-surface border border-border-default text-secondary rounded text-[8px] px-2 h-[20px] flex items-center">
           Filter
         </div>
-        <div className="bg-[#6366f1] text-white rounded text-[8px] px-2 h-[20px] flex items-center gap-1">
+        <div className="bg-accent text-on-accent rounded text-[8px] px-2 h-[20px] flex items-center gap-1">
           <Plus size={9} /> New snippet
         </div>
       </div>
@@ -120,18 +120,18 @@ function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduce
   return (
     <motion.div
       {...revealProps(shouldReduceMotion, revealDelay)}
-      className="border-b border-[#2a2a2a]"
+      className="border-b border-border-default"
     >
       <button
         type="button"
         onClick={onToggle}
         className={`w-full flex items-center justify-between px-3 py-2.5 text-left cursor-pointer transition-colors duration-150 ${
-          expanded ? 'bg-[#1f1f1f]' : 'bg-[#1a1a1a] hover:bg-[#1f1f1f]'
+          expanded ? 'bg-surface-hover' : 'bg-surface hover:bg-surface-hover'
         }`}
       >
         <div className="min-w-0 mr-3">
-          <p className="text-[10px] font-medium text-white truncate">{snippet.title}</p>
-          <p className="text-[8px] text-[#595e69] mt-0.5 truncate">{snippet.description}</p>
+          <p className="text-[10px] font-medium text-primary truncate">{snippet.title}</p>
+          <p className="text-[8px] text-muted mt-0.5 truncate">{snippet.description}</p>
         </div>
         <div className={`shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-medium ${snippet.badgeClass}`}>
           <span aria-hidden="true" className={`w-1 h-1 rounded-full shrink-0 ${snippet.dotClass}`} />
@@ -139,7 +139,7 @@ function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduce
         </div>
       </button>
       {expanded && (
-        <pre className="bg-[#0f0f0f] text-[#9ba3af] text-[8px] leading-[1.5] font-mono px-3 py-2 overflow-x-auto whitespace-pre">
+        <pre className="bg-app text-secondary text-[8px] leading-[1.5] font-mono px-3 py-2 overflow-x-auto whitespace-pre">
           {snippet.code}
         </pre>
       )}
@@ -182,7 +182,7 @@ export default function LandingAppPreview() {
   return (
     <section aria-labelledby="snippet-preview-heading" className="flex justify-center px-6 pb-20 mt-4">
       <div className="w-full max-w-[1048px] mx-auto">
-        <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] overflow-hidden shadow-2xl">
+        <div className="rounded-xl border border-border-default bg-surface overflow-hidden shadow-2xl">
           <div className="flex h-[360px] overflow-hidden">
             <MiniSidebar
               filter={filter}
@@ -203,17 +203,17 @@ export default function LandingAppPreview() {
 
               <motion.div
                 {...revealProps(shouldReduceMotion, 0.16)}
-                className="flex items-center gap-1.5 px-3 py-2 border-b border-[#2a2a2a] shrink-0"
+                className="flex items-center gap-1.5 px-3 py-2 border-b border-border-default shrink-0"
               >
-                <div className="flex-1 min-w-0 flex items-center gap-1 bg-[#222] rounded px-2 py-1">
-                  <Search size={9} className="text-[#595e69] shrink-0" />
+                <div className="flex-1 min-w-0 flex items-center gap-1 bg-control rounded px-2 py-1">
+                  <Search size={9} className="text-muted shrink-0" />
                   <input
                     type="text"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                     aria-label="Search demo snippets"
                     placeholder="Search snippets..."
-                    className="bg-transparent text-[9px] text-white placeholder:text-[#595e69] outline-none w-full min-w-0"
+                    className="bg-transparent text-[9px] text-primary placeholder:text-muted outline-none w-full min-w-0"
                   />
                 </div>
                 <div className="flex sm:hidden items-center gap-1 overflow-x-auto">
@@ -223,7 +223,7 @@ export default function LandingAppPreview() {
                       type="button"
                       onClick={() => handleTagToggle(tag.label)}
                       className={`flex items-center gap-1 px-1.5 py-1 rounded text-[8px] shrink-0 transition-colors duration-150 ${
-                        activeTag === tag.label ? 'bg-white/10 ring-1 ring-[#6366f1] text-white' : 'bg-[#222] text-[#9ba3af]'
+                        activeTag === tag.label ? 'bg-interactive-overlay/10 ring-1 ring-accent text-primary' : 'bg-control text-secondary'
                       }`}
                     >
                       <span aria-hidden="true" className={`w-1 h-1 rounded-full shrink-0 ${tag.dotClass}`} />
@@ -237,7 +237,7 @@ export default function LandingAppPreview() {
                 {visibleSnippets.length === 0 ? (
                   <motion.p
                     {...revealProps(shouldReduceMotion, 0.24)}
-                    className="text-[9px] text-[#595e69] text-center py-6"
+                    className="text-[9px] text-muted text-center py-6"
                   >
                     No snippets
                   </motion.p>
@@ -258,7 +258,7 @@ export default function LandingAppPreview() {
           </div>
         </div>
 
-        <div className="h-16 bg-gradient-to-b from-[#0f0f0f]/0 to-[#0f0f0f] -mt-1 pointer-events-none" />
+        <div className="h-16 bg-gradient-to-b from-app/0 to-app -mt-1 pointer-events-none" />
       </div>
     </section>
   )

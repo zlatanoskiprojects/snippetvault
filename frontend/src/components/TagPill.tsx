@@ -5,5 +5,5 @@ interface TagPillProps {
 }
 
 export default function TagPill({ label }: TagPillProps) {
-  return <Badge label={label} bgColor="#242424" textColor="#595e69" />
+  return <Badge label={label} bgColor="var(--color-tag)" textColor="var(--color-muted)" />
 }

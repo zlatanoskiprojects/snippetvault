@@ -44,28 +44,28 @@ function LogIn() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-app flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px]">
         <div className="flex flex-col items-center mb-8">
-          <div className="rounded-lg bg-[#6366f1] w-9 h-9 flex items-center justify-center mb-3">
-            <span className="text-[13px] font-bold font-mono text-white">&lt;/&gt;</span>
+          <div className="rounded-lg bg-accent w-9 h-9 flex items-center justify-center mb-3">
+            <span className="text-[13px] font-bold font-mono text-on-accent">&lt;/&gt;</span>
           </div>
-          <h1 className="text-lg font-semibold text-white">Snippet Vault</h1>
-          <p className="text-sm text-[#595e69] mt-1">Sign in to your account</p>
+          <h1 className="text-lg font-semibold text-primary">Snippet Vault</h1>
+          <p className="text-sm text-muted mt-1">Sign in to your account</p>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 flex flex-col gap-4">
+        <div className="bg-surface border border-border-default rounded-xl p-6 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Button
               variant="secondary"
-              className="w-full h-[40px] bg-[#222] hover:bg-[#2a2a2a]"
+              className="w-full h-[40px] bg-control hover:bg-interactive-strong"
               onClick={() => handleSocialLogin('google')}
             >
               Continue with Google
             </Button>
             <Button
               variant="secondary"
-              className="w-full h-[40px] bg-[#222] hover:bg-[#2a2a2a]"
+              className="w-full h-[40px] bg-control hover:bg-interactive-strong"
               onClick={() => handleSocialLogin('github')}
             >
               Continue with GitHub
@@ -73,9 +73,9 @@ function LogIn() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#2a2a2a]" />
-            <span className="text-[11px] text-[#595e69]">or</span>
-            <div className="flex-1 h-px bg-[#2a2a2a]" />
+            <div className="flex-1 h-px bg-divider" />
+            <span className="text-[11px] text-muted">or</span>
+            <div className="flex-1 h-px bg-divider" />
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Field label="Email">
@@ -106,9 +106,9 @@ function LogIn() {
 
         </div>
 
-        <p className="text-center text-[#595e69] text-sm mt-5">
+        <p className="text-center text-muted text-sm mt-5">
           Don't have an account?{' '}
-          <Link to="/register" className="inline-block py-2.5 -my-2.5 text-[#6366f1] hover:text-indigo-400 transition-colors duration-150">
+          <Link to="/register" className="inline-block py-2.5 -my-2.5 text-accent hover:text-accent-text-hover transition-colors duration-150">
             Sign up
           </Link>
         </p>

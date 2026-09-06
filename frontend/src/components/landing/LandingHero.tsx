@@ -22,13 +22,13 @@ export default function LandingHero() {
         {...revealProps(0)}
         className="text-5xl md:text-6xl lg:text-[72px] font-bold leading-tight max-w-4xl mx-auto"
       >
-        <span className="text-white">Save code. Understand it. </span>
-        <span className="text-[#6366f1]">Reuse it faster.</span>
+        <span className="text-primary">Save code. Understand it. </span>
+        <span className="text-accent">Reuse it faster.</span>
       </motion.h1>
 
       <motion.p
         {...revealProps(0.08)}
-        className="text-[#9ba3af] text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-6"
+        className="text-secondary text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-6"
       >
         SnippetVault gives developers a smarter snippet workspace with local hosting, SaaS availability, and AI-powered code explanation.
       </motion.p>
@@ -38,7 +38,7 @@ export default function LandingHero() {
           {...revealProps(0.16)}
           to="/login"
           aria-label="Open SnippetVault Cloud sign-in"
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-[#222] hover:text-white transition-colors duration-150"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-surface border border-border-default text-secondary text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-control-hover hover:text-primary transition-colors duration-150"
         >
           <Cloud size={16} /> Cloud
         </MotionLink>
@@ -46,7 +46,7 @@ export default function LandingHero() {
           {...revealProps(0.24)}
           to="/docs/quick-start"
           aria-label="Read the SnippetVault Quick Start guide"
-          className="w-full sm:w-auto bg-[#6366f1] hover:bg-indigo-500 text-white text-sm font-medium px-8 h-[44px] rounded-lg transition-colors duration-150 flex items-center justify-center"
+          className="w-full sm:w-auto bg-accent hover:bg-accent-hover text-on-accent text-sm font-medium px-8 h-[44px] rounded-lg transition-colors duration-150 flex items-center justify-center"
         >
           Get Started
         </MotionLink>
@@ -54,7 +54,7 @@ export default function LandingHero() {
           {...revealProps(0.32)}
           href="https://github.com/Zlatanoski/snippetvault"
           aria-label="View SnippetVault on GitHub"
-          className="w-full sm:w-auto bg-[#1a1a1a] border border-[#2a2a2a] text-[#9ba3af] text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-[#222] hover:text-white transition-colors duration-150 flex items-center justify-center gap-2"
+          className="w-full sm:w-auto bg-surface border border-border-default text-secondary text-sm font-medium px-6 h-[44px] rounded-lg hover:bg-control-hover hover:text-primary transition-colors duration-150 flex items-center justify-center gap-2"
         >
           <svg
             width="16"
