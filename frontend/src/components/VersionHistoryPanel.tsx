@@ -109,7 +109,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
             </div>
           ) : (
             versions.map(v => (
-              <button
+              <Button variant="unstyled" size="unstyled"
                 key={v.id}
                 onClick={() => handleSelectVersion(v)}
                 className={`w-full text-left px-4 py-3 border-b border-border-default transition-colors duration-150 ${
@@ -127,7 +127,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
                 ) : (
                   <p className="text-[11px] text-muted italic">No note</p>
                 )}
-              </button>
+              </Button>
             ))
           )}
         </div>
@@ -171,24 +171,26 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
       </div>
 
       <div className="flex items-center justify-between px-5 h-[56px] border-t border-border-default shrink-0 bg-panel">
-        <Button variant="secondary" onClick={onBack} className="h-[40px] sm:h-[36px] px-4 text-[13px]">
+        <Button variant="secondary" size="md" onClick={onBack} className="px-4 text-[13px]">
           Back
         </Button>
         {selectedVersion && (
           <div className="flex items-center gap-2">
             <Button
               variant="danger"
+              size="md"
               onClick={() => setDeleteConfirmOpen(true)}
               disabled={deleting}
-              className="h-[40px] sm:h-[36px] px-4 text-[13px] bg-danger-restore border border-danger-restore-border hover:bg-danger-strong/40 text-danger-soft hover:text-danger-soft-hover"
+              className="border border-danger-restore-border bg-danger-restore px-4 text-[13px] text-danger-soft hover:bg-danger-strong/40 hover:text-danger-soft-hover"
             >
               {deleting ? 'Deleting…' : 'Delete'}
             </Button>
             <Button
               variant="primary"
+              size="md"
               onClick={handleRestore}
               disabled={restoring}
-              className="h-[40px] sm:h-[36px] px-4 text-[13px]"
+              className="px-4 text-[13px]"
             >
               {restoring ? 'Restoring…' : `Restore v${selectedVersion.version_number}`}
             </Button>

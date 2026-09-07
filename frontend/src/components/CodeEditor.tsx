@@ -66,8 +66,8 @@ export default function CodeEditor({ language, code, onChange, editable = true, 
           <span className="text-xs text-muted font-medium">{language || 'TypeScript'}</span>
           <Button
             variant="secondary"
+            size="sm"
             onClick={handleCopy}
-            className="h-[40px] sm:h-auto text-[11px] px-2.5 py-1 rounded"
           >
             {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied!' : 'Copy'}
           </Button>

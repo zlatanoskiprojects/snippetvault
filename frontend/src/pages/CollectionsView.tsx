@@ -54,7 +54,7 @@ export default function CollectionsView({ onSelectCollection, onMenuClick }: Col
               variant="secondary"
               onClick={onMenuClick}
               aria-label="Open menu"
-              className="lg:hidden w-[40px] h-[40px] p-0 shrink-0"
+              className="h-10 w-10 shrink-0 p-0 sm:h-10 lg:hidden"
             >
               <Menu size={14} />
             </Button>

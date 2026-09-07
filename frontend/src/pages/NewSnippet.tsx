@@ -119,7 +119,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
             variant="secondary"
             onClick={onMenuClick}
             aria-label="Open menu"
-            className="lg:hidden w-[40px] h-[40px] p-0"
+            className="h-10 w-10 p-0 sm:h-10 lg:hidden"
           >
             <Menu size={14} />
           </Button>
@@ -173,29 +173,32 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
 
           <div>
             <label className="block text-xs text-secondary mb-1.5 font-normal">Tags</label>
-            <div className="min-h-[38px] bg-control border border-border-default rounded-md px-2 py-1.5 flex flex-wrap gap-1.5 items-center focus-within:border-accent transition-colors duration-150">
+            <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-[10px] border border-border-default bg-control px-3 py-1.5 transition-[border-color,box-shadow] duration-150 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-1 focus-within:ring-offset-app sm:min-h-9">
               {tags.map((tag, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1 bg-tag text-muted text-[10px] px-2 py-0.5 rounded"
+                  className="flex items-center gap-1 rounded-md bg-tag px-2 py-0.5 text-[10px] text-muted"
                 >
                   {tag}
                   <Button
-                    variant="ghost"
+                    variant="unstyled"
+                    size="unstyled"
                     onClick={() => removeTag(i)}
-                    className="h-auto p-0 text-muted hover:text-primary hover:bg-transparent leading-none ml-0.5"
+                    aria-label={`Remove ${tag} tag`}
+                    className="ml-0.5 inline-flex size-4 cursor-pointer items-center justify-center rounded-md leading-none text-muted transition-colors duration-150 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     ×
                   </Button>
                 </span>
               ))}
               <Input
+                variant="unstyled"
                 type="text"
                 value={tagInput}
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
                 placeholder="Add tag…"
-                className="bg-transparent border-0 h-auto p-0 flex-1 min-w-[80px] focus:border-transparent"
+                className="h-5 min-w-[80px] flex-1 bg-transparent p-0 text-sm leading-5 text-primary placeholder-muted outline-none"
               />
             </div>
           </div>
@@ -209,7 +212,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
           </Field>
 
           <div className="flex flex-col gap-3 mt-auto pt-5 sm:flex-row">
-            <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+            <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full sm:w-auto sm:min-w-30">
               {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save snippet'}
             </Button>
             <Button variant="secondary" onClick={onCancel} className="w-full sm:w-auto">

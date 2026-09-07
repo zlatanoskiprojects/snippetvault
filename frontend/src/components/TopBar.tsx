@@ -34,7 +34,7 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           variant="secondary"
           onClick={onMenuClick}
           aria-label="Open menu"
-          className="lg:hidden w-[40px] h-[40px] p-0"
+          className="h-10 w-10 p-0 sm:h-10 lg:hidden"
         >
           <Menu size={14} />
         </Button>
@@ -43,7 +43,7 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           variant="secondary"
           onClick={onSearch}
           aria-label="Search"
-          className="lg:hidden w-[40px] h-[40px] p-0"
+          className="h-10 w-10 p-0 sm:h-10 lg:hidden"
         >
           <Search size={13} />
         </Button>

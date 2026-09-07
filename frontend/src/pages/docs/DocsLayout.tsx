@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dialog as BaseDialog } from '@base-ui/react/dialog'
+import { Sheet, SheetContent, SheetTitle } from '../../components/ui/Sheet'
 import { Menu } from 'lucide-react'
 import LandingNavbar from '../../components/landing/LandingNavbar'
 import Button from '../../components/ui/Button'
@@ -46,16 +46,14 @@ export default function DocsLayout({ slug, title, headings, children }: DocsLayo
           <DocsSidebar />
         </aside>
 
-        <BaseDialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <BaseDialog.Portal>
-            <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-overlay/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
-            <BaseDialog.Popup className="fixed left-0 top-0 z-40 h-full lg:hidden outline-none transition-transform duration-150 data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full">
-              <aside className="w-60 bg-sidebar border-r border-border-default overflow-y-auto py-6 px-3 h-full">
-                <DocsSidebar onNavigate={() => setDrawerOpen(false)} />
-              </aside>
-            </BaseDialog.Popup>
-          </BaseDialog.Portal>
-        </BaseDialog.Root>
+        <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <SheetContent side="left" overlayClassName="lg:hidden" className="lg:hidden">
+            <SheetTitle className="sr-only">Documentation navigation</SheetTitle>
+            <aside className="w-60 bg-sidebar border-r border-border-default overflow-y-auto py-6 px-3 h-full">
+              <DocsSidebar onNavigate={() => setDrawerOpen(false)} />
+            </aside>
+          </SheetContent>
+        </Sheet>
 
         <main ref={scrollRef} className="flex-1 min-w-0 overflow-y-auto">
           <div className="mx-auto flex w-full max-w-5xl gap-10 px-6 py-10">

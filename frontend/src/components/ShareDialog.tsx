@@ -78,13 +78,14 @@ export default function ShareDialog({ open, onClose, snippet, onUpdate }: ShareD
             </div>
 
             <div className="flex gap-2">
-              <div className="flex-1 bg-panel-header border border-border-default rounded-md px-3 h-[38px] flex items-center text-xs text-primary overflow-x-auto whitespace-nowrap scrollbar-none">
+              <div className="flex h-10 flex-1 items-center overflow-x-auto whitespace-nowrap rounded-[10px] border border-border-default bg-panel-header px-3 text-xs text-primary scrollbar-none sm:h-9">
                 {shareLink}
               </div>
               <Button
                 variant={copied ? 'secondary' : 'primary'}
+                size="md"
                 onClick={handleCopy}
-                className="h-[38px] px-4 text-xs font-semibold shrink-0"
+                className="shrink-0"
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
               </Button>
@@ -123,14 +124,14 @@ export default function ShareDialog({ open, onClose, snippet, onUpdate }: ShareD
               <Button
                 variant="primary"
                 onClick={handleToggleVisibility}
-                className="w-full text-xs font-semibold py-2"
+                className="w-full text-xs"
               >
                 <Globe size={14} /> Make Public & Share
               </Button>
               <Button
                 variant="secondary"
                 onClick={onClose}
-                className="w-full text-xs font-semibold py-2"
+                className="w-full text-xs"
               >
                 Cancel
               </Button>

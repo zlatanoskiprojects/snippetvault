@@ -1,3 +1,4 @@
+import Button from './ui/Button'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 interface ErrorBoundaryProps {
@@ -29,12 +30,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <p className="text-secondary text-sm mt-2">
             An unexpected error occurred while rendering this page.
           </p>
-          <button
+          <Button variant="unstyled" size="unstyled"
             onClick={() => window.location.reload()}
             className="mt-6 rounded-md bg-accent hover:bg-accent-hover transition-colors duration-150 text-on-accent text-sm px-4 py-2"
           >
             Reload page
-          </button>
+          </Button>
         </div>
       </div>
     )

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, type ChangeEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Menu, Pencil, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Menu, Pencil, ShieldCheck, SlidersHorizontal, Trash2, TriangleAlert, UserRound } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -17,9 +17,9 @@ import type { Snippet } from '../api/types'
 import { socialLogin } from '../api/auth'
 
 const TABS = [
-  { key: 'profile',     label: 'Profile'      },
-  { key: 'security',    label: 'Security'     },
-  { key: 'preferences', label: 'Preferences'  },
+  { key: 'profile',     label: 'Profile',     icon: UserRound            },
+  { key: 'security',    label: 'Security',    icon: ShieldCheck          },
+  { key: 'preferences', label: 'Preferences', icon: SlidersHorizontal   },
 ]
 
 interface ProfileForm {
@@ -358,287 +358,319 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   }
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-app">
-      <div className="flex items-center gap-3 px-6 py-3 border-b border-border-default shrink-0">
-        {onMenuClick && (
-          <Button
-            variant="secondary"
-            onClick={onMenuClick}
-            aria-label="Open menu"
-            className="lg:hidden w-[40px] h-[40px] p-0"
-          >
-            <Menu size={14} />
-          </Button>
-        )}
-        {onBack && (
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="w-[40px] h-[40px] sm:w-[28px] sm:h-[28px] p-0"
-            aria-label="Go back"
-          >
-            <ArrowLeft size={16} />
-          </Button>
-        )}
-        <span className="text-lg font-semibold text-primary">Profile &amp; Settings</span>
-      </div>
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-app lg:m-2 lg:rounded-[14px] lg:border lg:border-border-default lg:shadow-sm lg:shadow-overlay/5">
+      <header className="shrink-0 px-4 pb-4 pt-3 sm:px-6 lg:px-5 lg:pb-2">
+        <div className="flex min-h-10 items-center gap-2">
+          {onMenuClick && (
+            <Button
+              variant="secondary"
+              onClick={onMenuClick}
+              aria-label="Open menu"
+              className="h-10 w-10 p-0 lg:hidden"
+            >
+              <Menu size={14} />
+            </Button>
+          )}
+          {onBack && (
+            <Button variant="ghost" onClick={onBack} className="gap-1.5 px-2 text-[13px]">
+              <ArrowLeft size={15} />
+              Back to workspace
+            </Button>
+          )}
+        </div>
+        <h1 className="mt-3 text-xl font-semibold tracking-tight text-primary sm:text-2xl">Profile &amp; Settings</h1>
+      </header>
 
       <TabsRoot
         value={activeTab}
         onValueChange={value => setActiveTab(value as string)}
-        className="flex flex-col flex-1 min-h-0"
+        className="min-h-0 flex-1 overflow-y-auto"
       >
-        <TabsList className="px-6 pt-4 shrink-0">
-          {TABS.map(({ key, label }) => (
-            <Tab key={key} value={key}>
-              {label}
-            </Tab>
-          ))}
-        </TabsList>
-
-        <Panel value={activeTab} className="flex-1 overflow-y-auto">
-        {activeTab === 'profile' ? (
-          <div className="flex flex-col lg:flex-row gap-8 px-6 py-6">
-            <div className="flex-1 max-w-[480px] flex flex-col gap-6">
-              <div className="flex items-start gap-4">
-                <div className="relative w-[80px] h-[80px] shrink-0">
-                  <div className="w-[80px] h-[80px] rounded-full bg-avatar flex items-center justify-center">
-                    <span className="text-accent text-[22px] font-bold">{avatarLetter}</span>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    className="absolute bottom-0 right-0 w-[40px] h-[40px] sm:w-[30px] sm:h-[30px] p-0 rounded-full"
-                  >
-                    <Pencil size={12} />
-                  </Button>
+        <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 pb-10 sm:px-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10 lg:px-5 lg:pt-3 xl:gap-16">
+          <aside className="min-w-0 lg:sticky lg:top-0 lg:self-start">
+            <div className="flex min-w-0 items-center gap-3 py-2 lg:px-2 lg:py-4">
+              <div className="relative shrink-0">
+                <div className="flex size-14 items-center justify-center rounded-full bg-avatar">
+                  <span className="text-lg font-bold text-accent">{avatarLetter}</span>
                 </div>
-
-                <div className="flex flex-col gap-1 pt-1">
-                  <span className="text-[15px] font-medium text-primary">@{user?.username}</span>
-                  <span className="text-xs text-muted">{user?.email}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Field label="Username">
-                  <Input
-                    type="text"
-                    value={form.username}
-                    onChange={handleChange('username')}
-                    className="text-[13px]"
-                  />
-                </Field>
-
-                <Field label="Display name">
-                  <Input
-                    type="text"
-                    value={form.displayName}
-                    onChange={handleChange('displayName')}
-                    className="text-[13px]"
-                  />
-                </Field>
-
-                <Field label="Email">
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange('email')}
-                    className="text-[13px]"
-                  />
-                </Field>
-
-                {emailChanged && user?.has_password && (
-                  <Field label="Current password">
-                    <Input
-                      type="password"
-                      value={emailCurrentPassword}
-                      onChange={event => setEmailCurrentPassword(event.target.value)}
-                      placeholder="Required to change your email"
-                      className="text-[13px]"
-                    />
-                  </Field>
-                )}
-
-                {emailChanged && !user?.has_password && (
-                  <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-muted p-3">
-                    <p className="text-xs text-secondary">
-                      Re-authenticate with a linked provider to continue.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {user?.oauth_providers.map(provider => (
-                        <Button
-                          key={provider}
-                          variant="secondary"
-                          onClick={() => handleEmailOAuthReauth(provider)}
-                          disabled={oauthReauthing}
-                          className="h-[34px] px-3 text-[12px] capitalize"
-                        >
-                          Continue with {provider}
-                        </Button>
-                      ))}
-                    </div>
-                    {user?.oauth_providers.length === 0 && (
-                      <p className="text-xs text-danger">
-                        No linked OAuth provider is available for re-authentication.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <Field label="Bio">
-                  <Textarea
-                    value={form.bio}
-                    onChange={handleChange('bio')}
-                    className="text-[13px] h-[80px]"
-                  />
-                </Field>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="primary"
-                  onClick={isDirty && !saving ? handleSave : undefined}
-                  disabled={!isDirty || saving}
-                  className="h-[38px] px-5 text-[13px]"
-                >
-                  {saving ? 'Saving…' : 'Save changes'}
-                </Button>
                 <Button
                   variant="secondary"
-                  onClick={handleDiscard}
-                  className="h-[38px] px-4 text-[13px]"
+                  aria-label="Edit profile picture"
+                  className="absolute -bottom-1 -right-1 size-7 rounded-full p-0"
                 >
-                  Discard
+                  <Pencil size={11} />
                 </Button>
               </div>
-
-              <div className="w-full bg-danger-zone border border-danger-zone-border rounded-lg px-4 py-4 mt-2">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5 text-danger text-[14px] font-medium">
-                    <TriangleAlert size={14} /> Danger Zone
-                  </span>
-                </div>
-                <p className="text-muted text-xs mt-1">
-                  Permanently delete your account and all associated data.
-                </p>
-                <Button
-                  variant="danger"
-                  onClick={() => setDeleteConfirmOpen(true)}
-                  className="bg-danger-action hover:bg-danger-action-hover text-[12px] h-[34px] px-3 mt-3"
-                >
-                  <Trash2 size={14} /> Delete account
-                </Button>
-
-                <ConfirmDialog
-                  open={deleteConfirmOpen}
-                  onOpenChange={setDeleteConfirmOpen}
-                  title="Delete account"
-                  description="Are you sure? This action cannot be undone."
-                  confirmLabel={deletingAccount ? 'Deleting…' : 'Delete account'}
-                  danger
-                  confirming={deletingAccount}
-                  onConfirm={handleDeleteAccount}
-                />
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-primary">@{user?.username}</div>
+                <div className="mt-0.5 truncate text-xs text-muted">{user?.email}</div>
               </div>
             </div>
 
-            <div className="w-full lg:w-[420px] xl:w-[500px] shrink-0 flex flex-col gap-4">
-              <div className="text-[15px] font-medium text-primary mb-2">Your stats</div>
-              <div className="grid grid-cols-2 gap-3">
-                {stats.map(stat => (
-                  <StatCard
-                    key={stat.label}
-                    value={stat.value}
-                    label={stat.label}
-                    accentColor={stat.accentColor}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : activeTab === 'security' ? (
-          <div className="flex flex-col gap-6 px-6 py-6 max-w-[480px]">
-            <div className="flex flex-col gap-4">
-              {!user?.has_password && (
-                <p className="text-sm text-secondary leading-6">
-                  Create a password to finish setting up your account and enable email sign-in.
-                </p>
-              )}
+            <TabsList className="mt-3 flex items-stretch gap-1 overflow-x-auto border-0 pb-1 lg:mt-4 lg:flex-col lg:overflow-visible lg:pb-0 [&_[data-slot=tabs-indicator]]:hidden">
+              {TABS.map(({ key, label, icon: Icon }) => (
+                <Tab
+                  key={key}
+                  value={key}
+                  className="h-9 shrink-0 justify-start gap-2 rounded-lg px-3 text-[13px] data-[active]:bg-surface-selected data-[active]:text-primary sm:h-9 lg:w-full"
+                >
+                  <Icon size={15} />
+                  {label}
+                </Tab>
+              ))}
+            </TabsList>
+          </aside>
 
-              {user && !user.has_password && passwordReauthRequired && (
-                <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-muted p-3">
-                  <p className="text-xs text-secondary">
-                    Your session is older than five minutes. Re-authenticate with a linked provider,
-                    then enter the new password again.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {user.oauth_providers.map(provider => (
+          <Panel value={activeTab} className="min-w-0">
+            {activeTab === 'profile' ? (
+              <div className="flex w-full max-w-4xl flex-col gap-8">
+                <section>
+                  <h2 className="text-lg font-semibold text-primary">Personal information</h2>
+                  <p className="mt-1 text-sm text-muted">Manage your personal details and account information.</p>
+
+                  <div className="mt-5 overflow-hidden rounded-2xl border border-border-default bg-surface">
+                    <div className="divide-y divide-border-default">
+                      <Field label="Username" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                        <Input
+                          type="text"
+                          value={form.username}
+                          onChange={handleChange('username')}
+                          className="text-[13px]"
+                        />
+                      </Field>
+
+                      <Field label="Display name" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                        <Input
+                          type="text"
+                          value={form.displayName}
+                          onChange={handleChange('displayName')}
+                          className="text-[13px]"
+                        />
+                      </Field>
+
+                      <Field label="Email" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                        <Input
+                          type="email"
+                          value={form.email}
+                          onChange={handleChange('email')}
+                          className="text-[13px]"
+                        />
+                      </Field>
+
+                      {emailChanged && user?.has_password && (
+                        <Field label="Current password" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                          <Input
+                            type="password"
+                            value={emailCurrentPassword}
+                            onChange={event => setEmailCurrentPassword(event.target.value)}
+                            placeholder="Required to change your email"
+                            className="text-[13px]"
+                          />
+                        </Field>
+                      )}
+
+                      {emailChanged && !user?.has_password && (
+                        <div className="p-4">
+                          <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-muted p-3">
+                            <p className="text-xs text-secondary">
+                              Re-authenticate with a linked provider to continue.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {user?.oauth_providers.map(provider => (
+                                <Button
+                                  key={provider}
+                                  variant="secondary"
+                                  onClick={() => handleEmailOAuthReauth(provider)}
+                                  disabled={oauthReauthing}
+                                  className="px-3 text-[12px] capitalize"
+                                >
+                                  Continue with {provider}
+                                </Button>
+                              ))}
+                            </div>
+                            {user?.oauth_providers.length === 0 && (
+                              <p className="text-xs text-danger">
+                                No linked OAuth provider is available for re-authentication.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <Field label="Bio" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-start sm:[&_[data-slot=field-label]]:pt-2.5">
+                        <Textarea
+                          value={form.bio}
+                          onChange={handleChange('bio')}
+                          className="h-20 text-[13px] sm:h-20"
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="flex flex-col-reverse gap-2 border-t border-border-default bg-surface-muted px-4 py-3 sm:flex-row sm:justify-end">
                       <Button
-                        key={provider}
                         variant="secondary"
-                        onClick={() => handlePasswordOAuthReauth(provider)}
-                        disabled={passwordOauthReauthing}
-                        className="h-[34px] px-3 text-[12px] capitalize"
+                        size="md"
+                        onClick={handleDiscard}
+                        className="px-4 text-[13px]"
                       >
-                        Continue with {provider}
+                        Discard
                       </Button>
+                      <Button
+                        variant="primary"
+                        size="md"
+                        onClick={isDirty && !saving ? handleSave : undefined}
+                        disabled={!isDirty || saving}
+                        className="min-w-32 text-[13px]"
+                      >
+                        {saving ? 'Saving…' : 'Save changes'}
+                      </Button>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-2 text-sm font-medium text-danger">
+                    <TriangleAlert size={14} />
+                    <h2>Danger Zone</h2>
+                  </div>
+                  <p className="mt-1 text-xs text-muted">Manage permanent actions that affect your account.</p>
+                  <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-danger-zone-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-primary">Delete account</div>
+                      <p className="mt-1 text-xs text-muted">Permanently delete your account and all associated data.</p>
+                    </div>
+                    <Button
+                      variant="danger"
+                      onClick={() => setDeleteConfirmOpen(true)}
+                      className="shrink-0 bg-danger-action px-3 text-[12px] hover:bg-danger-action-hover"
+                    >
+                      <Trash2 size={14} /> Delete account
+                    </Button>
+                  </div>
+
+                  <ConfirmDialog
+                    open={deleteConfirmOpen}
+                    onOpenChange={setDeleteConfirmOpen}
+                    title="Delete account"
+                    description="Are you sure? This action cannot be undone."
+                    confirmLabel={deletingAccount ? 'Deleting…' : 'Delete account'}
+                    danger
+                    confirming={deletingAccount}
+                    onConfirm={handleDeleteAccount}
+                  />
+                </section>
+
+                <section>
+                  <h2 className="text-[15px] font-medium text-primary">Your stats</h2>
+                  <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {stats.map(stat => (
+                      <StatCard
+                        key={stat.label}
+                        value={stat.value}
+                        label={stat.label}
+                        accentColor={stat.accentColor}
+                      />
                     ))}
                   </div>
-                  {user.oauth_providers.length === 0 && (
-                    <p className="text-xs text-danger">
-                      No linked OAuth provider is available for re-authentication.
+                </section>
+              </div>
+            ) : activeTab === 'security' ? (
+              <div className="flex w-full max-w-4xl flex-col">
+                <h2 className="text-lg font-semibold text-primary">Security</h2>
+                <p className="mt-1 text-sm text-muted">Manage how you sign in to your account.</p>
+
+                <div className="mt-5 overflow-hidden rounded-2xl border border-border-default bg-surface">
+                  {!user?.has_password && (
+                    <p className="border-b border-border-default p-4 text-sm leading-6 text-secondary">
+                      Create a password to finish setting up your account and enable email sign-in.
                     </p>
                   )}
+
+                  {user && !user.has_password && passwordReauthRequired && (
+                    <div className="border-b border-border-default p-4">
+                      <div className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-muted p-3">
+                        <p className="text-xs text-secondary">
+                          Your session is older than five minutes. Re-authenticate with a linked provider,
+                          then enter the new password again.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {user.oauth_providers.map(provider => (
+                            <Button
+                              key={provider}
+                              variant="secondary"
+                              onClick={() => handlePasswordOAuthReauth(provider)}
+                              disabled={passwordOauthReauthing}
+                              className="px-3 text-[12px] capitalize"
+                            >
+                              Continue with {provider}
+                            </Button>
+                          ))}
+                        </div>
+                        {user.oauth_providers.length === 0 && (
+                          <p className="text-xs text-danger">
+                            No linked OAuth provider is available for re-authentication.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="divide-y divide-border-default">
+                    {user?.has_password && (
+                      <Field label="Current password" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                        <Input
+                          type="password"
+                          value={pwForm.currentPassword}
+                          onChange={handlePwChange('currentPassword')}
+                          className="text-[13px]"
+                        />
+                      </Field>
+                    )}
+
+                    <Field label="New password" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                      <Input
+                        type="password"
+                        value={pwForm.newPassword}
+                        onChange={handlePwChange('newPassword')}
+                        className="text-[13px]"
+                      />
+                    </Field>
+
+                    <Field label="Confirm new password" className="gap-3 p-4 sm:grid sm:grid-cols-[minmax(8rem,1fr)_minmax(14rem,20rem)] sm:items-center">
+                      <Input
+                        type="password"
+                        value={pwForm.confirmPassword}
+                        onChange={handlePwChange('confirmPassword')}
+                        className="text-[13px]"
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="flex border-t border-border-default bg-surface-muted px-4 py-3 sm:justify-end">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={pwReady && !pwSaving ? handlePasswordSubmit : undefined}
+                      disabled={!pwReady || pwSaving}
+                      className="w-full text-[13px] sm:w-auto"
+                    >
+                      {pwSaving
+                        ? user?.has_password ? 'Updating…' : 'Creating…'
+                        : user?.has_password ? 'Update password' : 'Create password'}
+                    </Button>
+                  </div>
                 </div>
-              )}
-
-              {user?.has_password && (
-                <Field label="Current password">
-                  <Input
-                    type="password"
-                    value={pwForm.currentPassword}
-                    onChange={handlePwChange('currentPassword')}
-                    className="text-[13px]"
-                  />
-                </Field>
-              )}
-
-              <Field label="New password">
-                <Input
-                  type="password"
-                  value={pwForm.newPassword}
-                  onChange={handlePwChange('newPassword')}
-                  className="text-[13px]"
-                />
-              </Field>
-
-              <Field label="Confirm new password">
-                <Input
-                  type="password"
-                  value={pwForm.confirmPassword}
-                  onChange={handlePwChange('confirmPassword')}
-                  className="text-[13px]"
-                />
-              </Field>
-            </div>
-
-            <Button
-              variant="primary"
-              onClick={pwReady && !pwSaving ? handlePasswordSubmit : undefined}
-              disabled={!pwReady || pwSaving}
-              className="h-[38px] px-5 text-[13px] self-start"
-            >
-              {pwSaving
-                ? user?.has_password ? 'Updating…' : 'Creating…'
-                : user?.has_password ? 'Update password' : 'Create password'}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-48 text-muted text-sm">
-            This section is coming soon.
-          </div>
-        )}
-        </Panel>
+              </div>
+            ) : (
+              <div className="flex w-full max-w-4xl flex-col">
+                <h2 className="text-lg font-semibold text-primary">Preferences</h2>
+                <div className="flex h-48 items-center justify-center text-sm text-muted">
+                  This section is coming soon.
+                </div>
+              </div>
+            )}
+          </Panel>
+        </div>
       </TabsRoot>
     </div>
   )

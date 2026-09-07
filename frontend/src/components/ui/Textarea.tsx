@@ -6,11 +6,13 @@ export interface TextareaProps extends ComponentProps<'textarea'> {
   invalid?: boolean
 }
 
-const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, invalid, ...props }, ref) => (
     <textarea
       ref={ref}
-      className={cn(inputBase, 'h-[60px] py-2 resize-none', invalid && 'border-danger', className)}
+      data-slot="textarea"
+      aria-invalid={invalid || undefined}
+      className={cn(inputBase, 'h-15 py-2 resize-none', invalid && 'border-danger', className)}
       {...props}
     />
   )

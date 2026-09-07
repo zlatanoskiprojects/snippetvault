@@ -1,3 +1,5 @@
+import Input from '../ui/Input'
+import Button from '../ui/Button'
 import { useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Code2, LayoutGrid, Lock, Plus, Search, Star } from 'lucide-react'
@@ -45,34 +47,35 @@ function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDel
 
       <p className="text-[7px] font-medium text-muted mt-2 tracking-wider">LIBRARY</p>
       <div className="flex flex-col gap-0.5">
-        <button type="button" className={navItemClass(filter === 'all')} onClick={() => onFilterChange('all')}>
+        <Button variant="unstyled" size="unstyled" type="button" aria-pressed={filter === 'all'} className={navItemClass(filter === 'all')} onClick={() => onFilterChange('all')}>
           <LayoutGrid size={9} className={filter === 'all' ? 'text-on-accent shrink-0' : 'text-secondary shrink-0'} />
           <span className={`text-[9px] ${filter === 'all' ? 'text-on-accent' : 'text-secondary'}`}>All snippets</span>
-        </button>
-        <button type="button" className={navItemClass(filter === 'favourites')} onClick={() => onFilterChange('favourites')}>
+        </Button>
+        <Button variant="unstyled" size="unstyled" type="button" aria-pressed={filter === 'favourites'} className={navItemClass(filter === 'favourites')} onClick={() => onFilterChange('favourites')}>
           <Star size={9} className={filter === 'favourites' ? 'text-on-accent shrink-0' : 'text-secondary shrink-0'} />
           <span className={`text-[9px] ${filter === 'favourites' ? 'text-on-accent' : 'text-secondary'}`}>Favourites</span>
-        </button>
-        <button type="button" className={navItemClass(filter === 'private')} onClick={() => onFilterChange('private')}>
+        </Button>
+        <Button variant="unstyled" size="unstyled" type="button" aria-pressed={filter === 'private'} className={navItemClass(filter === 'private')} onClick={() => onFilterChange('private')}>
           <Lock size={9} className={filter === 'private' ? 'text-on-accent shrink-0' : 'text-secondary shrink-0'} />
           <span className={`text-[9px] ${filter === 'private' ? 'text-on-accent' : 'text-secondary'}`}>Private</span>
-        </button>
+        </Button>
       </div>
 
       <p className="text-[7px] font-medium text-muted mt-2 tracking-wider">TAGS</p>
       <div className="flex flex-col gap-0.5">
         {TAGS.map(tag => (
-          <button
+          <Button variant="unstyled" size="unstyled"
             key={tag.label}
             type="button"
             onClick={() => onTagToggle(tag.label)}
+            aria-pressed={activeTag === tag.label}
             className={`flex items-center gap-1.5 px-1.5 py-0.5 w-full text-left rounded transition-colors duration-150 ${
               activeTag === tag.label ? 'bg-interactive-overlay/10 ring-1 ring-accent' : 'hover:bg-interactive-overlay/5'
             }`}
           >
             <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full shrink-0 ${tag.dotClass}`} />
             <span className="text-[9px] text-secondary">{tag.label}</span>
-          </button>
+          </Button>
         ))}
       </div>
     </motion.aside>
@@ -122,9 +125,10 @@ function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduce
       {...revealProps(shouldReduceMotion, revealDelay)}
       className="border-b border-border-default"
     >
-      <button
+      <Button variant="unstyled" size="unstyled"
         type="button"
         onClick={onToggle}
+        aria-expanded={expanded}
         className={`w-full flex items-center justify-between px-3 py-2.5 text-left cursor-pointer transition-colors duration-150 ${
           expanded ? 'bg-surface-hover' : 'bg-surface hover:bg-surface-hover'
         }`}
@@ -137,7 +141,7 @@ function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduce
           <span aria-hidden="true" className={`w-1 h-1 rounded-full shrink-0 ${snippet.dotClass}`} />
           {snippet.lang}
         </div>
-      </button>
+      </Button>
       {expanded && (
         <pre className="bg-app text-secondary text-[8px] leading-[1.5] font-mono px-3 py-2 overflow-x-auto whitespace-pre">
           {snippet.code}
@@ -207,7 +211,7 @@ export default function LandingAppPreview() {
               >
                 <div className="flex-1 min-w-0 flex items-center gap-1 bg-control rounded px-2 py-1">
                   <Search size={9} className="text-muted shrink-0" />
-                  <input
+                  <Input variant="unstyled"
                     type="text"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
@@ -218,17 +222,18 @@ export default function LandingAppPreview() {
                 </div>
                 <div className="flex sm:hidden items-center gap-1 overflow-x-auto">
                   {TAGS.map(tag => (
-                    <button
+                    <Button variant="unstyled" size="unstyled"
                       key={tag.label}
                       type="button"
                       onClick={() => handleTagToggle(tag.label)}
+                      aria-pressed={activeTag === tag.label}
                       className={`flex items-center gap-1 px-1.5 py-1 rounded text-[8px] shrink-0 transition-colors duration-150 ${
                         activeTag === tag.label ? 'bg-interactive-overlay/10 ring-1 ring-accent text-primary' : 'bg-control text-secondary'
                       }`}
                     >
                       <span aria-hidden="true" className={`w-1 h-1 rounded-full shrink-0 ${tag.dotClass}`} />
                       {tag.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </motion.div>

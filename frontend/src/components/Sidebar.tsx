@@ -8,12 +8,12 @@ import Button from './ui/Button'
 import type { Snippet } from '../api/types'
 
 const TAG_DOT_COLORS = [
-  'var(--color-category-blue)',
-  'var(--color-category-green)',
-  'var(--color-category-purple)',
-  'var(--color-category-orange)',
-  'var(--color-category-red)',
-  'var(--color-category-indigo)',
+  'bg-category-blue',
+  'bg-category-green',
+  'bg-category-purple',
+  'bg-category-orange',
+  'bg-category-red',
+  'bg-category-indigo',
 ]
 
 const libraryItems = [
@@ -80,16 +80,17 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
       </div>
 
       <div className="mx-3 mt-2">
-        <div className="bg-control border border-border-default rounded-md h-[30px] flex items-center gap-2 px-2">
-          <Search size={12} className="shrink-0 text-muted" />
+        <div className="flex h-10 items-center gap-2 rounded-lg border border-border-default bg-control px-2 transition-[border-color,box-shadow] duration-150 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-1 focus-within:ring-offset-sidebar lg:h-8">
+          <Search size={14} className="shrink-0 text-muted" />
           <Input
+            variant="unstyled"
             type="search"
             value={searchQuery}
             onChange={e => onSearchChange?.(e.target.value)}
             onFocus={() => onSearchFocus?.()}
             onBlur={() => { if (!searchQuery && !isSearchActive) onSearchBlur?.() }}
             placeholder="Search snippets…"
-            className="bg-transparent border-0 h-auto p-0 text-[11px] text-secondary placeholder-muted focus:border-transparent"
+            className="h-full min-w-0 flex-1 bg-transparent p-0 text-xs leading-none text-secondary placeholder-muted outline-none lg:text-[11px]"
           />
         </div>
       </div>
@@ -99,17 +100,18 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
         {libraryItems.map((item) => {
           const isActive = activeView === item.view
           return (
-            <div
+            <Button variant="unstyled" size="unstyled"
               key={item.label}
               onClick={() => onViewChange?.(item.view)}
-              className={`flex items-center justify-between px-2 py-2.5 lg:py-1.5 min-h-10 lg:min-h-0 rounded-md cursor-pointer transition-colors duration-150 ${
+              aria-pressed={isActive}
+              className={`flex h-10 w-full cursor-pointer items-center justify-between rounded-lg px-2 text-left text-sm leading-none transition-colors duration-150 lg:h-8 ${
                 isActive ? 'bg-accent' : 'hover:bg-interactive-overlay/5'
               }`}
             >
-              <span className={`text-[13px] ${isActive ? 'text-on-accent' : 'text-secondary'}`}>
+              <span className={`truncate ${isActive ? 'text-on-accent' : 'text-secondary'}`}>
                 {item.label}
               </span>
-            </div>
+            </Button>
           )
         })}
       </div>
@@ -119,30 +121,31 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
         {tagList.map((tag, i) => {
           const isActive = activeTag === tag.label
           return (
-            <div
+            <Button variant="unstyled" size="unstyled"
               key={tag.label}
               onClick={() => onTagChange?.(tag.label)}
-              className={`flex items-center justify-between px-2 py-2.5 lg:py-1.5 min-h-10 lg:min-h-0 rounded-md cursor-pointer transition-colors duration-150 ${
+              aria-pressed={isActive}
+              className={`flex h-10 w-full cursor-pointer items-center justify-between rounded-lg px-2 text-left text-sm leading-none transition-colors duration-150 lg:h-8 ${
                 isActive ? 'bg-accent' : 'hover:bg-interactive-overlay/5'
               }`}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span
-                  className="w-2 h-2 rounded-sm inline-block shrink-0"
-                  style={{ backgroundColor: TAG_DOT_COLORS[i % TAG_DOT_COLORS.length] }}
+                  className={`w-2 h-2 rounded-sm inline-block shrink-0 ${TAG_DOT_COLORS[i % TAG_DOT_COLORS.length]}`}
                 />
-                <span className={`text-[13px] truncate ${isActive ? 'text-on-accent' : 'text-secondary'}`}>{tag.label}</span>
+                <span className={`truncate ${isActive ? 'text-on-accent' : 'text-secondary'}`}>{tag.label}</span>
               </div>
               <span className={`text-[11px] font-medium ml-2 shrink-0 ${isActive ? 'text-on-accent/70' : 'text-muted'}`}>{tag.count}</span>
-            </div>
+            </Button>
           )
         })}
       </div>
 
       <div className="mt-auto">
-        <div
+        <Button variant="unstyled" size="unstyled"
           onClick={() => onViewChange?.('profile')}
-          className={`flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-colors duration-150 border-t border-border-default ${
+          aria-pressed={activeView === 'profile'}
+          className={`flex h-14 w-full cursor-pointer items-center gap-2 border-t border-border-default px-3 text-left transition-colors duration-150 lg:h-12 ${
             activeView === 'profile' ? 'bg-interactive-overlay/5' : 'hover:bg-interactive-overlay/5'
           }`}
         >
@@ -155,20 +158,21 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
             </span>
             <span className="text-xs lg:text-[10px] text-muted truncate">Profile &amp; Settings</span>
           </div>
-        </div>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <button
+        </Button>
+        <div className="flex items-center justify-between px-3 py-2">
+          <Button variant="unstyled" size="unstyled"
             type="button"
             onClick={handleThemeToggle}
-            className="h-10 lg:h-auto text-xs text-muted hover:text-primary flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0 transition-colors duration-150 focus:outline-none"
+            className="flex h-10 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-xs text-muted transition-colors duration-150 hover:bg-interactive-overlay/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:h-8"
           >
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          </button>
+          </Button>
           <Button
             variant="ghost"
+            size="unstyled"
             onClick={handleLogout}
-            className="h-10 sm:h-10 lg:h-auto px-0 text-xs text-muted hover:text-danger hover:bg-transparent"
+            className="h-10 rounded-lg px-2 text-xs text-muted hover:text-danger lg:h-8"
           >
             Sign out
           </Button>

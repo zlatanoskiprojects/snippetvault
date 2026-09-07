@@ -1,3 +1,5 @@
+import Input from '../components/ui/Input'
+import Button from '../components/ui/Button'
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
 import { X } from 'lucide-react'
 import { useSnippets } from '../hooks/useSnippets'
@@ -94,23 +96,24 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
 
       <div className="flex items-center justify-between px-6 py-3 border-b border-border-default shrink-0">
         <h1 className="text-lg font-semibold text-primary">Search snippets</h1>
-        <button
+        <Button variant="unstyled" size="unstyled"
           onClick={() => { onQueryChange(''); onClose() }}
           aria-label="Close search"
           className="flex items-center justify-center w-[40px] h-[40px] sm:w-[28px] sm:h-[28px] rounded-md text-secondary hover:text-primary hover:bg-interactive-overlay/5 transition-colors duration-150"
         >
           <X size={14} />
-        </button>
+        </Button>
       </div>
 
       <div className="px-6 pt-4 pb-3 flex flex-col gap-3 shrink-0">
 
-        <input
+        <Input variant="unstyled"
           ref={inputRef}
           type="text"
           value={query}
           onChange={e => onQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          aria-label="Search snippets"
           placeholder="Search by title, description, tags, or code..."
           className="w-full h-[48px] bg-control border-2 border-accent rounded-lg text-sm text-primary px-4 outline-none placeholder-muted"
         />
@@ -118,10 +121,11 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted shrink-0 w-[60px]">Language:</span>
           {LANG_CHIPS.map(chip => (
-            <button
+            <Button variant="unstyled" size="unstyled"
               key={chip.value}
               type="button"
               onClick={() => toggleLang(chip.value)}
+              aria-pressed={activeLang === chip.value}
               className={
                 activeLang === chip.value
                   ? 'bg-accent text-on-accent text-xs px-3 h-[28px] rounded-md font-medium transition-colors duration-150'
@@ -129,17 +133,18 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
               }
             >
               {chip.label}
-            </button>
+            </Button>
           ))}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted shrink-0 w-[60px]">Tags:</span>
           {tagChips.map(tag => (
-            <button
+            <Button variant="unstyled" size="unstyled"
               key={tag}
               type="button"
               onClick={() => toggleTag(tag)}
+              aria-pressed={activeTags.includes(tag)}
               className={
                 activeTags.includes(tag)
                   ? 'bg-accent text-on-accent text-xs px-3 h-[28px] rounded-md transition-colors duration-150'
@@ -147,17 +152,18 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
               }
             >
               {tag}
-            </button>
+            </Button>
           ))}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted shrink-0 w-[60px]">Sort by:</span>
           {SORT_CHIPS.map(chip => (
-            <button
+            <Button variant="unstyled" size="unstyled"
               key={chip.value}
               type="button"
               onClick={() => setActiveSort(chip.value)}
+              aria-pressed={activeSort === chip.value}
               className={
                 activeSort === chip.value
                   ? 'bg-accent-selection text-accent text-xs px-3 h-[28px] rounded-md font-medium transition-colors duration-150'
@@ -165,7 +171,7 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
               }
             >
               {chip.label}
-            </button>
+            </Button>
           ))}
         </div>
 

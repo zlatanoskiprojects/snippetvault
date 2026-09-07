@@ -87,7 +87,7 @@ function Register() {
               </div>
               <Button
                 variant="secondary"
-                className="w-full h-[40px]"
+                className="w-full"
                 onClick={handleResend}
                 disabled={isResending || resendCooldown > 0}
               >
@@ -106,7 +106,6 @@ function Register() {
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   placeholder="johndoe"
-                  className="h-[40px]"
                 />
               </Field>
               <Field label="Email">
@@ -115,13 +114,12 @@ function Register() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="h-[40px]"
                 />
               </Field>
               <div className="flex justify-center">
                 <Turnstile onVerify={setCaptchaToken} />
               </div>
-              <Button type="submit" variant="primary" className="w-full h-[40px]">
+              <Button type="submit" variant="primary" className="w-full">
                 Create Account
               </Button>
             </form>

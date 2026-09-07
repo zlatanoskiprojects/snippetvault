@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Dialog as BaseDialog } from '@base-ui/react/dialog'
+import { Sheet, SheetContent, SheetTitle } from '../components/ui/Sheet'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import SnippetList from '../components/SnippetList'
@@ -156,20 +156,18 @@ export default function Dashboard() {
         />
       </div>
 
-      <BaseDialog.Root open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <BaseDialog.Portal>
-          <BaseDialog.Backdrop className="fixed inset-0 z-40 bg-overlay/50 lg:hidden transition-opacity duration-150 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0" />
-          <BaseDialog.Popup className="fixed left-0 top-0 z-40 h-full lg:hidden outline-none transition-transform duration-150 data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full">
-            <Sidebar
-              snippets={snippets}
-              activeView={view}
-              onViewChange={v => { handleViewChange(v); setSidebarOpen(false) }}
-              activeTag={activeTag}
-              onTagChange={tag => { handleSelectTag(tag); setSidebarOpen(false) }}
-            />
-          </BaseDialog.Popup>
-        </BaseDialog.Portal>
-      </BaseDialog.Root>
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" overlayClassName="lg:hidden" className="lg:hidden">
+          <SheetTitle className="sr-only">Snippet navigation</SheetTitle>
+          <Sidebar
+            snippets={snippets}
+            activeView={view}
+            onViewChange={v => { handleViewChange(v); setSidebarOpen(false) }}
+            activeTag={activeTag}
+            onTagChange={tag => { handleSelectTag(tag); setSidebarOpen(false) }}
+          />
+        </SheetContent>
+      </Sheet>
 
       <div className="flex flex-1 min-w-0 overflow-hidden">
         {isSearching || searchQuery ? (

@@ -21,7 +21,7 @@ export default function DocsSidebar({ onNavigate }: DocsSidebarProps) {
               to={`/docs/${page.slug}`}
               onClick={onNavigate}
               className={({ isActive }) => cn(
-                'flex items-center justify-between px-2 py-1.5 rounded-md text-[13px] transition-colors duration-150',
+                'flex h-10 w-full items-center justify-between rounded-lg px-2 text-[13px] leading-none transition-colors duration-150 lg:h-8',
                 isActive ? 'bg-accent text-on-accent' : 'text-secondary hover:bg-interactive-overlay/5 hover:text-primary'
               )}
             >

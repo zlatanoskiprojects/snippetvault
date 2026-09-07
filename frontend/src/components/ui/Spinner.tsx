@@ -1,27 +1,25 @@
 import type { ComponentProps } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../../lib/utils'
 
-export interface SpinnerProps extends ComponentProps<'div'> {
-  size?: 'sm' | 'md'
-}
+export const spinnerVariants = cva('inline-block animate-spin rounded-full border-solid border-current border-r-transparent', {
+  variants: { size: { sm: 'size-4 border-2', md: 'size-8 border-3' } },
+  defaultVariants: { size: 'md' },
+})
 
-const SIZE_CLASSES: Record<NonNullable<SpinnerProps['size']>, string> = {
-  sm: 'w-4 h-4 border-2',
-  md: 'w-8 h-8 border-[3px]',
-}
+export interface SpinnerProps extends ComponentProps<'div'>, VariantProps<typeof spinnerVariants> {}
 
-export default function Spinner({ size = 'md', className, ...props }: SpinnerProps) {
+export function Spinner({ size, className, ...props }: SpinnerProps) {
   return (
     <div
       role="status"
-      className={cn(
-        'inline-block animate-spin rounded-full border-solid border-current border-r-transparent',
-        SIZE_CLASSES[size],
-        className
-      )}
+      data-slot="spinner"
+      className={cn(spinnerVariants({ size }), className)}
       {...props}
     >
       <span className="sr-only">Loading...</span>
     </div>
   )
 }
+
+export default Spinner

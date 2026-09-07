@@ -97,42 +97,58 @@
   color-scheme: dark;
 
   /* Theme-dependent surfaces */
-  --theme-app: #0f0f0f;
-  --theme-sidebar: #161616;
-  --theme-surface: #1a1a1a;
-  --theme-panel: #101010;
-  --theme-panel-header: #121212;
-  --theme-control: #222222;
-  --theme-control-hover: #222222;
-  --theme-tag: #242424;
-  --theme-editor: #0d0d0d;
-  --theme-surface-muted: #151515;
-  --theme-surface-hover: #1f1f1f;
+  --theme-app: color-mix(
+    in srgb,
+    var(--color-neutral-950) 96%,
+    var(--color-white)
+  );
+  --theme-sidebar: color-mix(
+    in srgb,
+    var(--color-neutral-950) 97%,
+    var(--color-white)
+  );
+  --theme-surface: color-mix(in srgb, var(--theme-app) 98%, var(--color-white));
+  --theme-panel: var(--theme-app);
+  --theme-panel-header: var(--theme-surface);
+  --theme-control: --alpha(var(--color-white) / 8%);
+  --theme-control-hover: var(--theme-surface-hover);
+  --theme-tag: --alpha(var(--color-white) / 4%);
+  --theme-editor: var(--theme-surface);
+  --theme-surface-muted: --alpha(var(--color-white) / 4%);
+  --theme-surface-hover: --alpha(var(--color-white) / 4%);
   --theme-surface-selected: #1c1c38;
   --theme-surface-selected-strong: #1e1e2e;
 
   /* Theme-dependent text */
-  --theme-text-primary: #ffffff;
-  --theme-text-secondary: #9ba3af;
-  --theme-text-muted: #595e69;
-  --theme-code-text: #d4d4d8;
+  --theme-text-primary: var(--color-neutral-100);
+  --theme-text-secondary: color-mix(
+    in srgb,
+    var(--color-neutral-100) 64%,
+    var(--theme-sidebar)
+  );
+  --theme-text-muted: color-mix(
+    in srgb,
+    var(--color-neutral-500) 90%,
+    var(--color-white)
+  );
+  --theme-code-text: var(--color-neutral-100);
 
   /* Theme-dependent structure */
-  --theme-border-default: #2a2a2a;
-  --theme-border-hover: #3a3a3a;
-  --theme-divider: #2a2a2a;
+  --theme-border-default: --alpha(var(--color-white) / 6%);
+  --theme-border-hover: --alpha(var(--color-white) / 12%);
+  --theme-divider: var(--theme-border-default);
 
   /* Theme-dependent interaction surfaces */
   --theme-interactive-overlay: #ffffff;
-  --theme-interactive-strong: #2a2a2a;
+  --theme-interactive-strong: var(--theme-control);
   --theme-overlay: #000000;
   --theme-avatar: #2e2457;
 
   /* Theme-dependent special surfaces */
-  --theme-feature-surface: #1c1c1c;
-  --theme-feature-surface-hover: #202020;
-  --theme-feature-border: #303030;
-  --theme-feature-border-hover: #454545;
+  --theme-feature-surface: var(--theme-surface);
+  --theme-feature-surface-hover: var(--theme-surface-hover);
+  --theme-feature-border: var(--theme-border-default);
+  --theme-feature-border-hover: var(--theme-border-hover);
   --theme-accent-surface: #262147;
   --theme-accent-surface-hover: #2e2660;
   --theme-accent-selection: #2e295c;

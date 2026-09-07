@@ -125,28 +125,28 @@ export default function SnippetDetailPanel({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="primary"
-            className="h-[40px] sm:h-[34px] px-4 text-[13px]"
+            className="px-4 text-[13px]"
             onClick={() => onEdit(snippet)}
           >
             <Pencil size={14} /> Edit
           </Button>
           <Button
             variant="secondary"
-            className="h-[40px] sm:h-[34px] px-4 text-[13px]"
+            className="px-4 text-[13px]"
             onClick={() => setShowHistory(true)}
           >
             <History size={14} /> History
           </Button>
           <Button
             variant="danger"
-            className="h-[40px] sm:h-[34px] px-4 text-[13px]"
+            className="px-4 text-[13px]"
             onClick={() => setDeleteConfirmOpen(true)}
           >
             <Trash2 size={14} /> Delete
           </Button>
           <Button
             variant="secondary"
-            className="h-[40px] sm:h-[34px] px-4 text-[13px]"
+            className="px-4 text-[13px]"
             onClick={() => setShareDialogOpen(true)}
           >
             <Share2 size={14} /> Share
@@ -175,7 +175,7 @@ export default function SnippetDetailPanel({
 
         <Button
           variant="secondary"
-          className="h-[40px] sm:h-[34px] px-4 text-[13px]"
+          className="px-4 text-[13px]"
           onClick={handleCopy}
         >
           {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied!' : 'Copy'}

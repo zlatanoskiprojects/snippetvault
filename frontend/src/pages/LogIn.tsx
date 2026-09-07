@@ -58,14 +58,14 @@ function LogIn() {
           <div className="flex flex-col gap-2">
             <Button
               variant="secondary"
-              className="w-full h-[40px] bg-control hover:bg-interactive-strong"
+              className="w-full bg-control hover:bg-interactive-strong"
               onClick={() => handleSocialLogin('google')}
             >
               Continue with Google
             </Button>
             <Button
               variant="secondary"
-              className="w-full h-[40px] bg-control hover:bg-interactive-strong"
+              className="w-full bg-control hover:bg-interactive-strong"
               onClick={() => handleSocialLogin('github')}
             >
               Continue with GitHub
@@ -84,7 +84,6 @@ function LogIn() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="h-[40px]"
               />
             </Field>
             <Field label="Password">
@@ -93,13 +92,12 @@ function LogIn() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="h-[40px]"
               />
             </Field>
             <div className="flex justify-center">
               <Turnstile onVerify={setCaptchaToken} />
             </div>
-            <Button type="submit" variant="primary" className="w-full h-[40px]">
+            <Button type="submit" variant="primary" className="w-full">
               Sign In
             </Button>
           </form>
