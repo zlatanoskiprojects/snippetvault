@@ -43,6 +43,13 @@
       "when": 1786908227222,
       "tag": "0005_auth_account_provider_account_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788813436727,
+      "tag": "0006_projects",
+      "breakpoints": true
     }
   ]
 }

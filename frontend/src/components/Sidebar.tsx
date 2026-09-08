@@ -18,7 +18,7 @@ const TAG_DOT_COLORS = [
 
 const libraryItems = [
   { label: 'All Snippets', view: 'list'        },
-  { label: 'Collections',  view: 'collections' },
+  { label: 'Projects',  view: 'projects' },
 ]
 
 interface SidebarProps {

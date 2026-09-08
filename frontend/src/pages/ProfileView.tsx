@@ -12,7 +12,7 @@ import Spinner from '../components/ui/Spinner'
 import Alert from '../components/ui/Alert'
 import { useUser } from '../hooks/useUser'
 import { useToast } from '../hooks/useToast'
-import { useCollections } from '../hooks/useCollections'
+import { useProjects } from '../hooks/useProjects'
 import type { Snippet } from '../api/types'
 import { socialLogin } from '../api/auth'
 
@@ -51,15 +51,15 @@ interface ProfileViewProps {
 export default function ProfileView({ snippets = [], onBack, onMenuClick }: ProfileViewProps) {
   const { user, loading, error, saveProfile, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
   const toast = useToast()
-  const { collections } = useCollections()
+  const { projects } = useProjects()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const stats = useMemo(() => [
     { value: snippets.length,                                                    label: 'Total snippets',  accentColor: 'var(--color-category-blue)' },
     { value: snippets.filter(s => s.visibility === 'public').length,             label: 'Public snippets', accentColor: 'var(--color-category-green)' },
-    { value: collections.length,                                                  label: 'Collections',     accentColor: 'var(--color-category-purple)' },
+    { value: projects.length,                                                  label: 'Projects',     accentColor: 'var(--color-category-purple)' },
     { value: new Set(snippets.flatMap(s => s.tags || [])).size,                  label: 'Tags used',       accentColor: 'var(--color-category-orange)' },
-  ], [snippets, collections])
+  ], [snippets, projects])
 
   const [activeTab, setActiveTab] = useState(
     searchParams.get('reauth') === 'password-setup' ||

@@ -1,21 +1,21 @@
 import Card from './ui/Card'
 import Button from './ui/Button'
-import type { Collection } from '../api/types'
+import type { Project } from '../api/types'
 
-export interface CollectionWithMeta extends Collection {
+export interface ProjectWithMeta extends Project {
   snippetCount: number
   accentColor: string
 }
 
-interface CollectionCardProps {
-  collection: CollectionWithMeta
+interface ProjectCardProps {
+  project: ProjectWithMeta
   onEdit?: () => void
   onDelete?: () => void
   onSelect?: () => void
 }
 
-export default function CollectionCard({ collection, onEdit, onDelete, onSelect }: CollectionCardProps) {
-  const { name, description, snippetCount, accentColor } = collection
+export default function ProjectCard({ project, onEdit, onDelete, onSelect }: ProjectCardProps) {
+  const { name, description, snippetCount, accentColor } = project
 
   return (
     <Card

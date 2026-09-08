@@ -48,7 +48,7 @@ router.get('/:id/snippets', authMiddleware, tagIdValidation, asyncHandler(async 
             .select({
                 id: snippet.id,
                 userId: snippet.userId,
-                collectionId: snippet.collectionId,
+                projectId: snippet.projectId,
                 title: snippet.title,
                 description: snippet.description,
                 code: snippet.code,
@@ -65,7 +65,7 @@ router.get('/:id/snippets', authMiddleware, tagIdValidation, asyncHandler(async 
         return res.status(200).json(rows.map((s) => ({
             id: s.id,
             user_id: s.userId,
-            collection_id: s.collectionId,
+            project_id: s.projectId,
             title: s.title,
             description: s.description,
             code: s.code,

@@ -40,9 +40,9 @@ const createSnippetValidation: ValidationChain[] = [
         .optional()
         .isIn(['public', 'private']).withMessage('Visibility must be public or private'),
 
-    body('collection_id')
+    body('project_id')
         .optional({ nullable: true })
-        .isInt({ min: 1 }).withMessage('Invalid collection_id'),
+        .isInt({ min: 1 }).withMessage('Invalid project_id'),
 ];
 
 const updateSnippetValidation: ValidationChain[] = [
@@ -77,9 +77,9 @@ const updateSnippetValidation: ValidationChain[] = [
         .optional()
         .isIn(['public', 'private']).withMessage('Visibility must be public or private'),
 
-    body('collection_id')
+    body('project_id')
         .optional({ nullable: true })
-        .isInt({ min: 1 }).withMessage('Invalid collection_id'),
+        .isInt({ min: 1 }).withMessage('Invalid project_id'),
 
     body('change_note')
         .optional({ nullable: true })

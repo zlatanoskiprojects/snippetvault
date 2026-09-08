@@ -6,7 +6,7 @@ import TopBar from '../components/TopBar'
 import SnippetList from '../components/SnippetList'
 import NewSnippet from './NewSnippet'
 import SearchView from './SearchView'
-import CollectionsView from './CollectionsView'
+import ProjectsView from './ProjectsView'
 import SnippetDetailPanel from './SnippetDetailPanel'
 import ProfileView from './ProfileView'
 import { useSnippets } from '../hooks/useSnippets'
@@ -16,9 +16,9 @@ import { UserProvider } from '../contexts/UserContext'
 import Spinner from '../components/ui/Spinner'
 import Alert from '../components/ui/Alert'
 import type { Snippet } from '../api/types'
-import type { Collection } from '../api/types'
+import type { Project } from '../api/types'
 
-type View = 'list' | 'new' | 'search' | 'collections' | 'profile'
+type View = 'list' | 'new' | 'search' | 'projects' | 'profile'
 
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -35,7 +35,7 @@ export default function Dashboard() {
   const { snippets, setSnippets, loading, error } = useSnippets()
   const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null)
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null)
-  const [activeCollection, setActiveCollection] = useState<Collection | null>(null)
+  const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const toast = useToast()
 
@@ -99,8 +99,8 @@ export default function Dashboard() {
     setView('list')
   }
 
-  function handleSelectCollection(collection: Collection) {
-    setActiveCollection(collection)
+  function handleSelectProject(project: Project) {
+    setActiveProject(project)
     setActiveTag(null)
     setSelectedSnippet(null)
     setView('list')
@@ -115,20 +115,20 @@ export default function Dashboard() {
     exitSearch()
     if (v !== 'list') {
       setActiveTag(null)
-      setActiveCollection(null)
+      setActiveProject(null)
     }
     setView(v as View)
   }
 
-  function handleClearCollection() {
-    setActiveCollection(null)
+  function handleClearProject() {
+    setActiveProject(null)
     setSelectedSnippet(null)
   }
 
   function handleSelectTag(tag: string) {
     exitSearch()
     setActiveTag(tag)
-    setActiveCollection(null)
+    setActiveProject(null)
     setSelectedSnippet(null)
     setView('list')
   }
@@ -179,11 +179,11 @@ export default function Dashboard() {
           />
         ) : view === 'profile' ? (
           <ProfileView snippets={snippets} onBack={() => handleViewChange('list')} onMenuClick={() => setSidebarOpen(true)} />
-        ) : view === 'collections' ? (
-          <CollectionsView onSelectCollection={handleSelectCollection} onMenuClick={() => setSidebarOpen(true)} />
+        ) : view === 'projects' ? (
+          <ProjectsView onSelectProject={handleSelectProject} onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'list' ? (() => {
           const displayedSnippets = snippets
-            .filter(s => !activeCollection || s.collection_id === activeCollection.id)
+            .filter(s => !activeProject || s.project_id === activeProject.id)
             .filter(s => !activeTag || (s.tags || []).includes(activeTag))
           return loading ? (
             <div className="flex flex-1 items-center justify-center">
@@ -231,8 +231,8 @@ export default function Dashboard() {
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
               <TopBar
                 snippetCount={displayedSnippets.length}
-                title={activeCollection ? activeCollection.name : activeTag ? `#${activeTag}` : 'All snippets'}
-                onBack={activeCollection ? handleClearCollection : activeTag ? handleClearTag : undefined}
+                title={activeProject ? activeProject.name : activeTag ? `#${activeTag}` : 'All snippets'}
+                onBack={activeProject ? handleClearProject : activeTag ? handleClearTag : undefined}
                 onMenuClick={() => setSidebarOpen(true)}
                 onSearch={() => setIsSearching(true)}
                 onNewSnippet={() => setView('new')}

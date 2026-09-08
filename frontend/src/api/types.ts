@@ -11,7 +11,7 @@ export interface User {
     oauth_providers: Array<'google' | 'github'>;
 }
 
-export interface Collection {
+export interface Project {
     id: number;
     user_id: number;
     name: string;
@@ -22,7 +22,7 @@ export interface Collection {
 export interface Snippet {
     id: number;
     user_id: number;
-    collection_id: number | null;
+    project_id: number | null;
     title: string;
     description: string | null;
     code: string;

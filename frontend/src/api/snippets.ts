@@ -8,7 +8,7 @@ export interface SnippetInput {
     description?: string | null;
     code: string;
     language: string;
-    collection_id?: number | null;
+    project_id?: number | null;
     visibility?: string;
     tags?: string[];
 }

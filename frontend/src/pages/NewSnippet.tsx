@@ -9,7 +9,7 @@ import Field from '../components/ui/Field'
 import { createSnippet, updateSnippet, type SnippetInput } from '../api/snippets'
 import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } from '../api/tags'
 import { useToast } from '../hooks/useToast'
-import { useCollections } from '../hooks/useCollections'
+import { useProjects } from '../hooks/useProjects'
 import type { Snippet } from '../api/types'
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
 
@@ -29,7 +29,7 @@ interface NewSnippetProps {
 export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: NewSnippetProps) {
   const isEditing = Boolean(snippet)
   const toast = useToast()
-  const { collections } = useCollections()
+  const { projects } = useProjects()
 
   const [title, setTitle] = useState(snippet?.title ?? '')
   const [description, setDescription] = useState(snippet?.description ?? '')
@@ -39,7 +39,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
   )
   const [tags, setTags] = useState<string[]>(snippet?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
-  const [collectionId, setCollectionId] = useState<number | ''>(snippet?.collection_id ?? '')
+  const [projectId, setProjectId] = useState<number | ''>(snippet?.project_id ?? '')
   const [code, setCode] = useState(snippet?.code ?? '')
   const [changeNote, setChangeNote] = useState('')
   const [saving, setSaving] = useState(false)
@@ -70,7 +70,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
       code,
       language,
       visibility: visibility.toLowerCase(),
-      collection_id: collectionId || null,
+      project_id: projectId || null,
       ...(isEditing && changeNote.trim() ? { change_note: changeNote.trim() } : {}),
     }
     setSaving(true)
@@ -203,11 +203,11 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
             </div>
           </div>
 
-          <Field label="Collection">
+          <Field label="Project">
             <Select
-              value={collectionId}
-              onValueChange={setCollectionId}
-              options={[{ value: '' as number | '', label: 'No collection' }, ...collections.map(c => ({ value: c.id, label: c.name }))]}
+              value={projectId}
+              onValueChange={setProjectId}
+              options={[{ value: '' as number | '', label: 'No project' }, ...projects.map(project => ({ value: project.id, label: project.name }))]}
             />
           </Field>
 

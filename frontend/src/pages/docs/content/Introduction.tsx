@@ -11,7 +11,7 @@ export const INTRODUCTION_HEADINGS: DocHeadingRef[] = [
 
 const FEATURES = [
   { title: 'Snippets & Editor', description: 'Write and edit code with a CodeMirror-powered editor across a dozen languages.', color: 'var(--color-feature-blue)', surface: 'var(--color-feature-blue-surface)', border: 'var(--color-feature-blue-border)' },
-  { title: 'Collections & Tags', description: 'Group related snippets into collections and label them with global tags.', color: 'var(--color-feature-green)', surface: 'var(--color-feature-green-surface)', border: 'var(--color-feature-green-border)' },
+  { title: 'Projects & Tags', description: 'Group related snippets into projects and label them with global tags.', color: 'var(--color-feature-green)', surface: 'var(--color-feature-green-surface)', border: 'var(--color-feature-green-border)' },
   { title: 'Version History', description: 'Every meaningful edit is snapshotted, so you can review and restore prior versions.', color: 'var(--color-feature-yellow)', surface: 'var(--color-feature-yellow-surface)', border: 'var(--color-feature-yellow-border)' },
   { title: 'Public Sharing', description: 'Share a single snippet publicly with a share link, without exposing your account.', color: 'var(--color-feature-purple)', surface: 'var(--color-feature-purple-surface)', border: 'var(--color-feature-purple-border)' },
 ]
@@ -21,7 +21,7 @@ export default function Introduction() {
     <div>
       <DocParagraph>
         SnippetVault is a full-stack code snippet manager. Authenticate, then create and organize
-        snippets into collections, tag them, comment on them, track version history, and share
+        snippets into projects, tag them, comment on them, track version history, and share
         individual snippets publicly via share links.
       </DocParagraph>
 

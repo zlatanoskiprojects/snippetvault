@@ -1,12 +1,12 @@
 import { body, param, ValidationChain } from 'express-validator';
 
-const collectionIdValidation: ValidationChain[] = [
+const projectIdValidation: ValidationChain[] = [
     param('id')
         .isInt({ min: 1 })
-        .withMessage('Invalid collection id'),
+        .withMessage('Invalid project id'),
 ];
 
-const createCollectionValidation: ValidationChain[] = [
+const createProjectValidation: ValidationChain[] = [
     body('name')
         .isString().trim()
         .notEmpty().withMessage('Name is required')
@@ -17,10 +17,10 @@ const createCollectionValidation: ValidationChain[] = [
         .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
 ];
 
-const updateCollectionValidation: ValidationChain[] = [
+const updateProjectValidation: ValidationChain[] = [
     param('id')
         .isInt({ min: 1 })
-        .withMessage('Invalid collection id'),
+        .withMessage('Invalid project id'),
 
     body('name')
         .optional()
@@ -36,11 +36,11 @@ const updateCollectionValidation: ValidationChain[] = [
 const assignSnippetValidation: ValidationChain[] = [
     param('id')
         .isInt({ min: 1 })
-        .withMessage('Invalid collection id'),
+        .withMessage('Invalid project id'),
 
     param('snippetId')
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
 ];
 
-export { collectionIdValidation, createCollectionValidation, updateCollectionValidation, assignSnippetValidation };
+export { projectIdValidation, createProjectValidation, updateProjectValidation, assignSnippetValidation };

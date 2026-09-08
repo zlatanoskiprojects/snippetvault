@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import db from '../lib/db';
-import { snippet, snippetTag, tag, snippetVersion, collection } from '../db/schema';
+import { snippet, snippetTag, tag, snippetVersion, project } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
@@ -13,7 +13,7 @@ const router = Router();
 const snippetWithTagsSelection = {
     id: snippet.id,
     userId: snippet.userId,
-    collectionId: snippet.collectionId,
+    projectId: snippet.projectId,
     title: snippet.title,
     description: snippet.description,
     code: snippet.code,
@@ -28,7 +28,7 @@ const snippetWithTagsSelection = {
 type SnippetWithTagsResult = {
     id: number;
     userId: number;
-    collectionId: number | null;
+    projectId: number | null;
     title: string;
     description: string | null;
     code: string;
@@ -43,7 +43,7 @@ type SnippetWithTagsResult = {
 const mapSnippetWithTags = (s: SnippetWithTagsResult) => ({
     id: s.id,
     user_id: s.userId,
-    collection_id: s.collectionId,
+    project_id: s.projectId,
     title: s.title,
     description: s.description,
     code: s.code,
@@ -58,7 +58,7 @@ const mapSnippetWithTags = (s: SnippetWithTagsResult) => ({
 const mapSnippet = (s: typeof snippet.$inferSelect) => ({
     id: s.id,
     user_id: s.userId,
-    collection_id: s.collectionId,
+    project_id: s.projectId,
     title: s.title,
     description: s.description,
     code: s.code,
@@ -146,13 +146,13 @@ router.post('/', authMiddleware, createSnippetValidation, asyncHandler(async (re
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { title, description, code, language, visibility, collection_id } = req.body;
+    const { title, description, code, language, visibility, project_id } = req.body;
 
     try {
-        if(collection_id !== undefined && collection_id !== null){
-            const cols = await db.select({id: collection.id}).from(collection).where(and(eq(collection.id,collection_id),eq(collection.userId,req.userId as number)))
-            if(cols.length === 0 ){
-                return res.status(403).json({error: 'Collection not found or not yours'})
+        if(project_id !== undefined && project_id !== null){
+            const projects = await db.select({id: project.id}).from(project).where(and(eq(project.id,project_id),eq(project.userId,req.userId as number)))
+            if(projects.length === 0 ){
+                return res.status(403).json({error: 'Project not found or not yours'})
             }
         }
 
@@ -165,7 +165,7 @@ router.post('/', authMiddleware, createSnippetValidation, asyncHandler(async (re
             code,
             language,
             visibility: isPublic ? 'public' : 'private',
-            collectionId: collection_id ?? null,
+            projectId: project_id ?? null,
             shareToken: shareToken,
         }).returning();
         return res.status(201).json(mapSnippet(created));
@@ -204,7 +204,7 @@ interface SnippetUpdateFields {
     code?: string;
     language?: string;
     visibility?: string;
-    collectionId?: number | null;
+    projectId?: number | null;
     shareToken?: string | null;
 }
 
@@ -222,7 +222,7 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, asyncHandler(async
         code: 'code',
         language: 'language',
         visibility: 'visibility',
-        collection_id: 'collectionId',
+        project_id: 'projectId',
     };
     const updates: SnippetUpdateFields = {};
     for (const bodyField of Object.keys(fieldMap)) {
@@ -236,13 +236,13 @@ router.patch('/:id', authMiddleware, updateSnippetValidation, asyncHandler(async
     }
 
     try {
-        if (updates.collectionId !== undefined && updates.collectionId !== null) {
-            const cols = await db
-                .select({ id: collection.id })
-                .from(collection)
-                .where(and(eq(collection.id, updates.collectionId), eq(collection.userId, req.userId as number)));
-            if (cols.length === 0) {
-                return res.status(403).json({ error: 'Collection not found or not yours' });
+        if (updates.projectId !== undefined && updates.projectId !== null) {
+            const projects = await db
+                .select({ id: project.id })
+                .from(project)
+                .where(and(eq(project.id, updates.projectId), eq(project.userId, req.userId as number)));
+            if (projects.length === 0) {
+                return res.status(403).json({ error: 'Project not found or not yours' });
             }
         }
 

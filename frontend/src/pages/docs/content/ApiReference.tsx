@@ -6,7 +6,7 @@ export const API_REFERENCE_HEADINGS: DocHeadingRef[] = [
   { id: 'auth', label: 'Auth' },
   { id: 'snippets', label: 'Snippets' },
   { id: 'versions', label: 'Versions' },
-  { id: 'collections', label: 'Collections' },
+  { id: 'projects', label: 'Projects' },
   { id: 'tags', label: 'Tags' },
   { id: 'comments', label: 'Comments' },
   { id: 'profile', label: 'Profile' },
@@ -75,15 +75,15 @@ export default function ApiReference() {
         ]}
       />
 
-      <DocHeading id="collections">Collections</DocHeading>
+      <DocHeading id="projects">Projects</DocHeading>
       <DocTable
         headers={['Method', 'Endpoint', 'Description']}
         rows={[
-          ['GET', <InlineCode>/api/collections</InlineCode>, 'List your collections with a snippet count.'],
-          ['POST', <InlineCode>/api/collections</InlineCode>, 'Create a collection.'],
-          ['PATCH', <InlineCode>/api/collections/:id</InlineCode>, 'Rename or update a collection.'],
-          ['DELETE', <InlineCode>/api/collections/:id</InlineCode>, 'Delete a collection.'],
-          ['PATCH', <InlineCode>/api/collections/:id/snippets/:snippetId</InlineCode>, 'Assign a snippet to this collection.'],
+          ['GET', <InlineCode>/api/projects</InlineCode>, 'List your projects with a snippet count.'],
+          ['POST', <InlineCode>/api/projects</InlineCode>, 'Create a project.'],
+          ['PATCH', <InlineCode>/api/projects/:id</InlineCode>, 'Rename or update a project.'],
+          ['DELETE', <InlineCode>/api/projects/:id</InlineCode>, 'Delete a project.'],
+          ['PATCH', <InlineCode>/api/projects/:id/snippets/:snippetId</InlineCode>, 'Assign a snippet to this project.'],
         ]}
       />
 
