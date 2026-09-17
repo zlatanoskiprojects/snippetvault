@@ -180,7 +180,7 @@ export default function Dashboard() {
         ) : view === 'profile' ? (
           <ProfileView snippets={snippets} onBack={() => handleViewChange('list')} onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'projects' ? (
-          <ProjectsView onSelectProject={handleSelectProject} onMenuClick={() => setSidebarOpen(true)} />
+          <ProjectsView snippets={snippets} onSelectProject={handleSelectProject} onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'list' ? (() => {
           const displayedSnippets = snippets
             .filter(s => !activeProject || s.project_id === activeProject.id)

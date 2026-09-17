@@ -59,7 +59,7 @@ export default function ApiReference() {
           ['GET', <InlineCode>/api/snippets</InlineCode>, 'List your snippets, newest first. Accepts an optional ?q= search parameter.'],
           ['POST', <InlineCode>/api/snippets</InlineCode>, 'Create a snippet.'],
           ['GET', <InlineCode>/api/snippets/:id</InlineCode>, 'Get one snippet.'],
-          ['PATCH', <InlineCode>/api/snippets/:id</InlineCode>, 'Update a snippet.'],
+          ['PATCH', <InlineCode>/api/snippets/:id</InlineCode>, 'Update a snippet. Set project_id to assign or move it; null unassigns it.'],
           ['DELETE', <InlineCode>/api/snippets/:id</InlineCode>, 'Delete a snippet.'],
         ]}
       />
@@ -83,7 +83,6 @@ export default function ApiReference() {
           ['POST', <InlineCode>/api/projects</InlineCode>, 'Create a project.'],
           ['PATCH', <InlineCode>/api/projects/:id</InlineCode>, 'Rename or update a project.'],
           ['DELETE', <InlineCode>/api/projects/:id</InlineCode>, 'Delete a project.'],
-          ['PATCH', <InlineCode>/api/projects/:id/snippets/:snippetId</InlineCode>, 'Assign a snippet to this project.'],
         ]}
       />
 

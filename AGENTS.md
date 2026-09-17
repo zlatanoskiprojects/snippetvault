@@ -29,6 +29,19 @@ There are no tests yet.
 
 ## Environment Setup
 
+### Default local development and testing
+
+Use the existing Docker database with native backend and frontend dev servers. Do not use the full Docker application stack for local development/testing unless the user explicitly requests it.
+
+1. Start the existing database container with `docker start snippetvault-db-1`. It uses the existing `snippetvault_db_data` volume and exposes PostgreSQL at `localhost:5433`. Preserve this volume and its data; do not substitute `snippetvault-postgres-1` or reset the database.
+2. In a separate terminal, change to `backend/` and run `pnpm run dev`. This loads private `backend/.env`, connects to the existing development database, and preserves the configured Google/GitHub providers. The API runs at `http://localhost:3000`; verify `GET /api/health`.
+3. In another terminal, change to `frontend/` and run `pnpm run dev`. Open `http://localhost:5173`; private `frontend/.env` uses `VITE_API_URL=http://localhost:3000/api`.
+4. Reuse already-running dev servers rather than starting duplicates. Keep local URL settings in sync with these addresses. Never print, copy into committed files, or overwrite private environment values or provider credentials.
+
+Do not redirect the Dockerized frontend at `localhost:8080` to this native backend or create temporary Compose database overrides. The Docker backend/frontend are a separate self-hosting workflow, not the default local testing setup.
+
+### Docker self-hosting environments
+
 - **Repo root `.env`** — private configuration consumed by Docker Compose. The local stack uses `docker-compose.yml`; the public HTTPS stack uses `docker-compose.selfhost.yml`. These modes require different URL values and should not share one unchanged `.env`.
 - **`.env.selfhost.example`** — committed template for the public self-hosted stack. PostgreSQL passwords must contain at least 32 cryptographically random characters from `A-Z`, `a-z`, `0-9`, `_`, and `-` because they are embedded directly in `DATABASE_URL`.
 - **`backend/.env`** — private environment used when running or deploying the backend outside Docker Compose. Do not commit or copy it into Docker images.

@@ -21,11 +21,12 @@ export async function getSnippetById(id: number | string): Promise<Snippet> {
     return apiFetch<Snippet>(`${BASE_URL}/${id}`);
 }
 
-export async function createSnippet(data: SnippetInput): Promise<Snippet> {
+export async function createSnippet(data: SnippetInput, silent = false): Promise<Snippet> {
     return apiFetch<Snippet>(BASE_URL, {
         method: 'POST',
         headers: JSON_HEADERS,
         body: JSON.stringify(data),
+        silent,
     });
 }
 
@@ -35,11 +36,12 @@ export async function deleteSnippet(id: number | string): Promise<Snippet | null
     });
 }
 
-export async function updateSnippet(id: number | string, data: Partial<SnippetInput>): Promise<Snippet> {
+export async function updateSnippet(id: number | string, data: Partial<SnippetInput>, silent = false): Promise<Snippet> {
     return apiFetch<Snippet>(`${BASE_URL}/${id}`, {
         method: 'PATCH',
         headers: JSON_HEADERS,
         body: JSON.stringify(data),
+        silent,
     });
 }
 

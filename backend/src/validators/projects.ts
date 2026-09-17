@@ -33,14 +33,4 @@ const updateProjectValidation: ValidationChain[] = [
         .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
 ];
 
-const assignSnippetValidation: ValidationChain[] = [
-    param('id')
-        .isInt({ min: 1 })
-        .withMessage('Invalid project id'),
-
-    param('snippetId')
-        .isInt({ min: 1 })
-        .withMessage('Invalid snippet id'),
-];
-
-export { projectIdValidation, createProjectValidation, updateProjectValidation, assignSnippetValidation };
+export { projectIdValidation, createProjectValidation, updateProjectValidation };

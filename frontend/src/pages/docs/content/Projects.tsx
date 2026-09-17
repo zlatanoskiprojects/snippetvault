@@ -33,20 +33,21 @@ export default function Projects() {
       <DocParagraph>
         In the app, you assign a snippet to a project from the snippet's create/edit form — the
         Project dropdown sends <InlineCode>project_id</InlineCode> along with the rest of the
-        snippet payload. The backend also exposes a dedicated endpoint for direct (re)assignment:
+        snippet payload. Existing snippets use the same update endpoint for assignment:
       </DocParagraph>
       <DocList
         items={[
-          <><InlineCode>PATCH /api/projects/:id/snippets/:snippetId</InlineCode> — assigns the
-            given snippet to the given project.</>,
+          <><InlineCode>PATCH /api/snippets/:id</InlineCode> — set{' '}
+            <InlineCode>project_id</InlineCode> to a project ID to assign or move the snippet,
+            or to <InlineCode>null</InlineCode> to unassign it.</>,
         ]}
       />
 
       <DocHeading id="ownership">Ownership</DocHeading>
       <DocParagraph>
-        Every project query is scoped to your own <InlineCode>user_id</InlineCode>. Assigning a
-        snippet to a project — whether through the snippet form or the dedicated endpoint — is
-        rejected unless both the snippet and the project belong to you.
+        Assigning a personal snippet requires snippet ownership and an owner or editor role in
+        the destination project. Moving or unassigning a project snippet requires an owner role
+        in its current project; moving it also requires an owner or editor role in the destination.
       </DocParagraph>
 
       <DocCallout variant="info" title="Snippet counts">

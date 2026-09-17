@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, exists, isNull, or } from 'drizzle-orm';
 import db from '../lib/db';
-import { tag, snippet, snippetTag } from '../db/schema';
+import { tag, snippet, snippetTag, projectMember } from '../db/schema';
+import getProjectMembership from '../lib/projectMembership';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
@@ -60,7 +61,24 @@ router.get('/:id/snippets', authMiddleware, tagIdValidation, asyncHandler(async 
             })
             .from(snippet)
             .innerJoin(snippetTag, eq(snippetTag.snippetId, snippet.id))
-            .where(and(eq(snippetTag.tagId, tagId), eq(snippet.userId, req.userId as number)));
+            .where(and(
+                eq(snippetTag.tagId, tagId),
+                or(
+                    and(
+                        isNull(snippet.projectId),
+                        eq(snippet.userId, req.userId as number),
+                    ),
+                    exists(
+                        db
+                            .select({ userId: projectMember.userId })
+                            .from(projectMember)
+                            .where(and(
+                                eq(projectMember.projectId, snippet.projectId),
+                                eq(projectMember.userId, req.userId as number),
+                            )),
+                    ),
+                ),
+            ));
 
         return res.status(200).json(rows.map((s) => ({
             id: s.id,
@@ -114,12 +132,27 @@ router.post('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, as
         const tagId = parseInt(req.params.id as string);
         const snippetId = parseInt(req.params.snippetId as string);
 
-        const foundSnippet = await db
-            .select({ id: snippet.id })
+        const [currentSnippet] = await db
+            .select({ id: snippet.id, userId: snippet.userId, projectId: snippet.projectId })
             .from(snippet)
-            .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)));
-        if (foundSnippet.length === 0) {
-            return res.status(404).json({ error: 'Snippet not found or not yours' });
+            .where(eq(snippet.id, snippetId))
+            .limit(1);
+        if (!currentSnippet) {
+            return res.status(404).json({ error: 'Snippet not found' });
+        }
+
+        if (currentSnippet.projectId === null) {
+            if (currentSnippet.userId !== req.userId) {
+                return res.status(404).json({ error: 'Snippet not found' });
+            }
+        } else {
+            const membership = await getProjectMembership(currentSnippet.projectId, req.userId as number);
+            if (!membership) {
+                return res.status(404).json({ error: 'Snippet not found' });
+            }
+            if (membership.role === 'viewer') {
+                return res.status(403).json({ error: 'You do not have permission to modify this snippet\'s tags' });
+            }
         }
 
         const existing = await db
@@ -148,12 +181,27 @@ router.delete('/:id/snippets/:snippetId', authMiddleware, tagSnippetValidation, 
         const tagId = parseInt(req.params.id as string);
         const snippetId = parseInt(req.params.snippetId as string);
 
-        const foundSnippet = await db
-            .select({ id: snippet.id })
+        const [currentSnippet] = await db
+            .select({ id: snippet.id, userId: snippet.userId, projectId: snippet.projectId })
             .from(snippet)
-            .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)));
-        if (foundSnippet.length === 0) {
-            return res.status(404).json({ error: 'Snippet not found or not yours' });
+            .where(eq(snippet.id, snippetId))
+            .limit(1);
+        if (!currentSnippet) {
+            return res.status(404).json({ error: 'Snippet not found' });
+        }
+
+        if (currentSnippet.projectId === null) {
+            if (currentSnippet.userId !== req.userId) {
+                return res.status(404).json({ error: 'Snippet not found' });
+            }
+        } else {
+            const membership = await getProjectMembership(currentSnippet.projectId, req.userId as number);
+            if (!membership) {
+                return res.status(404).json({ error: 'Snippet not found' });
+            }
+            if (membership.role === 'viewer') {
+                return res.status(403).json({ error: 'You do not have permission to modify this snippet\'s tags' });
+            }
         }
 
         const result = await db

@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import { and, asc, eq, ne } from 'drizzle-orm';
 import { projectMember, users } from '../db/schema';
 import db from '../lib/db';
+import getProjectMembership from '../lib/projectMembership';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
 import {
@@ -22,14 +23,7 @@ router.get('/:projectId/members', authMiddleware, projectMemberProjectIdValidati
     const projectId = Number(req.params.projectId);
 
     try {
-        const [membership] = await db
-            .select({ projectId: projectMember.projectId })
-            .from(projectMember)
-            .where(and(
-                eq(projectMember.projectId, projectId),
-                eq(projectMember.userId, req.userId as number),
-            ))
-            .limit(1);
+        const membership = await getProjectMembership(projectId, req.userId as number);
 
         if (!membership) {
             return res.status(404).json({ error: 'Project not found' });
@@ -73,14 +67,7 @@ router.patch('/:projectId/members/:userId', authMiddleware, updateProjectMemberR
     const userId = Number(req.params.userId);
 
     try {
-        const [membership] = await db
-            .select({ role: projectMember.role })
-            .from(projectMember)
-            .where(and(
-                eq(projectMember.projectId, projectId),
-                eq(projectMember.userId, req.userId as number),
-            ))
-            .limit(1);
+        const membership = await getProjectMembership(projectId, req.userId as number);
 
         if (!membership) {
             return res.status(404).json({ error: 'Project not found' });
@@ -127,14 +114,7 @@ router.delete('/:projectId/members/:userId', authMiddleware, projectMemberParams
     const userId = Number(req.params.userId);
 
     try {
-        const [membership] = await db
-            .select({ role: projectMember.role })
-            .from(projectMember)
-            .where(and(
-                eq(projectMember.projectId, projectId),
-                eq(projectMember.userId, req.userId as number),
-            ))
-            .limit(1);
+        const membership = await getProjectMembership(projectId, req.userId as number);
 
         if (!membership) {
             return res.status(404).json({ error: 'Project not found' });
@@ -144,14 +124,7 @@ router.delete('/:projectId/members/:userId', authMiddleware, projectMemberParams
             return res.status(403).json({ error: 'Only the project owner can remove members' });
         }
 
-        const [targetMember] = await db
-            .select({ role: projectMember.role })
-            .from(projectMember)
-            .where(and(
-                eq(projectMember.projectId, projectId),
-                eq(projectMember.userId, userId),
-            ))
-            .limit(1);
+        const targetMember = await getProjectMembership(projectId, userId);
 
         if (!targetMember) {
             return res.status(404).json({ error: 'Project member not found' });

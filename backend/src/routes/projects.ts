@@ -1,16 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import db from '../lib/db';
-import { project, projectMember, snippet } from '../db/schema';
+import { project, projectMember } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
 import {
     projectIdValidation,
     createProjectValidation,
     updateProjectValidation,
-    assignSnippetValidation,
 } from '../validators/projects';
+import getProjectMembership from "../lib/projectMembership";
 
 const router = Router();
 
@@ -26,21 +26,18 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
                 id: project.id,
                 name: project.name,
                 description: project.description,
-                createdAt: project.createdAt,
-                snippetCount: sql<number>`count(${snippet.id})`,
+                role: projectMember.role,
             })
             .from(project)
-            .leftJoin(snippet, eq(snippet.projectId, project.id))
-            .where(eq(project.userId, req.userId as number))
-            .groupBy(project.id)
+            .innerJoin(projectMember, eq(projectMember.projectId, project.id))
+            .where(eq(projectMember.userId, req.userId as number))
             .orderBy(desc(project.createdAt));
 
         return res.status(200).json(projects.map((p) => ({
             id: p.id,
             name: p.name,
             description: p.description,
-            created_at: p.createdAt,
-            snippet_count: Number(p.snippetCount),
+            role: p.role,
         })));
     } catch (error) {
         console.error('Error fetching projects:', error);
@@ -101,11 +98,22 @@ router.patch('/:id', authMiddleware, updateProjectValidation, asyncHandler(async
     }
 
     try {
+
         const projectId = parseInt(req.params.id as string);
+        const membership = await getProjectMembership(projectId, req.userId as number);
+
+        if (!membership) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        if (membership.role !== 'owner') {
+            return res.status(403).json({ error: 'You do not have permission to update this project' });
+        }
+
         const result = await db
             .update(project)
             .set(updates)
-            .where(and(eq(project.id, projectId), eq(project.userId, req.userId as number)))
+            .where(eq(project.id, projectId))
             .returning({ id: project.id });
 
         if (result.length === 0) {
@@ -126,9 +134,19 @@ router.delete('/:id', authMiddleware, projectIdValidation, asyncHandler(async (r
 
     try {
         const projectId = parseInt(req.params.id as string);
+        const membership = await getProjectMembership(projectId, req.userId as number);
+
+        if (!membership) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        if (membership.role !== 'owner') {
+            return res.status(403).json({ error: 'You do not have permission to delete this project' });
+        }
+
         const result = await db
             .delete(project)
-            .where(and(eq(project.id, projectId), eq(project.userId, req.userId as number)))
+            .where(eq(project.id, projectId))
             .returning({ id: project.id });
         if (result.length === 0) {
             return res.status(404).json({ error: 'Project not found' });
@@ -136,40 +154,6 @@ router.delete('/:id', authMiddleware, projectIdValidation, asyncHandler(async (r
         return res.status(200).json({ message: 'Project deleted successfully' });
     } catch (error) {
         console.error('Error deleting project:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}));
-
-router.patch('/:id/snippets/:snippetId', authMiddleware, assignSnippetValidation, asyncHandler(async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const projectId = parseInt(req.params.id as string);
-    const snippetId = parseInt(req.params.snippetId as string);
-    try {
-        const [foundProject] = await db
-            .select({ id: project.id })
-            .from(project)
-            .where(and(eq(project.id, projectId), eq(project.userId, req.userId as number)));
-        if (!foundProject) {
-            return res.status(404).json({ error: 'Project not found' });
-        }
-
-        const [foundSnippet] = await db
-            .select({ id: snippet.id })
-            .from(snippet)
-            .where(and(eq(snippet.id, snippetId), eq(snippet.userId, req.userId as number)));
-        if (!foundSnippet) {
-            return res.status(404).json({ error: 'Snippet not found' });
-        }
-
-        await db.update(snippet).set({ projectId }).where(eq(snippet.id, snippetId));
-        return res.status(200).json({ message: 'Snippet assigned to project' });
-    } catch (error) {
-        console.error('Error assigning snippet to project:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }));

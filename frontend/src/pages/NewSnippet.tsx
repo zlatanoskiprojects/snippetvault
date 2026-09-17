@@ -7,6 +7,7 @@ import Textarea from '../components/ui/Textarea'
 import Select from '../components/ui/Select'
 import Field from '../components/ui/Field'
 import { createSnippet, updateSnippet, type SnippetInput } from '../api/snippets'
+import { ApiError } from '../api/utils'
 import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } from '../api/tags'
 import { useToast } from '../hooks/useToast'
 import { useProjects } from '../hooks/useProjects'
@@ -74,9 +75,11 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
       ...(isEditing && changeNote.trim() ? { change_note: changeNote.trim() } : {}),
     }
     setSaving(true)
+    let snippetSaved = false
     try {
       if (isEditing && snippet) {
-        const updated = await updateSnippet(snippet.id, payload)
+        const updated = await updateSnippet(snippet.id, payload, true)
+        snippetSaved = true
         console.log('share_token:', updated.share_token)
         const existingTags = snippet.tags || []
         const toAdd = finalTags.filter(t => !existingTags.includes(t))
@@ -95,7 +98,8 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
         toast.success('Snippet updated.')
         onSaved({ ...updated, tags: finalTags })
       } else {
-        const created = await createSnippet(payload)
+        const created = await createSnippet(payload, true)
+        snippetSaved = true
         console.log('share_token:', created.share_token)
         for (const name of finalTags) {
           const tag = await getOrCreateTag(name)
@@ -104,8 +108,12 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
         toast.success('Snippet created.')
         onSaved({ ...created, tags: finalTags })
       }
-    } catch {
-      return
+    } catch (err) {
+      if ((!snippetSaved || !(err instanceof ApiError)) && !(err instanceof ApiError && err.status === 401)) {
+        toast.error(err instanceof ApiError && err.status === 403
+          ? "You don't have permission to save these changes. Project viewers are read-only."
+          : err instanceof Error ? err.message : 'Could not save the snippet. Please try again.')
+      }
     } finally {
       setSaving(false)
     }

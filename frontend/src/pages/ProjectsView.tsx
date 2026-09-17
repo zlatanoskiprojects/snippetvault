@@ -7,14 +7,15 @@ import ProjectDialog, {
   type ProjectDialogSubmitData,
 } from '../components/ProjectDialog'
 import { useProjects } from '../hooks/useProjects'
-import type { Project } from '../api/types'
+import type { Project, Snippet } from '../api/types'
 
 interface ProjectsViewProps {
+  snippets: Snippet[]
   onSelectProject?: (project: Project) => void
   onMenuClick?: () => void
 }
 
-export default function ProjectsView({ onSelectProject, onMenuClick }: ProjectsViewProps) {
+export default function ProjectsView({ snippets, onSelectProject, onMenuClick }: ProjectsViewProps) {
   const { projects, loading, error, addProject, editProject, removeProject } = useProjects()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
@@ -82,7 +83,7 @@ export default function ProjectsView({ onSelectProject, onMenuClick }: ProjectsV
           {projects.map(project => {
             const projectWithMeta: ProjectWithMeta = {
               ...project,
-              snippetCount: 0,
+              snippetCount: snippets.filter(snippet => snippet.project_id === project.id).length,
               accentColor: 'var(--color-accent)',
             }
             return (
