@@ -9,12 +9,14 @@ import {
     primaryKey,
     unique,
     index,
+    uniqueIndex,
     pgEnum,
     check,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const projectRole = pgEnum('project_role', ['owner', 'editor', 'viewer']);
+export const workspaceRole = pgEnum('workspace_role', ['owner', 'editor', 'viewer']);
 
 export const users = pgTable('users', {
     id: serial('id').primaryKey(),
@@ -85,13 +87,47 @@ export const emailChangeRateLimit = pgTable('email_change_rate_limit', {
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const workspace = pgTable('workspace', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const workspaceMember = pgTable('workspace_member', {
+    workspaceId: integer('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+    role: workspaceRole('role').notNull(),
+    joinedAt: timestamp('joined_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+    primaryKey({ columns: [table.workspaceId, table.userId] }),
+    index('workspace_member_user_id_idx').on(table.userId),
+    uniqueIndex('workspace_member_owner_unique').on(table.workspaceId).where(sql`${table.role} = 'owner'`),
+]);
+
+export const workspaceInvitation = pgTable('workspace_invitation', {
+    workspaceId: integer('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+    invitedUserId: integer('invited_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    invitedByUserId: integer('invited_by_user_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+    role: workspaceRole('role').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+}, (table) => [
+    primaryKey({ columns: [table.workspaceId, table.invitedUserId] }),
+    index('workspace_invitation_invited_user_id_idx').on(table.invitedUserId),
+    index('workspace_invitation_invited_by_user_id_idx').on(table.invitedByUserId),
+]);
+
 export const project = pgTable('project', {
     id: serial('id').primaryKey(),
+    workspaceId: integer('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
     userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+    index('project_workspace_id_idx').on(table.workspaceId),
+    index('project_user_id_idx').on(table.userId),
+]);
 
 export const projectMember = pgTable('project_member', {
     projectId: integer('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
@@ -117,7 +153,7 @@ export const projectInvitation = pgTable('project_invitation', {
 export const snippet = pgTable('snippet', {
     id: serial('id').primaryKey(),
     userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    projectId: integer('project_id').references(() => project.id, { onDelete: 'set null' }),
+    workspaceId: integer('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
     title: varchar('title', { length: 200 }).notNull(),
     description: text('description'),
     code: text('code').notNull(),
@@ -126,7 +162,17 @@ export const snippet = pgTable('snippet', {
     shareToken: varchar('share_token', { length: 255 }).unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-});
+}, (table) => [
+    index('snippet_workspace_id_idx').on(table.workspaceId),
+    index('snippet_user_id_idx').on(table.userId),
+]);
+
+export const snippetProject = pgTable('snippet_project', {
+    snippetId: integer('snippet_id').primaryKey().references(() => snippet.id, { onDelete: 'cascade' }),
+    projectId: integer('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
+}, (table) => [
+    index('snippet_project_project_id_idx').on(table.projectId),
+]);
 
 export const tag = pgTable('tag', {
     id: serial('id').primaryKey(),
