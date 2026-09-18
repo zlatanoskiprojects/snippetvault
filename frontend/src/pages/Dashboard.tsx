@@ -8,6 +8,8 @@ import SnippetList from '../components/SnippetList'
 import NewSnippet from './NewSnippet'
 import SearchView from './SearchView'
 import ProjectsView from './ProjectsView'
+import MembersView from './MembersView'
+import InvitationsView from './InvitationsView'
 import SnippetDetailPanel from './SnippetDetailPanel'
 import ProfileView from './ProfileView'
 import { useSnippets } from '../hooks/useSnippets'
@@ -19,7 +21,7 @@ import Alert from '../components/ui/Alert'
 import type { Snippet } from '../api/types'
 import type { Project } from '../api/types'
 
-type View = 'list' | 'new' | 'search' | 'projects' | 'profile'
+type View = 'list' | 'new' | 'search' | 'projects' | 'members' | 'invitations' | 'profile'
 
 const workspaces: WorkspaceOption[] = [{ id: 'placeholder', name: 'Placeholder workspace' }]
 
@@ -191,6 +193,10 @@ export default function Dashboard() {
           <ProfileView snippets={snippets} onBack={() => handleViewChange('list')} onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'projects' ? (
           <ProjectsView snippets={snippets} onSelectProject={handleSelectProject} onMenuClick={() => setSidebarOpen(true)} />
+        ) : view === 'members' ? (
+          <MembersView onMenuClick={() => setSidebarOpen(true)} />
+        ) : view === 'invitations' ? (
+          <InvitationsView onMenuClick={() => setSidebarOpen(true)} />
         ) : view === 'list' ? (() => {
           const displayedSnippets = snippets
             .filter(s => !activeProject || s.project_id === activeProject.id)
@@ -240,7 +246,6 @@ export default function Dashboard() {
           ) : (
             <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
               <TopBar
-                snippetCount={displayedSnippets.length}
                 title={activeProject ? activeProject.name : activeTag ? `#${activeTag}` : 'All snippets'}
                 onBack={activeProject ? handleClearProject : activeTag ? handleClearTag : undefined}
                 onMenuClick={() => setSidebarOpen(true)}

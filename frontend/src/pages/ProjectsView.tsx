@@ -62,7 +62,6 @@ export default function ProjectsView({ snippets, onSelectProject, onMenuClick }:
           )}
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-primary leading-tight">Projects</h1>
-            <p className="text-xs text-muted mt-0.5">{projects.length} projects</p>
           </div>
         </div>
         <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs shrink-0">

@@ -176,7 +176,6 @@ export default function SearchView({ query, onQueryChange, onClose, onSelectSnip
         </div>
 
         <div className="border-t border-border-default mt-1" />
-        <p className="text-xs text-muted -mt-1">{filtered.length} results</p>
       </div>
 
       <div className="flex-1 overflow-y-auto">
