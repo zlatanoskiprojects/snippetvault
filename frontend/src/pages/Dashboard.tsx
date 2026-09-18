@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Sheet, SheetContent, SheetTitle } from '../components/ui/Sheet'
 import Sidebar from '../components/Sidebar'
+import type { WorkspaceOption } from '../components/WorkspaceSwitcher'
 import TopBar from '../components/TopBar'
 import SnippetList from '../components/SnippetList'
 import NewSnippet from './NewSnippet'
@@ -20,9 +21,12 @@ import type { Project } from '../api/types'
 
 type View = 'list' | 'new' | 'search' | 'projects' | 'profile'
 
+const workspaces: WorkspaceOption[] = [{ id: 'placeholder', name: 'Placeholder workspace' }]
+
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(workspaces[0].id)
   const [view, setView] = useState<View>(
     searchParams.get('reauth') === 'email-change' ||
       searchParams.get('reauth') === 'password-setup' ||
@@ -143,6 +147,9 @@ export default function Dashboard() {
     <div className="flex h-dvh bg-app text-primary overflow-hidden">
       <div className="hidden lg:flex">
         <Sidebar
+          workspaces={workspaces}
+          selectedWorkspaceId={selectedWorkspaceId}
+          onSelectWorkspace={setSelectedWorkspaceId}
           snippets={snippets}
           searchQuery={searchQuery}
           onSearchChange={q => { setSearchQuery(q); if (q) setIsSearching(true) }}
@@ -160,6 +167,9 @@ export default function Dashboard() {
         <SheetContent side="left" overlayClassName="lg:hidden" className="lg:hidden">
           <SheetTitle className="sr-only">Snippet navigation</SheetTitle>
           <Sidebar
+            workspaces={workspaces}
+            selectedWorkspaceId={selectedWorkspaceId}
+            onSelectWorkspace={setSelectedWorkspaceId}
             snippets={snippets}
             activeView={view}
             onViewChange={v => { handleViewChange(v); setSidebarOpen(false) }}

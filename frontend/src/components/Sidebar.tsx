@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, Moon, Search, Sun } from 'lucide-react'
+import { Moon, Search, Sun } from 'lucide-react'
 import { logout } from '../api/auth'
 import { useUser } from '../hooks/useUser'
 import { useThemeStore } from '../store/theme'
 import Input from './ui/Input'
 import Button from './ui/Button'
+import WorkspaceSwitcher, { type WorkspaceSwitcherProps } from './WorkspaceSwitcher'
 import type { Snippet } from '../api/types'
 
 const TAG_DOT_COLORS = [
@@ -21,7 +22,7 @@ const libraryItems = [
   { label: 'Projects',  view: 'projects' },
 ]
 
-interface SidebarProps {
+interface SidebarProps extends WorkspaceSwitcherProps {
   snippets?: Snippet[]
   searchQuery?: string
   onSearchChange?: (value: string) => void
@@ -34,7 +35,7 @@ interface SidebarProps {
   onTagChange?: (tag: string) => void
 }
 
-export default function Sidebar({ snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }: SidebarProps) {
+export default function Sidebar({ workspaces, selectedWorkspaceId, onSelectWorkspace, snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }: SidebarProps) {
   const navigate = useNavigate()
   const { user } = useUser()
   const theme = useThemeStore((state) => state.theme)
@@ -71,12 +72,8 @@ export default function Sidebar({ snippets = [], searchQuery = '', onSearchChang
   const tagList = Object.entries(tagItems).map(([label, count]) => ({ label, count }))
   return (
     <aside className="w-72 lg:w-48 bg-sidebar border-r border-border-default flex flex-col h-full shrink-0">
-      <div className="flex items-center gap-2 px-3 py-3">
-        <div className="rounded-lg bg-accent w-7 h-7 flex items-center justify-center shrink-0">
-          <span className="text-on-accent font-bold font-mono text-[11px]">&lt;/&gt;</span>
-        </div>
-        <span className="text-sm font-medium text-primary flex-1 min-w-0 truncate">Snippet Vault</span>
-        <ChevronDown size={10} className="text-secondary shrink-0" />
+      <div className="px-3 py-3">
+        <WorkspaceSwitcher workspaces={workspaces} selectedWorkspaceId={selectedWorkspaceId} onSelectWorkspace={onSelectWorkspace} />
       </div>
 
       <div className="mx-3 mt-2">
