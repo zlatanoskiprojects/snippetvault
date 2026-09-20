@@ -12,8 +12,7 @@ import Spinner from '../components/ui/Spinner'
 import Alert from '../components/ui/Alert'
 import { useUser } from '../hooks/useUser'
 import { useToast } from '../hooks/useToast'
-import { useProjects } from '../hooks/useProjects'
-import type { Snippet } from '../api/types'
+import type { Project, Snippet } from '../api/types'
 import { socialLogin } from '../api/auth'
 
 const TABS = [
@@ -44,14 +43,14 @@ const PASSWORD_SETUP_REAUTH_MAX_AGE = 10 * 60 * 1000
 
 interface ProfileViewProps {
   snippets?: Snippet[]
+  projects?: Project[]
   onBack?: () => void
   onMenuClick?: () => void
 }
 
-export default function ProfileView({ snippets = [], onBack, onMenuClick }: ProfileViewProps) {
+export default function ProfileView({ snippets = [], projects = [], onBack, onMenuClick }: ProfileViewProps) {
   const { user, loading, error, saveProfile, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
   const toast = useToast()
-  const { projects } = useProjects()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const stats = useMemo(() => [

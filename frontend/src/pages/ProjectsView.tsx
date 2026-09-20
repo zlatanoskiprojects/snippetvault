@@ -6,17 +6,24 @@ import ProjectDialog, {
   type ProjectDialogInitialData,
   type ProjectDialogSubmitData,
 } from '../components/ProjectDialog'
-import { useProjects } from '../hooks/useProjects'
+import type { ProjectInput } from '../api/projects'
 import type { Project, Snippet } from '../api/types'
 
 interface ProjectsViewProps {
   snippets: Snippet[]
+  projects: Project[]
+  loading: boolean
+  error: string | null
+  canCreate: boolean
+  canManage: boolean
+  addProject: (data: ProjectInput) => Promise<void>
+  editProject: (id: number | string, data: Partial<ProjectInput>) => Promise<void>
+  removeProject: (id: number | string) => Promise<void>
   onSelectProject?: (project: Project) => void
   onMenuClick?: () => void
 }
 
-export default function ProjectsView({ snippets, onSelectProject, onMenuClick }: ProjectsViewProps) {
-  const { projects, loading, error, addProject, editProject, removeProject } = useProjects()
+export default function ProjectsView({ snippets, projects, loading, error, canCreate, canManage, addProject, editProject, removeProject, onSelectProject, onMenuClick }: ProjectsViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
 
@@ -26,6 +33,7 @@ export default function ProjectsView({ snippets, onSelectProject, onMenuClick }:
   }
 
   const handleEdit = (project: Project) => {
+    if (!canManage) return
     setEditing(project)
     setDialogOpen(true)
   }
@@ -39,6 +47,7 @@ export default function ProjectsView({ snippets, onSelectProject, onMenuClick }:
   }
 
   const handleDelete = (id: number) => {
+    if (!canManage) return
     removeProject(id)
   }
 
@@ -64,9 +73,11 @@ export default function ProjectsView({ snippets, onSelectProject, onMenuClick }:
             <h1 className="text-lg font-semibold text-primary leading-tight">Projects</h1>
           </div>
         </div>
-        <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs shrink-0">
-          <Plus size={14} /> New project
-        </Button>
+        {canCreate && (
+          <Button variant="primary" size="sm" onClick={handleNew} className="px-4 text-xs shrink-0">
+            <Plus size={14} /> New project
+          </Button>
+        )}
       </header>
 
       {loading ? (
@@ -89,8 +100,8 @@ export default function ProjectsView({ snippets, onSelectProject, onMenuClick }:
               <ProjectCard
                 key={project.id}
                 project={projectWithMeta}
-                onEdit={() => handleEdit(project)}
-                onDelete={() => handleDelete(project.id)}
+                onEdit={canManage ? () => handleEdit(project) : undefined}
+                onDelete={canManage ? () => handleDelete(project.id) : undefined}
                 onSelect={() => onSelectProject?.(project)}
               />
             )
@@ -98,12 +109,14 @@ export default function ProjectsView({ snippets, onSelectProject, onMenuClick }:
         </div>
       )}
 
-      <ProjectDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onSubmit={handleSubmit}
-        initialData={editingInitialData}
-      />
+      {(canCreate || canManage) && (
+        <ProjectDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={editingInitialData}
+        />
+      )}
     </div>
   )
 }

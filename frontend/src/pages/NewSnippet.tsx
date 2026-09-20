@@ -10,8 +10,7 @@ import { createSnippet, updateSnippet, type SnippetInput } from '../api/snippets
 import { ApiError } from '../api/utils'
 import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } from '../api/tags'
 import { useToast } from '../hooks/useToast'
-import { useProjects } from '../hooks/useProjects'
-import type { Snippet } from '../api/types'
+import type { Project, Snippet } from '../api/types'
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
 
 const LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map(l => ({ value: l, label: l }))
@@ -21,16 +20,17 @@ const VISIBILITY_OPTIONS = [
 ]
 
 interface NewSnippetProps {
+  workspaceId: number
+  projects: Project[]
   snippet?: Snippet | null
   onCancel: () => void
   onSaved: (snippet: Snippet) => void
   onMenuClick?: () => void
 }
 
-export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: NewSnippetProps) {
+export default function NewSnippet({ workspaceId, projects, snippet, onCancel, onSaved, onMenuClick }: NewSnippetProps) {
   const isEditing = Boolean(snippet)
   const toast = useToast()
-  const { projects } = useProjects()
 
   const [title, setTitle] = useState(snippet?.title ?? '')
   const [description, setDescription] = useState(snippet?.description ?? '')
@@ -98,7 +98,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
         toast.success('Snippet updated.')
         onSaved({ ...updated, tags: finalTags })
       } else {
-        const created = await createSnippet(payload, true)
+        const created = await createSnippet(workspaceId, payload, true)
         snippetSaved = true
         console.log('share_token:', created.share_token)
         for (const name of finalTags) {

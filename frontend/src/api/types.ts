@@ -11,17 +11,36 @@ export interface User {
     oauth_providers: Array<'google' | 'github'>;
 }
 
+export type WorkspaceRole = 'owner' | 'editor' | 'viewer';
+
+export interface Workspace {
+    id: number;
+    name: string;
+    created_at: string;
+    role: WorkspaceRole;
+}
+
+export interface WorkspaceMember {
+    user_id: number;
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    role: WorkspaceRole;
+    joined_at: string;
+}
+
 export interface Project {
     id: number;
-    user_id: number;
+    workspace_id: number;
     name: string;
     description: string | null;
-    created_at: string;
+    role: WorkspaceRole;
 }
 
 export interface Snippet {
     id: number;
     user_id: number;
+    workspace_id: number;
     project_id: number | null;
     title: string;
     description: string | null;

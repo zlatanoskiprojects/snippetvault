@@ -2,7 +2,6 @@ import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
 import { X } from 'lucide-react'
-import { useSnippets } from '../hooks/useSnippets'
 import SnippetRow from '../components/SnippetRow'
 import Spinner from '../components/ui/Spinner'
 import Alert from '../components/ui/Alert'
@@ -29,14 +28,16 @@ const SORT_CHIPS = [
 ]
 
 interface SearchViewProps {
+  snippets: Snippet[]
+  loading: boolean
+  error: string | null
   query: string
   onQueryChange: (query: string) => void
   onClose: () => void
   onSelectSnippet: (snippet: Snippet) => void
 }
 
-export default function SearchView({ query, onQueryChange, onClose, onSelectSnippet }: SearchViewProps) {
-  const { snippets, loading, error } = useSnippets()
+export default function SearchView({ snippets, loading, error, query, onQueryChange, onClose, onSelectSnippet }: SearchViewProps) {
   const [activeLang, setActiveLang] = useState('all')
   const [activeTags, setActiveTags] = useState<string[]>([])
   const [activeSort, setActiveSort] = useState('modified')

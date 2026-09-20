@@ -21,7 +21,6 @@ const libraryItems = [
   { label: 'All Snippets', view: 'list'        },
   { label: 'Projects',  view: 'projects' },
   { label: 'Members', view: 'members' },
-  { label: 'Invitations', view: 'invitations' },
 ]
 
 interface SidebarProps extends WorkspaceSwitcherProps {
@@ -37,7 +36,7 @@ interface SidebarProps extends WorkspaceSwitcherProps {
   onTagChange?: (tag: string) => void
 }
 
-export default function Sidebar({ workspaces, selectedWorkspaceId, onSelectWorkspace, snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }: SidebarProps) {
+export default function Sidebar({ workspaces, selectedWorkspaceId, onSelectWorkspace, onAddWorkspace, snippets = [], searchQuery = '', onSearchChange, onSearchFocus, onSearchBlur, isSearchActive = false, activeView = 'list', onViewChange, activeTag = null, onTagChange }: SidebarProps) {
   const navigate = useNavigate()
   const { user } = useUser()
   const theme = useThemeStore((state) => state.theme)
@@ -75,7 +74,7 @@ export default function Sidebar({ workspaces, selectedWorkspaceId, onSelectWorks
   return (
     <aside className="w-72 lg:w-48 bg-sidebar border-r border-border-default flex flex-col h-full shrink-0">
       <div className="px-3 py-3">
-        <WorkspaceSwitcher workspaces={workspaces} selectedWorkspaceId={selectedWorkspaceId} onSelectWorkspace={onSelectWorkspace} />
+        <WorkspaceSwitcher workspaces={workspaces} selectedWorkspaceId={selectedWorkspaceId} onSelectWorkspace={onSelectWorkspace} onAddWorkspace={onAddWorkspace} />
       </div>
 
       <div className="mx-3 mt-2">

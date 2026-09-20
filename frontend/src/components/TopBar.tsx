@@ -51,10 +51,12 @@ export default function TopBar({ onMenuClick, onNewSnippet, onSearch, title = 'A
           <span className="hidden sm:inline">Filter</span>
         </Button>
 
-        <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs min-w-[40px] sm:min-w-0">
-          <span className="hidden sm:inline-flex items-center gap-1"><Plus size={14} /> New snippet</span>
-          <span className="sm:hidden flex items-center justify-center"><Plus size={14} /></span>
-        </Button>
+        {onNewSnippet && (
+          <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs min-w-[40px] sm:min-w-0">
+            <span className="hidden sm:inline-flex items-center gap-1"><Plus size={14} /> New snippet</span>
+            <span className="sm:hidden flex items-center justify-center"><Plus size={14} /></span>
+          </Button>
+        )}
       </div>
     </header>
   )

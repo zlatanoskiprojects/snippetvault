@@ -16,8 +16,8 @@ export async function getTagById(id: number | string): Promise<Tag> {
     return apiFetch<Tag>(`${BASE_URL}/${id}`);
 }
 
-export async function getSnippetsByTag(id: number | string): Promise<Snippet[]> {
-    return apiFetch<Snippet[]>(`${BASE_URL}/${id}/snippets`);
+export async function getSnippetsByTag(workspaceId: number, id: number | string): Promise<Snippet[]> {
+    return apiFetch<Snippet[]>(`${import.meta.env.VITE_API_URL}/workspaces/${workspaceId}/tags/${id}/snippets`);
 }
 
 export async function createTag(data: TagInput, silent = false): Promise<Tag> {
