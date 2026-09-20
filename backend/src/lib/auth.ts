@@ -3,13 +3,16 @@ import { betterAuth, type BetterAuthPlugin } from 'better-auth';
 import { createAuthMiddleware, isAPIError } from 'better-auth/api';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { captcha } from 'better-auth/plugins';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import db from './db';
 import {
     authAccount,
     authSession,
     authVerification,
     users,
+    workspace,
+    workspaceInvitation,
+    workspaceMember,
 } from '../db/schema';
 import { ALLOWED_ORIGINS } from '../constants/origins';
 import { sendEmail } from './email';
@@ -245,6 +248,25 @@ export const auth = betterAuth({
                 before: async (user) => {
                     const name = (user as { name?: string }).name ?? '';
                     return { data: { ...user, username: deriveUsername(name) } };
+                },
+                after: async (user) => {
+                    await db.transaction(async (tx) => {
+                        const [createdWorkspace] = await tx.insert(workspace).values({ name: 'My Workspace' }).returning({ id: workspace.id });
+                        await tx.insert(workspaceMember).values({ workspaceId: createdWorkspace.id, userId: Number(user.id), role: 'owner' });
+                    });
+                },
+            },
+            delete: {
+                before: async (user) => {
+                    await db.transaction(async (tx) => {
+                        const owned = await tx.select({ workspaceId: workspaceMember.workspaceId }).from(workspaceMember).where(and(
+                            eq(workspaceMember.userId, Number(user.id)),
+                            eq(workspaceMember.role, 'owner'),
+                        ));
+                        if (owned.length > 0) await tx.delete(workspace).where(inArray(workspace.id, owned.map(({ workspaceId }) => workspaceId)));
+                        await tx.delete(workspaceInvitation).where(eq(workspaceInvitation.invitedByUserId, Number(user.id)));
+                        await tx.delete(workspaceMember).where(eq(workspaceMember.userId, Number(user.id)));
+                    });
                 },
             },
         },

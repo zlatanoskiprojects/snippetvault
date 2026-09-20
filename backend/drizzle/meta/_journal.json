@@ -57,6 +57,20 @@
       "when": 1789743917097,
       "tag": "0007_workspaces",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789909550568,
+      "tag": "0008_require_snippet_workspace",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789911879861,
+      "tag": "0009_drop_legacy_project_membership",
+      "breakpoints": true
     }
   ]
 }

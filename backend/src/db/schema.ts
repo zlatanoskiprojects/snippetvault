@@ -11,11 +11,9 @@ import {
     index,
     uniqueIndex,
     pgEnum,
-    check,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
-export const projectRole = pgEnum('project_role', ['owner', 'editor', 'viewer']);
 export const workspaceRole = pgEnum('workspace_role', ['owner', 'editor', 'viewer']);
 
 export const users = pgTable('users', {
@@ -129,31 +127,10 @@ export const project = pgTable('project', {
     index('project_user_id_idx').on(table.userId),
 ]);
 
-export const projectMember = pgTable('project_member', {
-    projectId: integer('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
-    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    role: projectRole('role').notNull(),
-    joinedAt: timestamp('joined_at', { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-    primaryKey({ columns: [table.projectId, table.userId] }),
-    index('project_member_user_id_idx').on(table.userId),
-]);
-
-export const projectInvitation = pgTable('project_invitation', {
-    projectId: integer('project_id').notNull().references(() => project.id, { onDelete: 'cascade' }),
-    invitedUserId: integer('invited_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    role: projectRole('role').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-    primaryKey({ columns: [table.projectId, table.invitedUserId] }),
-    index('project_invitation_invited_user_id_idx').on(table.invitedUserId),
-    check('project_invitation_role_check', sql`${table.role} in ('editor', 'viewer')`),
-]);
-
 export const snippet = pgTable('snippet', {
     id: serial('id').primaryKey(),
     userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    workspaceId: integer('workspace_id').references(() => workspace.id, { onDelete: 'cascade' }),
+    workspaceId: integer('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
     title: varchar('title', { length: 200 }).notNull(),
     description: text('description'),
     code: text('code').notNull(),
