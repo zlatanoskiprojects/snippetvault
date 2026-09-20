@@ -1,16 +1,20 @@
 import { Router, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, exists, inArray } from 'drizzle-orm';
 import db from '../lib/db';
-import { project, projectMember } from '../db/schema';
+import { project, workspaceMember } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
+import requireProjectPermission from '../middleware/requireProjectPermission';
+import requireWorkspacePermission from '../middleware/requireWorkspacePermission';
 import { asyncHandler } from '../middleware/errorHandler';
+import validateRequest from '../middleware/validateRequest';
 import {
     projectIdValidation,
     createProjectValidation,
     updateProjectValidation,
+    listProjectsValidation,
 } from '../validators/projects';
-import getProjectMembership from "../lib/projectMembership";
+import { projectRolesWithPermission } from '../permissions/projectPermissions';
 
 const router = Router();
 
@@ -19,143 +23,119 @@ interface ProjectUpdateFields {
     description?: string | null;
 }
 
-router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
-    try {
-        const projects = await db
-            .select({
-                id: project.id,
-                name: project.name,
-                description: project.description,
-                role: projectMember.role,
-            })
-            .from(project)
-            .innerJoin(projectMember, eq(projectMember.projectId, project.id))
-            .where(eq(projectMember.userId, req.userId as number))
-            .orderBy(desc(project.createdAt));
+router.get('/workspaces/:workspaceId/projects', authMiddleware, listProjectsValidation, validateRequest, requireWorkspacePermission('read'), asyncHandler(async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-        return res.status(200).json(projects.map((p) => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            role: p.role,
-        })));
-    } catch (error) {
-        console.error('Error fetching projects:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    const workspaceId = Number(req.params.workspaceId);
+    const role = res.locals.workspaceMembership.role;
+    const projects = await db
+        .select({
+            id: project.id,
+            workspaceId: project.workspaceId,
+            name: project.name,
+            description: project.description,
+        })
+        .from(project)
+        .where(eq(project.workspaceId, workspaceId))
+        .orderBy(desc(project.createdAt));
+
+    return res.status(200).json(projects.map((item) => ({
+        id: item.id,
+        workspace_id: item.workspaceId,
+        name: item.name,
+        description: item.description,
+        role,
+    })));
 }));
 
-router.post('/', authMiddleware, createProjectValidation, asyncHandler(async (req: Request, res: Response) => {
+router.post('/workspaces/:workspaceId/projects', authMiddleware, listProjectsValidation, createProjectValidation, validateRequest, requireWorkspacePermission('createProject'), asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    const { name, description } = req.body;
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    try {
-        const created = await db.transaction(async (tx) => {
-            const [newProject] = await tx.insert(project).values({
-                userId: req.userId as number,
-                name,
-                description: description ?? null,
-            }).returning({ id: project.id });
-            await tx.insert(projectMember).values({
-                projectId: newProject.id,
-                userId: req.userId as number,
-                role: 'owner',
-            });
-            return newProject;
-        });
+    const workspaceId = Number(req.params.workspaceId);
+    const [created] = await db
+        .insert(project)
+        .values({
+            workspaceId,
+            userId: req.userId as number,
+            name: req.body.name,
+            description: req.body.description ?? null,
+        })
+        .returning();
 
-        return res.status(201).json({
-            id: created.id,
-            name,
-            description: description ?? null,
-            message: 'Project created successfully',
-        });
-    } catch (error) {
-        console.error('Error creating project:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    return res.status(201).json({
+        id: created.id,
+        workspace_id: created.workspaceId,
+        name: created.name,
+        description: created.description,
+        role: res.locals.workspaceMembership.role,
+    });
 }));
 
-router.patch('/:id', authMiddleware, updateProjectValidation, asyncHandler(async (req: Request, res: Response) => {
+router.patch('/projects/:projectId', authMiddleware, updateProjectValidation, validateRequest, requireProjectPermission('update'), asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const allowedFields: (keyof ProjectUpdateFields)[] = ['name', 'description'];
+    const projectId = Number(req.params.projectId);
+    const workspaceId = res.locals.projectAuthorization.workspaceId as number;
+    const roles = projectRolesWithPermission('update');
     const updates: ProjectUpdateFields = {};
-    for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-            (updates as Record<string, unknown>)[field] = req.body[field];
-        }
-    }
+    if (req.body.name !== undefined) updates.name = req.body.name;
+    if (req.body.description !== undefined) updates.description = req.body.description;
 
-    if (Object.keys(updates).length === 0) {
-        return res.status(400).json({ error: 'No valid fields provided' });
-    }
+    const [updated] = await db
+        .update(project)
+        .set(updates)
+        .where(and(
+            eq(project.id, projectId),
+            eq(project.workspaceId, workspaceId),
+            exists(db
+                .select({ userId: workspaceMember.userId })
+                .from(workspaceMember)
+                .where(and(
+                    eq(workspaceMember.workspaceId, project.workspaceId),
+                    eq(workspaceMember.userId, req.userId as number),
+                    inArray(workspaceMember.role, roles),
+                ))),
+        ))
+        .returning();
+    if (!updated) return res.status(404).json({ error: 'Project not found' });
 
-    try {
-
-        const projectId = parseInt(req.params.id as string);
-        const membership = await getProjectMembership(projectId, req.userId as number);
-
-        if (!membership) {
-            return res.status(404).json({ error: 'Project not found' });
-        }
-
-        if (membership.role !== 'owner') {
-            return res.status(403).json({ error: 'You do not have permission to update this project' });
-        }
-
-        const result = await db
-            .update(project)
-            .set(updates)
-            .where(eq(project.id, projectId))
-            .returning({ id: project.id });
-
-        if (result.length === 0) {
-            return res.status(404).json({ error: 'Project not found' });
-        }
-        return res.status(200).json({ message: 'Project updated successfully' });
-    } catch (error) {
-        console.error('Error updating project:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    return res.status(200).json({
+        id: updated.id,
+        workspace_id: updated.workspaceId,
+        name: updated.name,
+        description: updated.description,
+        role: res.locals.projectAuthorization.membership.role,
+    });
 }));
 
-router.delete('/:id', authMiddleware, projectIdValidation, asyncHandler(async (req: Request, res: Response) => {
+router.delete('/projects/:projectId', authMiddleware, projectIdValidation, validateRequest, requireProjectPermission('delete'), asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    try {
-        const projectId = parseInt(req.params.id as string);
-        const membership = await getProjectMembership(projectId, req.userId as number);
+    const projectId = Number(req.params.projectId);
+    const workspaceId = res.locals.projectAuthorization.workspaceId as number;
+    const roles = projectRolesWithPermission('delete');
+    const [deleted] = await db
+        .delete(project)
+        .where(and(
+            eq(project.id, projectId),
+            eq(project.workspaceId, workspaceId),
+            exists(db
+                .select({ userId: workspaceMember.userId })
+                .from(workspaceMember)
+                .where(and(
+                    eq(workspaceMember.workspaceId, project.workspaceId),
+                    eq(workspaceMember.userId, req.userId as number),
+                    inArray(workspaceMember.role, roles),
+                ))),
+        ))
+        .returning({ id: project.id });
+    if (!deleted) return res.status(404).json({ error: 'Project not found' });
 
-        if (!membership) {
-            return res.status(404).json({ error: 'Project not found' });
-        }
-
-        if (membership.role !== 'owner') {
-            return res.status(403).json({ error: 'You do not have permission to delete this project' });
-        }
-
-        const result = await db
-            .delete(project)
-            .where(eq(project.id, projectId))
-            .returning({ id: project.id });
-        if (result.length === 0) {
-            return res.status(404).json({ error: 'Project not found' });
-        }
-        return res.status(200).json({ message: 'Project deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting project:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    return res.status(200).json({ message: 'Project deleted successfully' });
 }));
 
 export default router;

@@ -1,4 +1,4 @@
-import { body, param, ValidationChain } from 'express-validator';
+import { body, param, query, ValidationChain } from 'express-validator';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
 
 
@@ -10,9 +10,19 @@ const versionIdValidation: ValidationChain[] = [
 ];
 
 const snippetIdValidation: ValidationChain[] = [
-    param('id')
+    param('snippetId')
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
+];
+
+const listSnippetsValidation: ValidationChain[] = [
+    query().custom((value: unknown) => value !== null && typeof value === 'object'
+        && !Array.isArray(value) && Object.keys(value).every((field) => field === 'q'))
+        .withMessage('Only q is allowed'),
+    query('q')
+        .optional()
+        .isString().withMessage('Search must be a string')
+        .isLength({ max: 200 }).withMessage('Search cannot exceed 200 characters'),
 ];
 
 const createSnippetValidation: ValidationChain[] = [
@@ -46,7 +56,7 @@ const createSnippetValidation: ValidationChain[] = [
 ];
 
 const updateSnippetValidation: ValidationChain[] = [
-    param('id')
+    param('snippetId')
         .isInt({ min: 1 })
         .withMessage('Invalid snippet id'),
 
@@ -94,4 +104,4 @@ const shareTokenValidation: ValidationChain[] = [
         .matches(/^[A-Za-z0-9_-]+$/).withMessage('Invalid share token'),
 ];
 
-export { snippetIdValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation, shareTokenValidation };
+export { snippetIdValidation, listSnippetsValidation, createSnippetValidation, updateSnippetValidation, versionIdValidation, shareTokenValidation };

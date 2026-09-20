@@ -6,7 +6,7 @@ import { userAiSettings } from '../db/schema';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validationResult } from 'express-validator';
-import { createAiSettingsValidation, updateAiSettingsValidation, deleteAiSettingsValidation } from '../validators/aiSettings';
+import { saveAiSettingsValidation, deleteAiSettingsValidation } from '../validators/aiSettings';
 
 const router = Router();
 
@@ -69,7 +69,7 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
     }
 }));
 
-router.post('/', authMiddleware, createAiSettingsValidation, asyncHandler(async (req: Request, res: Response) => {
+router.put('/', authMiddleware, saveAiSettingsValidation, asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });

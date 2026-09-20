@@ -1,7 +1,7 @@
 import { body, param, ValidationChain } from 'express-validator';
 
 const commentIdValidation: ValidationChain[] = [
-    param('id')
+    param('commentId')
         .isInt({ min: 1 }).withMessage('Invalid comment id'),
 ];
 
@@ -20,7 +20,7 @@ const createCommentValidation: ValidationChain[] = [
 ];
 
 const updateCommentValidation: ValidationChain[] = [
-    param('id')
+    param('commentId')
         .isInt({ min: 1 }).withMessage('Invalid comment id'),
 
     body('content')

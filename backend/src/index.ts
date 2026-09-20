@@ -6,7 +6,6 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
 import snippetRoutes from './routes/snippets';
 import projectRoutes from './routes/projects';
-import projectMemberRoutes from './routes/projectMembers';
 import workspaceRoutes from './routes/workspace';
 import tagRoutes from './routes/tags';
 import commentRoutes from './routes/comments';
@@ -54,14 +53,13 @@ app.use(express.json());
 
 app.use('/api', apiLimiter);
 
-app.use('/api/snippets', snippetRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/projects', projectMemberRoutes);
+app.use('/api', snippetRoutes);
+app.use('/api', projectRoutes);
 app.use('/api/workspaces', workspaceRoutes);
-app.use('/api/tags', tagRoutes);
+app.use('/api', tagRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', commentRoutes);
-app.use('/api', aiSettingsRoutes);
+app.use('/api/ai-settings', aiSettingsRoutes);
 app.use('/api/share', shareLimiter, shareRoutes);
 
 app.use('/api', notFoundHandler);
