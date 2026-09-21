@@ -15,6 +15,7 @@ import {
 import { sql } from 'drizzle-orm';
 
 export const workspaceRole = pgEnum('workspace_role', ['owner', 'editor', 'viewer']);
+export const invitationStatus = pgEnum('invitation_status', ['pending', 'accepted', 'rejected', 'cancelled']);
 
 export const users = pgTable('users', {
     id: serial('id').primaryKey(),
@@ -103,15 +104,19 @@ export const workspaceMember = pgTable('workspace_member', {
 ]);
 
 export const workspaceInvitation = pgTable('workspace_invitation', {
+    id: serial('id').primaryKey(),
     workspaceId: integer('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
-    invitedUserId: integer('invited_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    email: varchar('email', { length: 255 }).notNull(),
     invitedByUserId: integer('invited_by_user_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
     role: workspaceRole('role').notNull(),
+    status: invitationStatus('status').notNull().default('pending'),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
 }, (table) => [
-    primaryKey({ columns: [table.workspaceId, table.invitedUserId] }),
-    index('workspace_invitation_invited_user_id_idx').on(table.invitedUserId),
+    index('workspace_invitation_email_idx').on(table.email),
+    index('workspace_invitation_workspace_id_idx').on(table.workspaceId),
     index('workspace_invitation_invited_by_user_id_idx').on(table.invitedByUserId),
 ]);
 
