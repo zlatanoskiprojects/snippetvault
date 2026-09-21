@@ -39,10 +39,27 @@ const updateWorkspaceMemberRoleValidation: ValidationChain[] = [
         .isIn(['editor', 'viewer']).withMessage('Role must be editor or viewer'),
 ];
 
+const createWorkspaceInvitationValidation: ValidationChain[] = [
+    ...workspaceIdValidation,
+    body().custom((value: unknown) => value !== null && typeof value === 'object'
+        && !Array.isArray(value) && Object.keys(value).every((field) => ['email', 'role'].includes(field)))
+        .withMessage('Only email and role are allowed'),
+    body('email')
+        .isString().withMessage('Email must be a string').bail()
+        .trim()
+        .notEmpty().withMessage('Email is required').bail()
+        .isLength({ max: 255 }).withMessage('Email cannot exceed 255 characters').bail()
+        .isEmail().withMessage('Invalid email'),
+    body('role')
+        .isString().withMessage('Role must be a string').bail()
+        .isIn(['editor', 'viewer']).withMessage('Role must be editor or viewer'),
+];
+
 export {
     workspaceIdValidation,
     workspaceMemberParamsValidation,
     createWorkspaceValidation,
     updateWorkspaceValidation,
     updateWorkspaceMemberRoleValidation,
+    createWorkspaceInvitationValidation,
 };

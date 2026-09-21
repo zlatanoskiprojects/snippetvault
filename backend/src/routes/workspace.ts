@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { and, asc, eq, exists, inArray } from 'drizzle-orm';
+import { and, asc, eq, exists, gt, inArray } from 'drizzle-orm';
 import { validationResult } from 'express-validator';
-import { users, workspace, workspaceMember } from '../db/schema';
+import { users, workspace, workspaceMember,workspaceInvitation } from '../db/schema';
 import db from '../lib/db';
 import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
@@ -9,12 +9,17 @@ import validateRequest from '../middleware/validateRequest';
 import requireWorkspacePermission from '../middleware/requireWorkspacePermission';
 import { workspaceRolesWithPermission } from '../permissions/workspacePermissions';
 import {
+    createWorkspaceInvitationValidation,
     createWorkspaceValidation,
     updateWorkspaceMemberRoleValidation,
     updateWorkspaceValidation,
     workspaceIdValidation,
     workspaceMemberParamsValidation,
 } from '../validators/workspace';
+import { generateInvitationToken } from '../lib/invitationToken';
+import { sendWorkspaceInvitationEmail } from '../lib/emails/workspaceInvitation';
+
+
 
 const router = Router();
 
@@ -129,5 +134,109 @@ router.delete('/:workspaceId/members/:userId', authMiddleware, workspaceMemberPa
     if (!deleted) return res.status(409).json({ error: 'Workspace member changed concurrently' });
     return res.status(200).json({ message: 'Workspace member removed successfully' });
 }));
+
+
+
+//WORKSPACE INVITATIONS ROUTES
+
+router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitationValidation, validateRequest, requireWorkspacePermission('inviteMembers'), asyncHandler(async (req: Request, res: Response) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() }); 
+
+
+    const userId = req.userId as number;
+
+    if(userId === undefined) return res.status(401).json({ error: 'Unauthorized' });
+
+    const workspaceId = Number(req.params.workspaceId);
+    const { email, role } = req.body;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const [invitedUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, normalizedEmail)).limit(1);
+
+    if(invitedUser) {
+        // Check if the user is already a member of the workspace
+        const [existingMember] = await db.select({ userId: workspaceMember.userId }).from(workspaceMember).where(and( 
+            eq(workspaceMember.workspaceId, workspaceId),
+            eq(workspaceMember.userId, invitedUser.id)
+        )).limit(1);
+
+
+        if(existingMember) {
+            return res.status(409).json({ error: 'User is already a member of the workspace' });
+        }
+    }
+
+    
+
+    // Check if an invitation already exists for the email in the workspace and is still pending and not expired .
+    const [existingInvitation] = await db
+    .select({ id: workspaceInvitation.id })
+    .from(workspaceInvitation)
+    .where(and(
+        eq(workspaceInvitation.workspaceId, workspaceId),
+        eq(workspaceInvitation.email, normalizedEmail),
+        eq(workspaceInvitation.status, 'pending'),
+        gt(workspaceInvitation.expiresAt, new Date())
+    ))
+    .limit(1);
+
+    if (existingInvitation) {
+    return res.status(409).json({
+        error: 'An active invitation for this email already exists'
+    });
+}
+
+    // Generate an invitation token and its hash
+    const { token, tokenHash } = generateInvitationToken();
+    //the token goes to the email link, and the hash goes to the database for verificaiton later 
+
+    // Insert the invitation into the database
+    const [invitation] = await db.insert(workspaceInvitation).values({
+        workspaceId,
+        email: normalizedEmail,
+        invitedByUserId: userId,
+        role,
+        tokenHash,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }).returning();
+    if (!invitation) {
+        return res.status(500).json({ error: 'Failed to create invitation' });
+    }
+
+    // Construct the invitation URL
+    const [inviter] = await db
+    .select({
+        displayName: users.displayName,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+    const [workspaceData] = await db
+    .select({
+        name: workspace.name,
+    })
+    .from(workspace)
+    .where(eq(workspace.id, workspaceId))
+    .limit(1);
+
+    const invitationUrl =
+    `${process.env.CLIENT_URL}/invitations/${token}`;
+
+    await sendWorkspaceInvitationEmail({
+        to: normalizedEmail,
+        inviterName: inviter.displayName as string,
+        workspaceName: workspaceData.name as string,
+        role,
+        invitationUrl,
+        expiresAt: invitation.expiresAt,
+    });
+
+    return res.status(201).json({ message: 'Workspace invitation sent successfully' });
+
+}));
+
 
 export default router;
