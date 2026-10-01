@@ -139,6 +139,7 @@ router.delete('/:workspaceId/members/:userId', authMiddleware, workspaceMemberPa
 
 //WORKSPACE INVITATIONS ROUTES
 
+
 router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitationValidation, validateRequest, requireWorkspacePermission('inviteMembers'), asyncHandler(async (req: Request, res: Response) => {
 
     const errors = validationResult(req);
