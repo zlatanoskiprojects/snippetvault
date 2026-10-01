@@ -11,11 +11,16 @@ import {
     index,
     uniqueIndex,
     pgEnum,
+    customType,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const workspaceRole = pgEnum('workspace_role', ['owner', 'editor', 'viewer']);
 export const invitationStatus = pgEnum('invitation_status', ['pending', 'accepted', 'rejected', 'cancelled']);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+    dataType: () => 'bytea',
+});
 
 export const users = pgTable('users', {
     id: serial('id').primaryKey(),
@@ -28,6 +33,13 @@ export const users = pgTable('users', {
     emailVerified: boolean('email_verified').notNull().default(false),
     registeredAt: timestamp('registered_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+export const userAvatar = pgTable('user_avatar', {
+    userId: integer('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+    imageData: bytea('image_data').notNull(),
+    revision: integer('revision').notNull().default(1),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const authSession = pgTable('auth_session', {

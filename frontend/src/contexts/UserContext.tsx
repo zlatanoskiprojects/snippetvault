@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import {
     getProfile,
     updateProfile,
+    uploadProfileAvatar,
+    removeProfileAvatar,
     changeEmail as apiChangeEmail,
     changePassword as apiChangePassword,
     setPassword as apiSetPassword,
@@ -22,6 +24,8 @@ export interface UserContextValue {
     loading: boolean
     error: string | null
     saveProfile: (data: UpdateProfileData) => Promise<void>
+    uploadAvatar: (file: File) => Promise<void>
+    removeAvatar: () => Promise<void>
     changeEmail: (data: ChangeEmailData) => Promise<boolean>
     changePassword: (data: ChangePasswordData) => Promise<void>
     setPassword: (data: SetPasswordData) => Promise<SetPasswordResult>
@@ -66,6 +70,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) navigate('/login')
             else if (err instanceof Error) toast.error(err.message)
+        }
+    }, [navigate, toast])
+
+    const uploadAvatar = useCallback(async (file: File) => {
+        try {
+            const result = await uploadProfileAvatar(file)
+            setUser(result.user)
+            toast.success('Profile photo updated.')
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) navigate('/login')
+            throw err
+        }
+    }, [navigate, toast])
+
+    const removeAvatar = useCallback(async () => {
+        try {
+            const result = await removeProfileAvatar()
+            setUser(result.user)
+            toast.success('Profile photo removed.')
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401) navigate('/login')
+            throw err
         }
     }, [navigate, toast])
 
@@ -139,7 +165,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }, [navigate, toast])
 
     return (
-        <UserContext.Provider value={{ user, loading, error, saveProfile, changeEmail, changePassword, setPassword, deleteAccount }}>
+        <UserContext.Provider value={{ user, loading, error, saveProfile, uploadAvatar, removeAvatar, changeEmail, changePassword, setPassword, deleteAccount }}>
             {children}
         </UserContext.Provider>
     )

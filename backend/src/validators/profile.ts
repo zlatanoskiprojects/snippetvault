@@ -1,4 +1,15 @@
-import { body, ValidationChain } from 'express-validator';
+import { body, header, ValidationChain } from 'express-validator';
+
+const AVATAR_CONTENT_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+
+const avatarUploadValidation: ValidationChain[] = [
+    header('content-type')
+        .custom((value) => typeof value === 'string' && AVATAR_CONTENT_TYPES.has(value.split(';')[0].trim().toLowerCase()))
+        .withMessage('Avatar must be a PNG, JPEG, or WebP image'),
+    body()
+        .custom((value) => Buffer.isBuffer(value) && value.length > 0)
+        .withMessage('Avatar image is required'),
+];
 
 const updateProfileValidation: ValidationChain[] = [
     body('username')
@@ -36,4 +47,4 @@ const setPasswordValidation: ValidationChain[] = [
         .isLength({ min: 8, max: 128 }).withMessage('New password must be between 8 and 128 characters'),
 ];
 
-export { updateProfileValidation, changePasswordValidation, setPasswordValidation };
+export { avatarUploadValidation, updateProfileValidation, changePasswordValidation, setPasswordValidation };

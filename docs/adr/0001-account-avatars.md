@@ -1,0 +1,3 @@
+# Generate account avatars locally and store uploaded photos in PostgreSQL
+
+Every SnippetVault account gets a stable default avatar generated locally with Blobatar from its immutable user ID; an uploaded profile photo overrides that default. We chose local generation over requests to blobatar.dev so avatar rendering does not depend on a third-party service or expose account identifiers through image requests. We chose PostgreSQL over object storage for uploaded photos because the app already operates a database in each supported environment and the photos will be resized before storage; this avoids a second storage service and its deployment configuration. Provider photos remain stored for Better Auth compatibility but do not appear as SnippetVault avatars.

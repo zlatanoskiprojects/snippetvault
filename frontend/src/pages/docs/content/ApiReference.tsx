@@ -47,6 +47,7 @@ export default function ApiReference() {
           ['POST', <InlineCode>/api/auth/sign-in/email</InlineCode>, 'Sign in with email and password.'],
           ['POST', <InlineCode>/api/auth/sign-out</InlineCode>, 'End the current session.'],
           ['POST', <InlineCode>/api/auth/sign-in/social</InlineCode>, 'Start a Google or GitHub OAuth flow (if configured).'],
+          ['POST', <InlineCode>/api/auth/change-email</InlineCode>, 'Request an email change through Better Auth.'],
           ['POST', <InlineCode>/api/auth/change-password</InlineCode>, 'Change the current password.'],
           ['POST', <InlineCode>/api/auth/delete-user</InlineCode>, "Delete the caller's account."],
         ]}
@@ -114,11 +115,22 @@ export default function ApiReference() {
       <DocTable
         headers={['Method', 'Endpoint', 'Description']}
         rows={[
-          ['GET', <InlineCode>/api/profile</InlineCode>, 'Get the current user profile.'],
-          ['PATCH', <InlineCode>/api/profile</InlineCode>, 'Update username, display name, bio, or email.'],
+          ['GET', <InlineCode>/api/profile</InlineCode>, 'Get the current user profile, including has_custom_avatar and custom_avatar_version.'],
+          ['PATCH', <InlineCode>/api/profile</InlineCode>, 'Update username, display name, or bio. Use Better Auth to change email.'],
+          ['GET', <InlineCode>/api/profile/avatar</InlineCode>, 'Get your uploaded photo as WebP. Returns 404 when no photo is uploaded.'],
+          ['PUT', <InlineCode>/api/profile/avatar</InlineCode>, 'Upload or replace your photo. Send raw PNG, JPEG, or WebP bytes, up to 10 MB.'],
+          ['DELETE', <InlineCode>/api/profile/avatar</InlineCode>, 'Remove your uploaded photo and return to the generated avatar.'],
           ['DELETE', <InlineCode>/api/profile</InlineCode>, "Delete the app-side user row (pair with /api/auth/delete-user)."],
         ]}
       />
+      <DocParagraph>
+        Avatar uploads use the image MIME type as <InlineCode>Content-Type</InlineCode> and the file
+        itself as the request body, not JSON or multipart form data. The server center-crops the
+        image to a square and returns a profile response. The profile metadata identifies whether
+        a custom photo exists; use <InlineCode>custom_avatar_version</InlineCode> as a query value
+        when loading the photo after an upload. Without an uploaded photo, the app renders a stable
+        Blobatar based on the account ID.
+      </DocParagraph>
 
       <DocHeading id="sharing">Sharing</DocHeading>
       <DocTable

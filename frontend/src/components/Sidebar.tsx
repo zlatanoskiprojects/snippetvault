@@ -7,6 +7,7 @@ import Input from './ui/Input'
 import Button from './ui/Button'
 import WorkspaceSwitcher, { type WorkspaceSwitcherProps } from './WorkspaceSwitcher'
 import type { Snippet } from '../api/types'
+import UserAvatar from './UserAvatar'
 
 const TAG_DOT_COLORS = [
   'bg-category-blue',
@@ -42,7 +43,6 @@ export default function Sidebar({ workspaces, selectedWorkspaceId, onSelectWorks
   const theme = useThemeStore((state) => state.theme)
   const toggleTheme = useThemeStore((state) => state.toggleTheme)
 
-  const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
   const displayName = user?.display_name || user?.username || '…'
 
   async function handleLogout() {
@@ -147,9 +147,7 @@ export default function Sidebar({ workspaces, selectedWorkspaceId, onSelectWorks
             activeView === 'profile' ? 'bg-interactive-overlay/5' : 'hover:bg-interactive-overlay/5'
           }`}
         >
-          <div className="w-6 h-6 rounded-full bg-avatar flex items-center justify-center shrink-0">
-            <span className="text-accent text-[10px] font-bold">{avatarLetter}</span>
-          </div>
+          <UserAvatar user={user} className="size-6" />
           <div className="flex flex-col min-w-0">
             <span className={`text-[12px] font-medium truncate ${activeView === 'profile' ? 'text-primary' : 'text-secondary'}`}>
               {displayName}

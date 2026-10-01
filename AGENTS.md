@@ -214,6 +214,20 @@ Each code language has a colored dot + text + dark tinted background:
 - **Responsiveness:** Sidebar collapses to a drawer on mobile (`lg:` breakpoint for persistent sidebar)
 - **Truncation:** Always use `truncate` + `min-w-0` on flex children that hold text — never let rows overflow horizontally
 
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues is the issue tracker. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default five-role triage vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use the single-context layout. See `docs/agents/domain.md`.
+
 ## Deploy Agent — SnippetVault (AWS)
 
 This section defines how Codex should behave when the user asks to **deploy**,

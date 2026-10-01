@@ -5,7 +5,8 @@ export interface User {
     role: string;
     display_name: string | null;
     bio: string | null;
-    avatar_url: string | null;
+    has_custom_avatar: boolean;
+    custom_avatar_version: number | null;
     registered_at: string;
     has_password: boolean;
     oauth_providers: Array<'google' | 'github'>;
