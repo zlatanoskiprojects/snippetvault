@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Menu, Users } from 'lucide-react'
-import { getWorkspaceMembers, removeWorkspaceMember, updateWorkspaceMemberRole } from '../api/workspaces'
+import { Menu, UserPlus, Users } from 'lucide-react'
+import { createWorkspaceInvitation, getWorkspaceMembers, removeWorkspaceMember, updateWorkspaceMemberRole } from '../api/workspaces'
 import type { WorkspaceMember, WorkspaceRole } from '../api/types'
 import Alert from '../components/ui/Alert'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Select from '../components/ui/Select'
 import Spinner from '../components/ui/Spinner'
+import InviteMemberDialog from '../components/InviteMemberDialog'
 import { useToast } from '../hooks/useToast'
 
 interface MembersViewProps {
@@ -25,7 +26,12 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pendingUserId, setPendingUserId] = useState<number | null>(null)
+  const [inviteWorkspaceId, setInviteWorkspaceId] = useState<number | null>(null)
   const toast = useToast()
+
+  useEffect(() => {
+    setInviteWorkspaceId(null)
+  }, [workspaceId, canManage])
 
   useEffect(() => {
     let current = true
@@ -51,6 +57,11 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
     }
   }
 
+  async function sendInvitation(email: string, role: Exclude<WorkspaceRole, 'owner'>) {
+    await createWorkspaceInvitation(workspaceId, email, role)
+    toast.success('Invitation sent.')
+  }
+
   async function removeMember(member: WorkspaceMember) {
     setPendingUserId(member.user_id)
     try {
@@ -72,7 +83,13 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
             <Menu size={14} />
           </Button>
         )}
-        <h1 className="truncate text-lg font-semibold leading-tight text-primary">Members</h1>
+        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold leading-tight text-primary">Members</h1>
+        {canManage && (
+          <Button variant="primary" size="sm" onClick={() => setInviteWorkspaceId(workspaceId)} className="shrink-0 gap-2">
+            <UserPlus size={14} aria-hidden="true" />
+            Invite member
+          </Button>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6">
@@ -147,6 +164,13 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
           </div>
         )}
       </div>
+      {canManage && inviteWorkspaceId === workspaceId && (
+        <InviteMemberDialog
+          open
+          onClose={() => setInviteWorkspaceId(current => current === workspaceId ? null : current)}
+          onSubmit={sendInvitation}
+        />
+      )}
     </div>
   )
 }

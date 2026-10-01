@@ -22,6 +22,7 @@ const libraryItems = [
   { label: 'All Snippets', view: 'list'        },
   { label: 'Projects',  view: 'projects' },
   { label: 'Members', view: 'members' },
+  { label: 'Invitations', view: 'invitations' },
 ]
 
 interface SidebarProps extends WorkspaceSwitcherProps {

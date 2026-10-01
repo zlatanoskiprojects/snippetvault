@@ -39,6 +39,25 @@ export function updateWorkspaceMemberRole(workspaceId: number, userId: number, r
     });
 }
 
+
+
 export function removeWorkspaceMember(workspaceId: number, userId: number): Promise<{ message: string }> {
     return apiFetch<{ message: string }>(`${BASE_URL}/${workspaceId}/members/${userId}`, { method: 'DELETE' });
 }
+
+export function createWorkspaceInvitation(workspaceId: number, email: string,role: Exclude<WorkspaceRole, 'owner'>): Promise<{ message: string }> {
+    return apiFetch<{ message: string }>(`${BASE_URL}/${workspaceId}/invitations`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email, role }),
+        silent: true,
+    });
+}
+
+// export function getWorkspaceInvitations(workspaceId: number): Promise<{ email: string; invited_at: string }[]> {
+//     return apiFetch<{ email: string; invited_at: string }[]>(`${BASE_URL}/${workspaceId}/invitations`);
+// }
+
+// export function revokeWorkspaceInvitation(workspaceId: number, email: string): Promise<{ message: string }> {
+//     return apiFetch<{ message: string }>(`${BASE_URL}/${workspaceId}/invitations/${encodeURIComponent(email)}`, { method: 'DELETE' });
+// }

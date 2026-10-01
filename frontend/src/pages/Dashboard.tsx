@@ -9,6 +9,7 @@ import NewSnippet from './NewSnippet'
 import SearchView from './SearchView'
 import ProjectsView from './ProjectsView'
 import MembersView from './MembersView'
+import InvitationsView from './InvitationsView'
 import SnippetDetailPanel from './SnippetDetailPanel'
 import ProfileView from './ProfileView'
 import { useSnippets } from '../hooks/useSnippets'
@@ -23,7 +24,7 @@ import Button from '../components/ui/Button'
 import type { Snippet } from '../api/types'
 import type { Project } from '../api/types'
 
-type View = 'list' | 'new' | 'search' | 'projects' | 'members' | 'profile'
+type View = 'list' | 'new' | 'search' | 'projects' | 'members' | 'invitations' | 'profile'
 
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -215,7 +216,9 @@ export default function Dashboard() {
       </Sheet>
 
       <div className="flex flex-1 min-w-0 overflow-hidden">
-        {workspacesLoading ? (
+        {view === 'invitations' ? (
+          <InvitationsView onMenuClick={() => setSidebarOpen(true)} />
+        ) : workspacesLoading ? (
           <div className="flex flex-1 items-center justify-center"><Spinner className="text-primary" /></div>
         ) : workspacesError ? (
           <div className="flex flex-1 flex-col min-w-0 p-6"><Alert>Failed to load workspaces: {workspacesError}</Alert></div>
