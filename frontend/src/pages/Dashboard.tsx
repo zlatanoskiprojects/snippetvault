@@ -39,7 +39,7 @@ export default function Dashboard() {
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const { workspaces, loading: workspacesLoading, error: workspacesError, addWorkspace } = useWorkspaces()
+  const { workspaces, loading: workspacesLoading, error: workspacesError, addWorkspace, refreshWorkspaces } = useWorkspaces()
   const { snippets, setSnippets, loading, error } = useSnippets(selectedWorkspaceId)
   const projectsState = useProjects(selectedWorkspaceId)
   const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null)
@@ -217,7 +217,7 @@ export default function Dashboard() {
 
       <div className="flex flex-1 min-w-0 overflow-hidden">
         {view === 'invitations' ? (
-          <InvitationsView onMenuClick={() => setSidebarOpen(true)} />
+          <InvitationsView onMenuClick={() => setSidebarOpen(true)} onAccepted={refreshWorkspaces} />
         ) : workspacesLoading ? (
           <div className="flex flex-1 items-center justify-center"><Spinner className="text-primary" /></div>
         ) : workspacesError ? (

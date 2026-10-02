@@ -26,5 +26,11 @@ export function useWorkspaces() {
     return created
   }, [])
 
-  return { workspaces, setWorkspaces, loading, error, addWorkspace }
+  const refreshWorkspaces = useCallback(async () => {
+    const updated = await getAllWorkspaces()
+    setWorkspaces(updated)
+    setError(null)
+  }, [])
+
+  return { workspaces, setWorkspaces, loading, error, addWorkspace, refreshWorkspaces }
 }

@@ -1,15 +1,17 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Menu } from 'lucide-react'
-import { getInvitations, type Invitation } from '../api/invitations'
+import { acceptInvitation, declineInvitation, getInvitations, type Invitation } from '../api/invitations'
 import { ApiError } from '../api/utils'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Spinner from '../components/ui/Spinner'
 import Alert from '../components/ui/Alert'
+import { useToast } from '../hooks/useToast'
 
 interface InvitationsViewProps {
   onMenuClick?: () => void
+  onAccepted?: () => Promise<void>
 }
 
 function formatExpiry(value?: string | null) {
@@ -19,12 +21,13 @@ function formatExpiry(value?: string | null) {
     : 'Expiry unavailable'
 }
 
-export default function InvitationsView({ onMenuClick }: InvitationsViewProps) {
-  const unavailableId = useId()
+export default function InvitationsView({ onMenuClick, onAccepted }: InvitationsViewProps) {
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => {
     let current = true
@@ -41,6 +44,29 @@ export default function InvitationsView({ onMenuClick }: InvitationsViewProps) {
     return () => { current = false }
   }, [navigate])
 
+  async function handleInvitation(invitationId: number, action: 'accept' | 'decline') {
+    if (sending) return
+    setSending(true)
+    try {
+      const result = await (action === 'accept' ? acceptInvitation(invitationId) : declineInvitation(invitationId))
+      setInvitations(current => current.filter(invitation => invitation.id !== invitationId))
+      toast.success(result.message)
+      if (action === 'accept') {
+        try {
+          await onAccepted?.()
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 401) navigate('/login')
+          else toast.error('Invitation accepted, but workspaces could not be refreshed. Reload to see your workspace.')
+        }
+      }
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) navigate('/login')
+      else toast.error(err instanceof Error ? err.message : `Could not ${action} invitation`)
+    } finally {
+      setSending(false)
+    }
+  }
+
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
       <header className="flex shrink-0 items-center gap-2 border-b border-border-default px-4 py-3 sm:px-6">
@@ -55,6 +81,7 @@ export default function InvitationsView({ onMenuClick }: InvitationsViewProps) {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        {sending && <p role="status" className="mb-3 text-xs text-secondary">Updating invitation…</p>}
         {loading ? (
           <div className="flex justify-center py-12"><Spinner /></div>
         ) : error ? (
@@ -94,14 +121,13 @@ export default function InvitationsView({ onMenuClick }: InvitationsViewProps) {
                         <dd className="text-sm text-secondary">{formatExpiry(invitation.expires_at)}</dd>
                       </dl>
                       <div className="flex flex-wrap gap-2 xl:justify-end">
-                        <Button variant="primary" size="sm" disabled aria-label={`Accept invitation to ${workspace} from ${inviter}`} aria-describedby={unavailableId}>Accept</Button>
-                        <Button variant="secondary" size="sm" disabled aria-label={`Decline invitation to ${workspace} from ${inviter}`} aria-describedby={unavailableId}>Decline</Button>
+                        <Button variant="primary" size="sm" disabled={sending} onClick={() => handleInvitation(invitation.id, 'accept')} aria-label={`Accept invitation to ${workspace} from ${inviter}`}>Accept</Button>
+                        <Button variant="secondary" size="sm" disabled={sending} onClick={() => handleInvitation(invitation.id, 'decline')} aria-label={`Decline invitation to ${workspace} from ${inviter}`}>Decline</Button>
                       </div>
                     </li>
                   )
                 })}
               </ul>
-              <p id={unavailableId} className="border-t border-border-default bg-surface-muted px-4 py-3 text-xs leading-relaxed text-secondary">Accepting and declining invitations are not available yet.</p>
             </>
           )}
           </div>
