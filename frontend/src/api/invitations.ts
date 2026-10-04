@@ -11,6 +11,14 @@ export interface Invitation {
   expires_at: string
 }
 
+export interface TokenInvitation extends Invitation {
+  email: string
+}
+
+export function getInvitationByToken(token: string): Promise<TokenInvitation> {
+  return apiFetch<TokenInvitation>(`${import.meta.env.VITE_API_URL}/invitations/token/${encodeURIComponent(token)}`, { silent: true })
+}
+
 export function getInvitations(): Promise<Invitation[]> {
   return apiFetch<Invitation[]>(`${import.meta.env.VITE_API_URL}/invitations`, { silent: true })
 }

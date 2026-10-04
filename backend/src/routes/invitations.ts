@@ -2,11 +2,14 @@ import { Router ,type Request, type Response} from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import authMiddleware from '../middleware/authMiddleware';
 import validateRequest from '../middleware/validateRequest';
-import { invitationIdValidation } from '../validators/invitations';
+import { invitationIdValidation, invitationTokenValidation } from '../validators/invitations';
 import { users,workspace,workspaceInvitation, workspaceMember } from '../db/schema';
 import { and, desc, eq, gt, } from 'drizzle-orm';
 import db from '../lib/db';
+import {  hashInvitationToken } from '../lib/invitationToken';
 const router = Router();
+
+
 
 
 
@@ -42,6 +45,7 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
     return res.status(200).json(invitations);
 }));
 
+//accept an invitation
 
 router.post('/:invitationId/accept', authMiddleware, invitationIdValidation, validateRequest, asyncHandler(async (req: Request, res: Response) => {
 
@@ -93,7 +97,7 @@ router.post('/:invitationId/accept', authMiddleware, invitationIdValidation, val
 
 
 
-
+//decline an invitation
 
 router.post('/:invitationId/decline', authMiddleware, invitationIdValidation, validateRequest, asyncHandler(async (req: Request, res: Response) => {
 
@@ -135,5 +139,45 @@ const userId = req.userId;
     return res.status(result.status).json(result.body);
 }));
 
+
+//get invitation by token.
+
+router.get('/token/:token', invitationTokenValidation, validateRequest, asyncHandler(async (req: Request, res: Response) => {
+
+
+    const token = req.params.token;
+
+    if (typeof token !== 'string') {
+    return res.status(400).json({ error: 'Invalid invitation token' });
+}
+
+    const tokenHash = hashInvitationToken(token);
+
+    const [invitation] = await db.select({
+        id: workspaceInvitation.id,
+        email: workspaceInvitation.email,
+        workspace_id: workspaceInvitation.workspaceId,
+        workspace_name: workspace.name,
+        inviter_name: users.displayName,
+        role: workspaceInvitation.role,
+        created_at: workspaceInvitation.createdAt,
+            expires_at: workspaceInvitation.expiresAt,}).from(workspaceInvitation)
+        .innerJoin(workspace, eq(workspace.id, workspaceInvitation.workspaceId))
+        .innerJoin(users, eq(users.id, workspaceInvitation.invitedByUserId))
+        .where(and(
+            eq(workspaceInvitation.tokenHash, tokenHash),
+            eq(workspaceInvitation.status, 'pending'),
+            gt(workspaceInvitation.expiresAt, new Date()),
+        ))
+        .limit(1);
+
+    if (!invitation) {
+        return res.status(404).json({ error: 'Invitation not found or expired' });
+    }
+
+
+    return res.status(200).json(invitation);
+
+}));
 
 export default router;
