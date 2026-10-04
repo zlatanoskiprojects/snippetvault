@@ -4,6 +4,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import LandingPage from './pages/LandingPage'
 import SharedSnippetView from './pages/SharedSnippetView'
+import InvitationView from './pages/InvitationView'
 import DocsPage from './pages/docs/DocsPage'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/share/:token" element={<SharedSnippetView />} />
+      <Route path="/invitations/:token" element={<InvitationView />} />
       <Route path="/docs" element={<Navigate to="/docs/introduction" replace />} />
       <Route path="/docs/:slug" element={<DocsPage />} />
       <Route path="*" element={<LandingPage onGetStarted={() => navigate('/login')} />} />
