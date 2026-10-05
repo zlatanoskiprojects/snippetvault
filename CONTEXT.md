@@ -40,3 +40,19 @@ _Avoid_: Reject
 **Share link**:
 The public URL through which one snippet can be read without signing in. Workspace membership does not make a snippet public.
 _Avoid_: Share token
+
+**Tag**:
+A short label attached to a snippet, used to find it. Tag names are shared across the installation.
+
+**Version**:
+An earlier copy of a snippet's code, saved when the code changes. A version can be restored.
+_Avoid_: Revision
+
+**Change note**:
+An optional short message describing why a snippet's code was changed, shown with the version it produces.
+
+**Visibility**:
+Whether a snippet is private (members only) or public (readable through its share link).
+
+**Comment**:
+A short message on a snippet, visible to the members of its workspace.
