@@ -1,8 +1,18 @@
 # SnippetVault
 
-SnippetVault lets user accounts keep and share code snippets.
+SnippetVault lets people keep and share code snippets in workspaces.
 
 ## Language
+
+**Workspace**:
+A shared space for members and their snippets. Projects belong to a workspace.
+
+**Project**:
+An optional grouping of related snippets within a workspace. A snippet can belong to one project at a time.
+_Avoid_: Collection
+
+**Snippet**:
+A saved piece of code with a title and language, kept in a workspace.
 
 **Avatar**:
 The visual identity shown for a user account. Each account has a generated avatar by default and may use an uploaded profile photo instead.
@@ -15,3 +25,18 @@ An image uploaded by a user to replace that account's generated avatar.
 
 **Provider photo**:
 An image supplied by a linked sign-in provider. It does not determine the account's SnippetVault avatar.
+
+**Member**:
+A user who belongs to a workspace and holds exactly one role in it.
+_Avoid_: Collaborator
+
+**Role**:
+What a member may do in a workspace: owner, editor, or viewer. Each workspace has exactly one owner.
+
+**Invitation**:
+An offer, sent to an email address, to join a workspace with the editor or viewer role. The invitee accepts or declines it.
+_Avoid_: Reject
+
+**Share link**:
+The public URL through which one snippet can be read without signing in. Workspace membership does not make a snippet public.
+_Avoid_: Share token
