@@ -1,4 +1,44 @@
 ---
 title: "Public sharing"
-description: "Share a snippet with people who have no account."
+description: "Share one snippet with anyone through a Share link."
 ---
+
+A Share link is the public URL through which one snippet can be read without signing in. Owners and editors can turn it on and off; workspace membership alone never makes a snippet public.
+
+## Create a Share link
+
+Minimum role: editor.
+
+1. Open the snippet and select **Share**.
+2. Select **Make Public & Share**.
+3. Select **Copy** to copy the link.
+
+You can also set **Visibility** to **Public** in the snippet form when creating or editing a snippet.
+
+The link has the form `/share/` followed by a long random string on your SnippetVault address. The string is generated the first time a snippet becomes public and is reused if you switch the snippet back to private and public again.
+
+## Stop sharing
+
+Minimum role: editor.
+
+1. Open the snippet and select **Share**.
+2. Select **Make Private**.
+
+The link stops working immediately and shows that the snippet no longer exists or is not public.
+
+## What visitors see
+
+Anyone with the link, signed in or not, sees a read-only page with:
+
+- the title, language, description and tags
+- the created and updated dates
+- the name of the person who owns the snippet, shown as "Shared by"
+- the code
+
+Visitors do not see comments, version history, the workspace, its members, or any email address.
+
+<Warning>
+Anyone who has the link can read the snippet, and the link can be passed on. Make the snippet private to revoke access.
+</Warning>
+
+Related: [Snippets](/snippets), [Members and roles](/members-and-roles).

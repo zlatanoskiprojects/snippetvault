@@ -2,3 +2,31 @@
 title: "Comments"
 description: "Discuss a snippet with other members."
 ---
+
+Comments are short messages attached to a snippet and visible to the members of its workspace. Every role, including viewer, can read and write comments.
+
+<Warning>
+The current web app does not show comments yet. The behaviour below is what the server enforces, so comments cannot be written or read from the app until the interface is added.
+</Warning>
+
+## What each role can do
+
+| Action | Minimum role |
+| --- | --- |
+| Read the comments on a snippet | viewer |
+| Add a comment | viewer |
+| Edit your own comment | viewer |
+| Delete your own comment | viewer |
+
+Nobody can edit or delete another member's comment, not even the workspace owner.
+
+## Limits
+
+- A comment cannot be empty and is limited to 2000 characters.
+- Comments are listed oldest first.
+- Comments belong to the snippet: deleting the snippet or its workspace deletes them.
+- Comments are not shown on a snippet's [Share link](/public-sharing).
+
+## Open question
+
+The project notes describe viewers as read-only, but the permission rules in the code let viewers comment. These docs follow the code. See [Members and roles](/members-and-roles).
