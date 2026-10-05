@@ -1,4 +1,55 @@
 ---
 title: "Members and roles"
-description: "What owners, editors and viewers can do."
+description: "What owners, editors and viewers can do in a workspace."
 ---
+
+Every member of a workspace holds exactly one role: owner, editor or viewer. The role decides what the member can do in that workspace, and each workspace has exactly one owner.
+
+## What each role can do
+
+| Action | Owner | Editor | Viewer |
+| --- | :---: | :---: | :---: |
+| View the workspace, its projects, snippets and members | Yes | Yes | Yes |
+| Comment on snippets | Yes | Yes | Yes |
+| Create, edit and delete snippets | Yes | Yes | No |
+| Assign a snippet to a project | Yes | Yes | No |
+| Restore snippet versions | Yes | Yes | No |
+| Manage a snippet's tags | Yes | Yes | No |
+| Create projects | Yes | Yes | No |
+| Rename or delete projects | Yes | No | No |
+| Rename or delete the workspace | Yes | No | No |
+| Invite members | Yes | No | No |
+| Change a member's role or remove a member | Yes | No | No |
+
+<Warning>
+Open item for the maintainer: the permission rules in code let viewers comment, while the project guidance describes viewers as read-only. This page follows the code until the question is decided.
+</Warning>
+
+Workspace membership never makes a snippet public. Only a [share link](/public-sharing) does.
+
+## The owner
+
+The person who creates a workspace is its owner. The owner role cannot be changed, assigned through an invitation or removed, so a workspace always keeps exactly one owner.
+
+## Change a member's role
+
+<Note>Minimum role: owner.</Note>
+
+1. Open **Members** in the sidebar.
+2. Find the member in the list.
+3. In the **Role** column, choose **Editor** or **Viewer**.
+
+The change applies immediately. Only editor and viewer are available, and the owner's role cannot be edited.
+
+## Remove a member
+
+<Note>Minimum role: owner.</Note>
+
+1. Open **Members** in the sidebar.
+2. Select **Remove** on the member's row.
+
+The owner cannot be removed. Removed people lose access to the workspace.
+
+## Add members
+
+Members join through an invitation. See [Invitations](/invitations).
