@@ -1,4 +1,61 @@
 ---
 title: "Your account"
-description: "Manage your profile, avatar, email and AI settings."
+description: "Manage your profile, avatar, email, password and AI settings."
 ---
+
+Your account holds your profile, sign-in details and personal settings. Every signed-in user can manage their own account; account settings are not tied to any [workspace](/workspaces-and-projects) or role.
+
+Open **Profile & Settings** to find the **Profile** and **Security** tabs.
+
+## Edit your profile
+
+1. Open the **Profile** tab.
+2. Change **Username** (up to 32 characters, must be unique), **Display name** (up to 64 characters) or **Bio** (up to 1000 characters).
+3. Select **Save changes**, or **Discard** to revert.
+
+## Change your avatar
+
+Every account gets a generated avatar by default. You can replace it with a profile photo.
+
+1. Select the pencil button on your avatar.
+2. Choose a PNG, JPEG or WebP image of up to 10 MB.
+
+The photo is cropped to a square and resized before it is stored. To go back to the generated avatar, select **Remove photo**. A photo supplied by a linked Google or GitHub account is not used as your SnippetVault avatar.
+
+## Change your email
+
+1. On the **Profile** tab, enter the new address in **Email**.
+2. Enter your **Current password** when asked. If you have no password and signed in through Google or GitHub, you are asked to re-authenticate with that provider instead, and your session must be less than five minutes old.
+3. Select **Save changes**.
+4. Open the confirmation message sent to your current address and follow its link.
+5. Open the verification message sent to the new address and follow its link.
+
+Your email changes only after both steps. Links expire after one hour, and a newer request replaces an earlier one. You can make up to three email change requests per hour. When the change completes, all your sessions end, so you sign in again, and your previous address receives a notice.
+
+<Warning>
+Completing an email change removes your password sign-in. Create a new password afterwards under **Security**.
+</Warning>
+
+## Change or create a password
+
+1. Open the **Security** tab.
+2. Enter your **Current password**, then the **New password** and **Confirm new password**. Passwords must be at least 8 characters.
+3. Select **Update password**.
+
+If you have no password yet, **Create password** adds email sign-in. This needs a verified email and a session less than five minutes old; otherwise you are asked to re-authenticate with a linked provider first.
+
+## AI settings
+
+SnippetVault can store one AI provider configuration per account: provider (OpenAI, Anthropic, Ollama or LM Studio), API key, optional model name and optional base URL. The key is encrypted before it is stored and is never returned or shown again; you can only replace or delete the configuration.
+
+<Note>
+The app does not yet have a screen for editing AI settings.
+</Note>
+
+## Delete your account
+
+On the **Profile** tab, select **Delete account** under **Danger Zone** and confirm. This cannot be undone.
+
+- Workspaces you own are deleted with everything in them: projects, snippets, comments and version history.
+- Invitations you sent are removed, and your membership in other workspaces ends.
+- Workspaces you only belong to are kept.
