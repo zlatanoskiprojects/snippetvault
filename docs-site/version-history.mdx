@@ -1,4 +1,54 @@
 ---
 title: "Version history"
-description: "Review and restore earlier versions of a snippet."
+description: "Review earlier code of a snippet and restore it."
 ---
+
+Version history keeps earlier copies of a snippet's code. Every member can browse versions; owners and editors can restore or delete them.
+
+## When a version is saved
+
+Versions are created automatically, only when you save a change to a snippet's **code**:
+
+- The version stores the code as it was before your save. Version 1 therefore holds the original code, and the newest code is always the snippet itself.
+- If that earlier code is already stored as a version, no new version is created.
+- Changing only the title, description, language, tags, project or visibility does not create a version.
+
+Versions are numbered upward per snippet (v1, v2, and so on).
+
+## Add a change note
+
+Minimum role: editor.
+
+When you edit a snippet, the form has an optional **Change note** field. If you change the code, the note is attached to the version saved for that edit. It is shown next to the version in the history list.
+
+## Browse versions
+
+Minimum role: viewer.
+
+1. Open the snippet.
+2. Select **History**.
+3. Select a version to preview its code, date and note.
+
+A snippet whose code was never changed shows "No versions saved yet".
+
+## Restore a version
+
+Minimum role: editor.
+
+1. Open **History** and select the version.
+2. Select **Restore**.
+
+The snippet's code becomes the version's code. If the current code is not already stored as a version, it is saved first with the note "Auto-save before restore to v" followed by the version number, so the restore can be undone. Restoring a version whose code matches the current code changes nothing.
+
+## Delete a version
+
+Minimum role: editor.
+
+1. Open **History** and select the version.
+2. Select **Delete** and confirm.
+
+<Warning>
+Deleting a version cannot be undone.
+</Warning>
+
+Related: [Snippets](/snippets), [Members and roles](/members-and-roles).
