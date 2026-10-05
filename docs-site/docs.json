@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "almond",
   "name": "SnippetVault",
   "colors": {
     "primary": "#6366f1",
@@ -30,7 +30,13 @@
   "favicon": "/favicon.svg",
   "navigation": {
     "groups": [
-      { "group": "Get started", "pages": ["index", "first-workspace"] },
+      {
+        "group": "Get started",
+        "pages": [
+          "index",
+          "first-workspace"
+        ]
+      },
       {
         "group": "Using SnippetVault",
         "pages": [
@@ -45,8 +51,31 @@
           "invitations"
         ]
       },
-      { "group": "Account", "pages": ["account"] },
-      { "group": "Self-host", "pages": ["self-host"] }
+      {
+        "group": "Account",
+        "pages": [
+          "account"
+        ]
+      },
+      {
+        "group": "Self-host",
+        "pages": [
+          "self-host"
+        ]
+      }
     ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Zlatanoski/snippetvault"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Open SnippetVault",
+      "href": "https://snippetvault.me"
+    }
   }
 }
