@@ -1,0 +1,52 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "SnippetVault",
+  "colors": {
+    "primary": "#6366f1",
+    "light": "#6366f1",
+    "dark": "#6366f1"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "background": {
+    "color": {
+      "light": "#f7f7f8",
+      "dark": "#0f0f0f"
+    }
+  },
+  "fonts": {
+    "family": "Inter",
+    "weight": 400
+  },
+  "styling": {
+    "codeblocks": "dark"
+  },
+  "logo": {
+    "light": "/code_logo.svg",
+    "dark": "/code_logo.svg"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "groups": [
+      { "group": "Get started", "pages": ["index", "first-workspace"] },
+      {
+        "group": "Using SnippetVault",
+        "pages": [
+          "workspaces-and-projects",
+          "snippets",
+          "tags",
+          "version-history",
+          "comments",
+          "search",
+          "public-sharing",
+          "members-and-roles",
+          "invitations"
+        ]
+      },
+      { "group": "Account", "pages": ["account"] },
+      { "group": "Self-host", "pages": ["self-host"] }
+    ]
+  }
+}

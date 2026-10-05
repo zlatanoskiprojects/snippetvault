@@ -1,0 +1,50 @@
+:root {
+  --sv-surface: #ffffff;
+  --sv-border: #dddde3;
+  --sv-radius: 6px;
+  --sv-radius-sm: 4px;
+}
+
+.dark {
+  --sv-surface: #141414;
+  --sv-border: rgba(255, 255, 255, 0.06);
+}
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+#sidebar,
+#navbar,
+#table-of-contents-layout {
+  border-color: var(--sv-border);
+}
+
+#sidebar {
+  background-color: var(--sv-surface);
+}
+
+button,
+input,
+[role="button"],
+[role="search"] {
+  border-radius: var(--sv-radius);
+}
+
+code:not(pre code) {
+  border-radius: var(--sv-radius-sm);
+}
+
+pre,
+.code-block,
+.callout,
+.card {
+  border: 1px solid var(--sv-border);
+  border-radius: var(--sv-radius);
+  box-shadow: none;
+}
+
+pre,
+.code-block {
+  background-color: #282c34;
+}
