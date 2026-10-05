@@ -9,20 +9,26 @@ Open **Profile & Settings** to find the **Profile** and **Security** tabs.
 
 ## Edit your profile
 
+Minimum role: none. Any signed-in user can do this.
+
 1. Open the **Profile** tab.
 2. Change **Username** (up to 32 characters, must be unique), **Display name** (up to 64 characters) or **Bio** (up to 1000 characters).
 3. Select **Save changes**, or **Discard** to revert.
 
 ## Change your avatar
 
+Minimum role: none. Any signed-in user can do this.
+
 Every account gets a generated avatar by default. You can replace it with a profile photo.
 
 1. Select the pencil button on your avatar.
 2. Choose a PNG, JPEG or WebP image of up to 10 MB.
 
-The photo is cropped to a square and resized before it is stored. To go back to the generated avatar, select **Remove photo**. A photo supplied by a linked Google or GitHub account is not used as your SnippetVault avatar.
+The photo is cropped to a square and resized to 256 by 256 pixels before it is stored. Images over 40 million pixels are refused. To go back to the generated avatar, select **Remove photo**. A photo supplied by a linked Google or GitHub account is not used as your SnippetVault avatar.
 
 ## Change your email
+
+Minimum role: none. Any signed-in user can do this.
 
 1. On the **Profile** tab, enter the new address in **Email**.
 2. Enter your **Current password** when asked. If you have no password and signed in through Google or GitHub, you are asked to re-authenticate with that provider instead, and your session must be less than five minutes old.
@@ -38,13 +44,17 @@ Completing an email change removes your password sign-in. Create a new password 
 
 ## Change or create a password
 
+Minimum role: none. Any signed-in user can do this.
+
 1. Open the **Security** tab.
 2. Enter your **Current password**, then the **New password** and **Confirm new password**. Passwords must be at least 8 characters.
 3. Select **Update password**.
 
-If you have no password yet, **Create password** adds email sign-in. This needs a verified email and a session less than five minutes old; otherwise you are asked to re-authenticate with a linked provider first.
+If you have no password yet, **Create password** adds email sign-in. A new password must be 8 to 128 characters. This needs a verified email and a session less than five minutes old; otherwise you are asked to re-authenticate with a linked provider first.
 
 ## AI settings
+
+Minimum role: none. Any signed-in user can do this.
 
 SnippetVault can store one AI provider configuration per account: provider (OpenAI, Anthropic, Ollama or LM Studio), API key, optional model name and optional base URL. The key is encrypted before it is stored and is never returned or shown again; you can only replace or delete the configuration.
 
@@ -53,6 +63,8 @@ The app does not yet have a screen for editing AI settings.
 </Note>
 
 ## Delete your account
+
+Minimum role: none. Any signed-in user can do this.
 
 On the **Profile** tab, select **Delete account** under **Danger Zone** and confirm. This cannot be undone.
 

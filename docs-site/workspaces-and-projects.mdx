@@ -7,7 +7,7 @@ A workspace is the shared space that holds snippets and members, and a project i
 
 ## Switch or add a workspace
 
-Any member can switch to another workspace they belong to, and any signed-in user can create a workspace and becomes its owner.
+Minimum role: viewer to switch workspace; none to add one. Any signed-in user can create a workspace and becomes its owner.
 
 1. Open the workspace menu at the top of the sidebar.
 2. Pick a workspace from the **Workspaces** list, or choose **Add workspace**.
@@ -17,11 +17,17 @@ See [Your first workspace](/first-workspace).
 
 ## Rename or delete a workspace
 
-Only the owner can rename or delete a workspace. Deleting a workspace permanently removes its members, invitations, projects, snippets, comments and versions. User accounts are kept.
+Minimum role: owner.
+
+Deleting a workspace permanently removes its members, invitations, projects, snippets, comments and versions. User accounts are kept.
+
+<Note>
+The app has no screen for renaming or deleting a workspace yet, so there are no steps to follow.
+</Note>
 
 ## Create a project
 
-Owners and editors can create projects.
+Minimum role: editor.
 
 1. Open **Projects** in the sidebar.
 2. Select **New project**.
@@ -32,20 +38,28 @@ Viewers can see the project list but cannot create projects.
 
 ## Edit or delete a project
 
-Only the owner can edit or delete a project.
+Minimum role: owner.
 
 1. Open **Projects** and find the project card.
-2. Use the edit control to change the name or description and select **Save changes**, or use the delete control to remove the project.
+2. Select **Edit** on the card, change the name or description and select **Save changes**. Or select **Delete** on the card to remove the project.
 
 Deleting a project does not delete its snippets. They stay in the workspace without a project.
 
 ## Put a snippet in a project
 
-Owners and editors choose a **Project** when they create or edit a snippet, or pick **No project** to take it out of one. A snippet and its project must belong to the same workspace. See [Snippets](/snippets).
+Minimum role: editor.
+
+Choose a **Project** when you create or edit a snippet, or pick **No project** to take it out of one. A snippet and its project must belong to the same workspace. See [Snippets](/snippets).
 
 ## Browse a project
 
-Select a project card to list only the snippets assigned to it. Each card shows the description and the number of snippets. All members, including viewers, can browse projects.
+Minimum role: viewer.
+
+1. Open **Projects** in the sidebar.
+2. Select a project card. The list shows only the snippets assigned to it, and the top bar shows the project name.
+3. Select the back arrow in the top bar to return to all snippets.
+
+Each card shows the description and the number of snippets.
 
 <Note>
 Editors can create projects but cannot rename or delete them afterwards; only the owner can.

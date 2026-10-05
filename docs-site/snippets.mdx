@@ -7,7 +7,7 @@ A snippet is a saved piece of code with a title and a language, kept in a worksp
 
 ## Create a snippet
 
-Owners and editors only.
+Minimum role: editor.
 
 1. Select **New snippet**.
 2. Enter a **Title** (required, up to 200 characters).
@@ -22,21 +22,29 @@ JavaScript, TypeScript, Python, Java, C++, Go, Rust and SQL. Other languages are
 
 ## Edit a snippet
 
-Owners and editors only. Open a snippet, select **Edit**, change the fields and select **Save changes**. You can add an optional **Change note** (up to 500 characters). If the code changes, the previous code may be saved as a version; see [Version history](/version-history).
+Minimum role: editor.
 
-Owners and editors can also move a snippet to another project or take it out of its project. See [Workspaces and projects](/workspaces-and-projects).
+Open a snippet, select **Edit**, change the fields and select **Save changes**. You can add an optional **Change note** (up to 500 characters). If the code changes, the previous code may be saved as a version; see [Version history](/version-history).
+
+A snippet belongs to at most one project. Owners and editors can move it to another project or take it out of its project. See [Workspaces and projects](/workspaces-and-projects).
 
 ## Delete a snippet
 
-Owners and editors only. Open the snippet, select **Delete** and confirm. Deleting a snippet also removes its versions and comments.
+Minimum role: editor.
+
+Open the snippet, select **Delete** and confirm. Deleting a snippet also removes its versions and comments.
 
 ## Copy code
 
-Any member, including viewers, can open a snippet and select **Copy**.
+Minimum role: viewer.
+
+Open a snippet and select **Copy**.
 
 ## Visibility
 
-A snippet is **Private** by default. Setting it to **Public** creates a share link that anyone can open without signing in. Only owners and editors can change visibility. See [Public sharing](/public-sharing).
+Minimum role: editor.
+
+A snippet is **Private** by default. Setting it to **Public** creates a share link that anyone can open without signing in. See [Public sharing](/public-sharing).
 
 ## Related
 

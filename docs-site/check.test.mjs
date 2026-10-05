@@ -14,6 +14,8 @@ function copy() {
   return dir;
 }
 
+const group = (g, name) => g.find((x) => x.group === name);
+
 function editNav(dir, fn) {
   const file = join(dir, "docs.json");
   const json = JSON.parse(readFileSync(file, "utf8"));
@@ -36,7 +38,7 @@ test("fails when a page file is removed", () => {
 test("fails when a navigation entry is dropped", () => {
   const dir = copy();
   editNav(dir, (g) => {
-    g[1].pages = g[1].pages.filter((p) => p !== "search");
+    group(g, "Using SnippetVault").pages = group(g, "Using SnippetVault").pages.filter((p) => p !== "search");
   });
   const errors = check(dir);
   rmSync(dir, { recursive: true });
@@ -45,7 +47,7 @@ test("fails when a navigation entry is dropped", () => {
 
 test("fails when navigation points to no page", () => {
   const dir = copy();
-  editNav(dir, (g) => g[2].pages.push("ghost"));
+  editNav(dir, (g) => group(g, "Account").pages.push("ghost"));
   const errors = check(dir);
   rmSync(dir, { recursive: true });
   assert.ok(errors.some((e) => e.includes("ghost")));
