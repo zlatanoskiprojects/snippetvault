@@ -6,6 +6,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Field from '../components/ui/Field'
 import Turnstile from '../components/Turnstile'
+import { getLoginDestination } from '../lib/invitationNavigation'
 
 function LogIn() {
   const [email, setEmail] = useState('')
@@ -14,6 +15,7 @@ function LogIn() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const toast = useToast()
+  const destination = getLoginDestination(searchParams.get('returnTo'))
 
   useEffect(() => {
     if (searchParams.get('emailChange') !== 'complete') return
@@ -28,8 +30,8 @@ function LogIn() {
     e.preventDefault()
     if (!email || !password) return
     try {
-      await login(email, password, captchaToken)
-      navigate('/dashboard')
+      await login(email, password, captchaToken, destination)
+      navigate(destination)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Login failed.')
     }
@@ -37,7 +39,10 @@ function LogIn() {
 
   async function handleSocialLogin(provider: 'google' | 'github') {
     try {
-      await socialLogin(provider)
+      const errorPath = destination === '/dashboard'
+        ? '/login'
+        : `/login?${new URLSearchParams({ returnTo: destination })}`
+      await socialLogin(provider, `${window.location.origin}${destination}`, `${window.location.origin}${errorPath}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : `${provider} login failed.`)
     }

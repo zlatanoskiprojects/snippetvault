@@ -1,7 +1,7 @@
 import Input from '../ui/Input'
 import Button from '../ui/Button'
 import { useMemo, useState } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'motion/react'
 import { Code2, LayoutGrid, Lock, Plus, Search, Star } from 'lucide-react'
 import { SNIPPETS, TAGS, type DemoSnippet } from './demoData'
 

@@ -172,7 +172,7 @@ function InvitationPage({ token }: { token: string }) {
                     <p className="break-words text-center text-sm text-secondary">Sign in or create an account with <span className="font-medium text-primary">{invitation.email}</span> to join.</p>
                     <div className="flex flex-col gap-3">
                       <Link to="/register" className={linkClassName('primary')}>Create account</Link>
-                      <Link to="/login" className={linkClassName('secondary')}>Sign in</Link>
+                      <Link to={`/login?${new URLSearchParams({ returnTo: `/invitations/${token}` })}`} className={linkClassName('secondary')}>Sign in</Link>
                     </div>
                   </div>
                 )}

@@ -2,13 +2,15 @@
 
 ## Current status and next task
 
-Workspace authorization, workspace member management, normalized resource parameters, and workspace-aware project/snippet/tag/version/comment routes are implemented. Project assignment reads and writes `snippet_project`, and every snippet now requires a workspace. An owner-only workspace is the private single-user case. The unused legacy project-member routes, validators, membership helper, and invitation stub are removed from application code; legacy project membership tables remain in the schema for a later migration.
+Workspace authorization, workspace member management, normalized resource parameters, and workspace-aware project/snippet/tag/version/comment routes are implemented. Project assignment reads and writes `snippet_project`, and every snippet now requires a workspace. An owner-only workspace is the private single-user case. The unused legacy project-member routes, validators, membership helper, and invitation stub are removed from application code; legacy project membership tables were removed through migration `0009_drop_legacy_project_membership`.
 
-The workspace switcher uses authenticated workspace data, supports workspace creation, and selects only real workspaces. The Members view loads actual members and roles. Invitation actions remain unavailable.
+The workspace switcher uses authenticated workspace data, supports workspace creation, and selects only real workspaces. The Members view loads actual members and roles. Owners can now send email invitations with viewer/editor role selection. The dashboard Invitations button opens the recipient inbox and fetches pending, unexpired invitations for the signed-in account email. Recipients can accept or decline from the inbox. Successful actions remove the invitation from the list; acceptance refreshes the workspace switcher.
 
-The frontend API modules, types, hooks, workspace selection, members view, and permission-aware controls now use the workspace-only resource URLs. Backend/frontend typechecks and builds, frontend lint, and the workspace-only invariant tests pass. Migrations `0008_require_snippet_workspace` and `0009_drop_legacy_project_membership` were applied locally on 2026-09-20. Verification found 15 snippets, zero null workspace IDs, zero cross-workspace assignments, zero users without a workspace, and zero ownerless workspaces. Legacy project memberships had exact workspace equivalents, no legacy invitations existed, and `project_member`, `project_invitation`, and `project_role` are now removed. Workspace invitation APIs remain a separate follow-up phase.
+Next task: implement the emailed `/invitations/:token` destination and token validation, including sign-in/sign-up continuation to the invitation. The dashboard send/list/accept/decline flow is implemented; live end-to-end verification remains pending.
 
-After the frontend works against the new API and end-to-end owner/editor/viewer/non-member checks pass, verify that every legacy project membership and invitation row is either represented by the workspace model or deliberately migrated. Only then remove `project_member`, `project_invitation`, and `project_role` through a new forward Drizzle migration.
+The frontend API modules, types, hooks, workspace selection, members view, and permission-aware controls now use the workspace-only resource URLs. Backend/frontend typechecks and builds, frontend lint, and the workspace-only invariant tests pass. Migrations `0008_require_snippet_workspace` and `0009_drop_legacy_project_membership` were applied locally on 2026-09-20. Verification found 15 snippets, zero null workspace IDs, zero cross-workspace assignments, zero users without a workspace, and zero ownerless workspaces. Legacy project memberships had exact workspace equivalents, no legacy invitations existed, and `project_member`, `project_invitation`, and `project_role` are now removed. Workspace invitation creation, email sending, recipient listing, and accept/decline APIs are implemented. Remaining Phase 6 items include email-link handling, owner cancellation, creation concurrency protection, and email failure/retry behavior.
+
+Legacy membership reconciliation and table removal were completed through migration `0009_drop_legacy_project_membership`; the remaining verification items below are tracked separately.
 
 Schema definitions were updated on 2026-09-18. Migration `0007_workspaces.sql` and its snapshot/journal metadata were generated and applied to the existing local development database on 2026-09-18. The SQL backfilled one workspace per existing project, copied memberships and snippet assignments, then applied required columns before dropping snippet.project_id. Read-only database checks verified all four workspace CASCADE foreign keys, matching snippet/project workspaces, copied memberships, and one owner per migrated workspace. Custom workspace CHECK constraints and all new triggers were removed at the user's request; foreign keys, primary keys, unique indexes, and enum values remain. Workspace business rules are now enforced by the backend routes and permission middleware.
 
@@ -60,7 +62,7 @@ Schema definitions, migration-file preparation, workspace APIs, member APIs, reu
 | `project` | Required `workspace_id`; existing fields retained |
 | `snippet` | Required `workspace_id`; retain `user_id` for creator attribution; no stored `project_id` |
 | `snippet_project` | `snippet_id` primary key/FK and required `project_id` FK; at most one project per snippet |
-| `workspace_invitation` (schema added; API later) | `workspace_id`, `invited_user_id`, `invited_by_user_id`, `role`, `created_at`, `expires_at` |
+| `workspace_invitation` | `id`, `workspace_id`, normalized `email`, `invited_by_user_id`, `role`, `status`, unique `token_hash`, `created_at`, `expires_at`, nullable `accepted_at` |
 
 | Snippet state | `workspace_id` | `snippet_project` assignment | Authenticated access |
 |---|---|---|---|
@@ -161,7 +163,7 @@ Existing `user_id` fields record creator attribution and never bypass workspace 
 - [x] Load real members for the selected workspace and show actual roles rather than a hardcoded Owner badge.
 - [x] Hide workspace/project management controls from non-owners and snippet mutation controls from viewers; retain server enforcement.
 - [ ] Display permission errors and handle revoked workspace access by clearing stale data and refreshing workspace options.
-- [x] Keep invitations unavailable until Phase 6 is implemented.
+- [x] Enable owner-only invitation sending as implemented in Phase 6; keep recipient response buttons disabled until their APIs are connected.
 - [x] Delegate component/JSX/Tailwind changes to frontend-ui-master under the repository workflow; browser/visual testing requires an explicit user request.
 
 ## Phase 5: Cleanup and workspace verification
@@ -194,21 +196,56 @@ Existing `user_id` fields record creator attribution and never bypass workspace 
 - [ ] Rerun authenticated end-to-end API/UI checks after frontend wiring and before dropping legacy tables.
 - [ ] When explicitly requested, verify workspace/project/member/viewer screens across desktop/mobile breakpoints.
 
-## Phase 6: Workspace invitations (follow-up)
+## Phase 6: Workspace invitations (in progress)
 
-The old project invitation roadmap is superseded by workspace invitations.
+The old project invitation roadmap is superseded by workspace invitations. The current schema uses recipient email, allowing invitations before account registration; the previous existing-account-only scope is superseded by the implemented email flow.
 
-- [x] Define `workspace_invitation` with workspace/recipient uniqueness, inviter attribution, role enum, timestamps, expiry, and lookup indexes; editor/viewer-only invitation roles and valid expiry must be validated in the backend.
-- [x] Apply the invitation table through migration 0007_workspaces locally.
-- [ ] Define invitation expiry duration and expired-invitation replacement behavior before implementing this phase.
-- [ ] Add owner-only `POST /api/workspaces/:workspaceId/invitations` with normalized-email lookup of existing accounts.
-- [ ] Reject existing members and duplicate active invitations; rate-limit creation.
-- [ ] Add `GET /api/invitations` for the signed-in recipient, including workspace, inviter, role, and expiry information.
-- [ ] Add recipient-only accept and decline actions and owner-only cancellation of pending workspace invitations.
-- [ ] Accept transactionally by consuming the invitation and inserting workspace membership; expiry and duplicate/concurrent acceptance must not create inconsistent membership.
-- [ ] Connect invite-by-email, role selection, Invitations listing, Accept/Decline, and cancellation to the API.
-- [ ] Invitations may be received by existing accounts only in the initial implementation; defer signup-token/email-delivery flows.
-- [ ] Test recipient/owner authorization, expiry, removed inviters, membership changes, duplicate creation, and simultaneous acceptance.
+- [x] Define workspace invitation storage, inviter attribution, roles, status, hashed tokens, timestamps, expiry, and lookup indexes. Token hashes are unique; workspace/email uniqueness is not enforced by a database constraint.
+- [x] Apply the original invitation table through migration 0007_workspaces locally; generate forward migration `0010_workspace_invitation_email` for the current email/token schema.
+- [x] Set invitation expiry to 24 hours; expired invitations do not block creation of a new invitation row.
+- [x] Add owner-only `POST /api/workspaces/:workspaceId/invitations`, with normalized recipient email, validated email and editor/viewer role, existing-account lookup, and membership checks.
+- [x] Reject existing members and duplicate pending, unexpired invitations in the creation handler.
+- [x] Create a pending invitation with a hashed token, then await the Resend email call before returning success.
+- [x] Connect owner-only Members view Invite button, joined email/role controls, role descriptions, and frontend POST helper.
+- [x] Use native required/email validation, disable controls while sending, show success/error toasts, retain values on failure, and close/reset on success.
+- [x] Add dashboard/sidebar Invitations navigation to the existing inbox UI, accessible without a selected workspace; preserve mobile drawer navigation.
+- [ ] Verify local application of `0010_workspace_invitation_email` explicitly; successful sending is user-reported, not a migration audit.
+- [x] Add `GET /api/invitations` for the signed-in recipient, scoped to normalized account email, pending status, and future expiry; return workspace, inviter, role, and expiry in snake_case.
+- [x] Connect recipient fetching, loading/error states, and role display to `InvitationsView`; replace the old receiving-unavailable placeholder text.
+- [x] Add authenticated recipient-only `POST /api/invitations/:invitationId/accept` and `/decline`, with shared express-validator invitation ID middleware and recipient-email, pending-status, and expiry checks.
+- [ ] Add owner-only cancellation of pending workspace invitations.
+- [x] Accept transactionally with a locked invitation lookup, membership insert, and status/acceptedAt update. Query filters enforce expiry; conflicting membership returns 409 without changing invitation status.
+- [x] Decline transactionally with a locked valid invitation lookup and status update to rejected; leave membership and acceptedAt untouched.
+- [x] Connect Accept/Decline to the API with success/error toasts, removal from the inbox after success, and workspace refresh after acceptance.
+- [ ] Connect owner cancellation to the API and UI.
+- [ ] Implement the emailed `/invitations/:token` destination and token validation/acceptance flow; it is not wired in the frontend yet.
+- [ ] Add invitation-specific creation rate limiting beyond the existing general API limiter, and protect against concurrent duplicate active invitations.
+- [ ] Add inbox pagination beyond the current latest-50 limit; deferred by agreement.
+- [ ] Decide and implement email failure/retry behavior: the current handler inserts the pending row before sending, so a sending failure leaves that row in place. Provider acceptance does not confirm delivery to the recipient inbox.
+- [ ] Test recipient/owner authorization, expiry, removed inviters, membership changes, duplicate creation, email failures, and simultaneous acceptance.
+
+### Progress checkpoint (2026-10-03)
+
+- The dashboard invitation flow is implemented: owner sends an email invitation, recipient loads the pending inbox, then accepts or declines. Acceptance uses the stored workspace/role and authenticated user ID; decline only changes invitation status.
+- Both action routes use authentication and shared invitation ID validation. Acceptance performs its lookup/row lock, membership insert, and accepted status update within one transaction. Existing membership is handled with a 409 response.
+- Frontend actions use one shared `handleInvitation(id, action)` and one `sending` boolean. Buttons are disabled during processing; failures retain the invitation, successful actions remove it and show the backend message, and 401 responses redirect to login.
+- Dashboard passes `refreshWorkspaces` after acceptance. A refresh failure is reported separately from the successful acceptance; the handled invitation remains removed.
+- Backend build/typecheck and acceptance handler checks passed during implementation. Frontend typecheck/lint/build, action handler checks for success/failure and refresh failure, and source reviews passed. Mocked handler checks do not verify real PostgreSQL locking/rollback or live authorization. Live Accept/Decline and browser/breakpoint verification remain pending.
+- The email currently points to `/invitations/:token`, which is not registered in the frontend. Implement this destination next; owner cancellation, email failure/retry handling, concurrent creation protection, and deferred pagination remain unfinished.
+- No commit or push was performed by the assistant. The user handles commits; this update only edits the progress document.
+
+### Progress checkpoint (2026-10-02)
+
+- Mounted the authenticated invitation router at `/api/invitations`; the existing list handler filters by account email, pending status, and future expiry, and returns the latest 50 rows with workspace/inviter details. Pagination remains deferred.
+- Added the typed frontend invitation API helper and mount-time inbox fetch with loading/error/empty states, role badges, expired-session redirect, and stale response protection. Accept/Decline are still disabled.
+
+### Progress checkpoint (2026-10-01)
+
+- Invitation sending works according to the user’s local verification. The recipient inbox is now reachable from the dashboard, but receives no API data and Accept/Decline remain disabled.
+- Fixed the joined Base UI controls to use separate email and role field names; the previous shared name made form lookup return multiple controls and silently prevented submission. The simplified form now relies on native browser validation.
+- Frontend typecheck, lint, and production build passed during this work. A DOM check covered submission, loading, duplicate submission while disabled, error toast/retry, success closure, and required-email validation. Source reviews passed for the dialog and dashboard navigation; no browser/breakpoint testing was requested or performed.
+- No commit, push, deployment, or database migration was performed during this frontend work.
+- Recommended commit boundary: invitation sending UI/API connection plus inbox navigation and this progress update. Recipient fetching and acceptance remain the next separate change.
 
 ## Historical project implementation
 

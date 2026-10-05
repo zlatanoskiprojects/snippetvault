@@ -1,5 +1,6 @@
 import { JSON_HEADERS, apiFetch } from './utils';
 import type { User } from './types';
+import { getLoginDestination } from '../lib/invitationNavigation';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/auth`;
 const APP_URL = window.location.origin;
@@ -31,7 +32,7 @@ export async function sendVerificationEmail(email: string): Promise<{ status: bo
     });
 }
 
-export async function login(email: string, password: string, captchaToken?: string): Promise<AuthResponse> {
+export async function login(email: string, password: string, captchaToken?: string, returnTo?: string): Promise<AuthResponse> {
     return apiFetch<AuthResponse>(`${BASE_URL}/sign-in/email`, {
         method: 'POST',
         headers: captchaToken ? { ...JSON_HEADERS, 'x-captcha-response': captchaToken } : JSON_HEADERS,
@@ -39,7 +40,7 @@ export async function login(email: string, password: string, captchaToken?: stri
         body: JSON.stringify({
             email,
             password,
-            callbackURL: `${APP_URL}/dashboard`,
+            callbackURL: `${APP_URL}${getLoginDestination(returnTo)}`,
         }),
     });
 }
@@ -54,6 +55,7 @@ export async function logout(): Promise<{ message?: string }> {
 export async function socialLogin(
     provider: 'google' | 'github',
     callbackURL = `${APP_URL}/dashboard`,
+    errorCallbackURL = `${APP_URL}/login`,
 ): Promise<void> {
     const data = await apiFetch<{ url?: string }>(`${BASE_URL}/sign-in/social`, {
         method: 'POST',
@@ -62,7 +64,7 @@ export async function socialLogin(
         body: JSON.stringify({
             provider,
             callbackURL,
-            errorCallbackURL: `${APP_URL}/login`,
+            errorCallbackURL,
         }),
     });
 
