@@ -23,3 +23,6 @@ Thumbs.db
 # Playwright MCP output
 .playwright-mcp/
 /*.png
+
+# Mintlify
+docs-site/.mintlify/
