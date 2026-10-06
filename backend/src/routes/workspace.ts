@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { and, asc, eq, exists, gt, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, exists, gt, inArray } from 'drizzle-orm';
 import { validationResult } from 'express-validator';
 import { users, workspace, workspaceMember,workspaceInvitation } from '../db/schema';
 import db from '../lib/db';
@@ -7,6 +7,7 @@ import authMiddleware from '../middleware/authMiddleware';
 import { asyncHandler } from '../middleware/errorHandler';
 import validateRequest from '../middleware/validateRequest';
 import requireWorkspacePermission from '../middleware/requireWorkspacePermission';
+import { invitationSendLimiter } from '../middleware/rateLimit';
 import { workspaceRolesWithPermission } from '../permissions/workspacePermissions';
 import {
     createWorkspaceInvitationValidation,
@@ -14,6 +15,7 @@ import {
     updateWorkspaceMemberRoleValidation,
     updateWorkspaceValidation,
     workspaceIdValidation,
+    workspaceInvitationParamsValidation,
     workspaceMemberParamsValidation,
 } from '../validators/workspace';
 import { generateInvitationToken } from '../lib/invitationToken';
@@ -140,7 +142,7 @@ router.delete('/:workspaceId/members/:userId', authMiddleware, workspaceMemberPa
 //WORKSPACE INVITATIONS ROUTES
 
 
-router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitationValidation, validateRequest, requireWorkspacePermission('inviteMembers'), asyncHandler(async (req: Request, res: Response) => {
+router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitationValidation, validateRequest, requireWorkspacePermission('inviteMembers'), invitationSendLimiter, asyncHandler(async (req: Request, res: Response) => {
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() }); 
@@ -237,6 +239,38 @@ router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitati
 
     return res.status(201).json({ message: 'Workspace invitation sent successfully' });
 
+}));
+
+router.get('/:workspaceId/invitations', authMiddleware, workspaceIdValidation, validateRequest, requireWorkspacePermission('inviteMembers'), asyncHandler(async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const invitations = await db.select({
+        id: workspaceInvitation.id,
+        email: workspaceInvitation.email,
+        role: workspaceInvitation.role,
+        created_at: workspaceInvitation.createdAt,
+        expires_at: workspaceInvitation.expiresAt,
+    }).from(workspaceInvitation).where(and(
+        eq(workspaceInvitation.workspaceId, Number(req.params.workspaceId)),
+        eq(workspaceInvitation.status, 'pending'),
+        gt(workspaceInvitation.expiresAt, new Date()),
+    )).orderBy(desc(workspaceInvitation.createdAt)).limit(50);
+    return res.status(200).json(invitations);
+}));
+
+router.delete('/:workspaceId/invitations/:invitationId', authMiddleware, workspaceInvitationParamsValidation, validateRequest, requireWorkspacePermission('inviteMembers'), asyncHandler(async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const workspaceId = Number(req.params.workspaceId);
+    const invitationId = Number(req.params.invitationId);
+    const [cancelled] = await db.update(workspaceInvitation).set({ status: 'cancelled' }).where(and(
+        eq(workspaceInvitation.id, invitationId),
+        eq(workspaceInvitation.workspaceId, workspaceId),
+        eq(workspaceInvitation.status, 'pending'),
+        gt(workspaceInvitation.expiresAt, new Date()),
+    )).returning({ id: workspaceInvitation.id });
+    if (!cancelled) return res.status(404).json({ error: 'Invitation not found' });
+    return res.status(200).json({ message: 'Invitation cancelled successfully' });
 }));
 
 

@@ -6,6 +6,7 @@ import { invitationIdValidation, invitationTokenValidation } from '../validators
 import { users,workspace,workspaceInvitation, workspaceMember } from '../db/schema';
 import { and, desc, eq, gt, } from 'drizzle-orm';
 import db from '../lib/db';
+import { invitationLookupLimiter } from '../middleware/rateLimit';
 import {  hashInvitationToken } from '../lib/invitationToken';
 const router = Router();
 
@@ -142,7 +143,7 @@ const userId = req.userId;
 
 //get invitation by token.
 
-router.get('/token/:token', invitationTokenValidation, validateRequest, asyncHandler(async (req: Request, res: Response) => {
+router.get('/token/:token', invitationLookupLimiter, invitationTokenValidation, validateRequest, asyncHandler(async (req: Request, res: Response) => {
 
 
     const token = req.params.token;

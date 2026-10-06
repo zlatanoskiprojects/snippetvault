@@ -1,5 +1,5 @@
 import { JSON_HEADERS, apiFetch } from './utils';
-import type { Workspace, WorkspaceMember, WorkspaceRole } from './types';
+import type { Workspace, WorkspaceInvitation, WorkspaceMember, WorkspaceRole } from './types';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/workspaces`;
 
@@ -54,10 +54,10 @@ export function createWorkspaceInvitation(workspaceId: number, email: string,rol
     });
 }
 
-// export function getWorkspaceInvitations(workspaceId: number): Promise<{ email: string; invited_at: string }[]> {
-//     return apiFetch<{ email: string; invited_at: string }[]>(`${BASE_URL}/${workspaceId}/invitations`);
-// }
+export function getWorkspaceInvitations(workspaceId: number): Promise<WorkspaceInvitation[]> {
+    return apiFetch<WorkspaceInvitation[]>(`${BASE_URL}/${workspaceId}/invitations`);
+}
 
-// export function revokeWorkspaceInvitation(workspaceId: number, email: string): Promise<{ message: string }> {
-//     return apiFetch<{ message: string }>(`${BASE_URL}/${workspaceId}/invitations/${encodeURIComponent(email)}`, { method: 'DELETE' });
-// }
+export function cancelWorkspaceInvitation(workspaceId: number, invitationId: number): Promise<{ message: string }> {
+    return apiFetch<{ message: string }>(`${BASE_URL}/${workspaceId}/invitations/${invitationId}`, { method: 'DELETE' });
+}

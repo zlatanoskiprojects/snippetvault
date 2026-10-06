@@ -30,6 +30,14 @@ export interface WorkspaceMember {
     joined_at: string;
 }
 
+export interface WorkspaceInvitation {
+    id: number;
+    email: string;
+    role: Exclude<WorkspaceRole, 'owner'>;
+    created_at: string;
+    expires_at: string;
+}
+
 export interface Project {
     id: number;
     workspace_id: number;

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Menu, UserPlus, Users } from 'lucide-react'
-import { createWorkspaceInvitation, getWorkspaceMembers, removeWorkspaceMember, updateWorkspaceMemberRole } from '../api/workspaces'
-import type { WorkspaceMember, WorkspaceRole } from '../api/types'
+import { Mail, Menu, UserPlus, Users, X } from 'lucide-react'
+import { cancelWorkspaceInvitation, createWorkspaceInvitation, getWorkspaceInvitations, getWorkspaceMembers, removeWorkspaceMember, updateWorkspaceMemberRole } from '../api/workspaces'
+import type { WorkspaceInvitation, WorkspaceMember, WorkspaceRole } from '../api/types'
 import Alert from '../components/ui/Alert'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
+import ConfirmDialog from '../components/ui/AlertDialog'
 import Select from '../components/ui/Select'
 import Spinner from '../components/ui/Spinner'
 import InviteMemberDialog from '../components/InviteMemberDialog'
@@ -27,10 +28,15 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
   const [error, setError] = useState<string | null>(null)
   const [pendingUserId, setPendingUserId] = useState<number | null>(null)
   const [inviteWorkspaceId, setInviteWorkspaceId] = useState<number | null>(null)
+  const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([])
+  const [cancelTarget, setCancelTarget] = useState<WorkspaceInvitation | null>(null)
+  const [cancellingId, setCancellingId] = useState<number | null>(null)
   const toast = useToast()
 
   useEffect(() => {
     setInviteWorkspaceId(null)
+    setCancelTarget(null)
+    setCancellingId(null)
   }, [workspaceId, canManage])
 
   useEffect(() => {
@@ -43,6 +49,41 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
       .finally(() => { if (current) setLoading(false) })
     return () => { current = false }
   }, [workspaceId])
+
+  useEffect(() => {
+    setInvitations([])
+    if (!canManage) return
+    let current = true
+    getWorkspaceInvitations(workspaceId)
+      .then(data => { if (current) setInvitations(data) })
+      .catch(err => { if (current) toast.error(err instanceof Error ? err.message : 'Could not load pending invitations') })
+    return () => { current = false }
+  }, [workspaceId, canManage])
+
+  async function refreshInvitations() {
+    try {
+      setInvitations(await getWorkspaceInvitations(workspaceId))
+    } catch {
+      return
+    }
+  }
+
+  async function confirmCancel() {
+    if (!cancelTarget) return
+    const target = cancelTarget
+    setCancellingId(target.id)
+    try {
+      await cancelWorkspaceInvitation(workspaceId, target.id)
+      setInvitations(current => current.filter(item => item.id !== target.id))
+      toast.success('Invitation cancelled.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not cancel invitation')
+      await refreshInvitations()
+    } finally {
+      setCancellingId(null)
+      setCancelTarget(null)
+    }
+  }
 
   async function changeRole(member: WorkspaceMember, role: Exclude<WorkspaceRole, 'owner'>) {
     setPendingUserId(member.user_id)
@@ -60,6 +101,7 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
   async function sendInvitation(email: string, role: Exclude<WorkspaceRole, 'owner'>) {
     await createWorkspaceInvitation(workspaceId, email, role)
     toast.success('Invitation sent.')
+    await refreshInvitations()
   }
 
   async function removeMember(member: WorkspaceMember) {
@@ -105,7 +147,7 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border-default bg-surface">
             <table className="w-full min-w-[560px] text-left text-sm">
-              <caption className="sr-only">Workspace members</caption>
+              <caption className="sr-only">Workspace members and pending invitations</caption>
               <thead className="border-b border-border-default bg-surface-muted text-xs text-muted">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Member</th>
@@ -159,11 +201,56 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
                     </tr>
                   )
                 })}
+                {canManage && invitations.map(invitation => (
+                  <tr key={`invitation-${invitation.id}`}>
+                    <td className="px-4 py-4">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface-muted text-muted">
+                          <Mail size={16} />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <p className="min-w-0 truncate font-medium text-secondary" title={invitation.email}>{invitation.email}</p>
+                            <Badge variant="outline" className="shrink-0 text-[10px] uppercase tracking-wide text-muted">Pending</Badge>
+                          </div>
+                          <p className="truncate text-xs text-muted">Sent {new Date(invitation.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <Badge variant="outline">{invitation.role[0].toUpperCase() + invitation.role.slice(1)}</Badge>
+                    </td>
+                    <td className="px-4 py-4 text-xs text-muted">Expires {new Date(invitation.expires_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-4 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-10 shrink-0 p-0 sm:w-7"
+                        aria-label={`Cancel invitation for ${invitation.email}`}
+                        disabled={cancellingId === invitation.id}
+                        onClick={() => setCancelTarget(invitation)}
+                      >
+                        <X size={14} aria-hidden="true" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={cancelTarget !== null}
+        onOpenChange={open => { if (!open && cancellingId === null) setCancelTarget(null) }}
+        danger
+        title="Cancel invitation?"
+        description={cancelTarget ? `The invitation for ${cancelTarget.email} will no longer be valid.` : undefined}
+        confirmLabel="Cancel invitation"
+        cancelLabel="Keep invitation"
+        confirming={cancellingId !== null}
+        onConfirm={confirmCancel}
+      />
       {canManage && inviteWorkspaceId === workspaceId && (
         <InviteMemberDialog
           open

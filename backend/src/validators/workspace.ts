@@ -13,6 +13,13 @@ const workspaceMemberParamsValidation: ValidationChain[] = [
         .withMessage('Invalid user id'),
 ];
 
+const workspaceInvitationParamsValidation: ValidationChain[] = [
+    ...workspaceIdValidation,
+    param('invitationId')
+        .isInt({ min: 1, max: 2147483647 })
+        .withMessage('Invalid invitation id'),
+];
+
 const createWorkspaceValidation: ValidationChain[] = [
     body().custom((value: unknown) => value !== null && typeof value === 'object'
         && !Array.isArray(value) && Object.keys(value).every((field) => field === 'name'))
@@ -58,6 +65,7 @@ const createWorkspaceInvitationValidation: ValidationChain[] = [
 export {
     workspaceIdValidation,
     workspaceMemberParamsValidation,
+    workspaceInvitationParamsValidation,
     createWorkspaceValidation,
     updateWorkspaceValidation,
     updateWorkspaceMemberRoleValidation,
