@@ -228,14 +228,19 @@ router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitati
     const invitationUrl =
     `${process.env.CLIENT_URL}/invitations/${token}`;
 
-    await sendWorkspaceInvitationEmail({
-        to: normalizedEmail,
-        inviterName: inviter.displayName as string,
-        workspaceName: workspaceData.name as string,
-        role,
-        invitationUrl,
-        expiresAt: invitation.expiresAt,
-    });
+    try {
+        await sendWorkspaceInvitationEmail({
+            to: normalizedEmail,
+            inviterName: inviter.displayName as string,
+            workspaceName: workspaceData.name as string,
+            role,
+            invitationUrl,
+            expiresAt: invitation.expiresAt,
+        });
+    } catch (error) {
+        await db.delete(workspaceInvitation).where(eq(workspaceInvitation.id, invitation.id));
+        throw error;
+    }
 
     return res.status(201).json({ message: 'Workspace invitation sent successfully' });
 
