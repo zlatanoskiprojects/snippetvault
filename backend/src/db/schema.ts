@@ -130,6 +130,7 @@ export const workspaceInvitation = pgTable('workspace_invitation', {
     index('workspace_invitation_email_idx').on(table.email),
     index('workspace_invitation_workspace_id_idx').on(table.workspaceId),
     index('workspace_invitation_invited_by_user_id_idx').on(table.invitedByUserId),
+    uniqueIndex('workspace_invitation_active_unique').on(table.workspaceId, table.email).where(sql`${table.status} = 'pending'`),
 ]);
 
 export const project = pgTable('project', {

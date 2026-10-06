@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { and, asc, desc, eq, exists, gt, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, exists, gt, inArray, lte } from 'drizzle-orm';
 import { validationResult } from 'express-validator';
 import { users, workspace, workspaceMember,workspaceInvitation } from '../db/schema';
 import db from '../lib/db';
@@ -173,6 +173,13 @@ router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitati
 
     
 
+    await db.update(workspaceInvitation).set({ status: 'cancelled' }).where(and(
+        eq(workspaceInvitation.workspaceId, workspaceId),
+        eq(workspaceInvitation.email, normalizedEmail),
+        eq(workspaceInvitation.status, 'pending'),
+        lte(workspaceInvitation.expiresAt, new Date())
+    ));
+
     // Check if an invitation already exists for the email in the workspace and is still pending and not expired .
     const [existingInvitation] = await db
     .select({ id: workspaceInvitation.id })
@@ -203,9 +210,12 @@ router.post('/:workspaceId/invitations', authMiddleware, createWorkspaceInvitati
         role,
         tokenHash,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    }).returning();
+    }).returning().catch((error) => {
+        if (error?.code === '23505' || error?.cause?.code === '23505') return [];
+        throw error;
+    });
     if (!invitation) {
-        return res.status(500).json({ error: 'Failed to create invitation' });
+        return res.status(409).json({ error: 'An active invitation for this email already exists' });
     }
 
     // Construct the invitation URL
