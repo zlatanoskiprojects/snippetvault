@@ -5,24 +5,24 @@ import Input from './ui/Input'
 import Textarea from './ui/Textarea'
 import Field from './ui/Field'
 
-export interface CollectionDialogInitialData {
+export interface ProjectDialogInitialData {
   name?: string | null
   description?: string | null
 }
 
-export interface CollectionDialogSubmitData {
+export interface ProjectDialogSubmitData {
   name: string
   description: string | null
 }
 
-interface CollectionDialogProps {
+interface ProjectDialogProps {
   open: boolean
   onClose: () => void
-  onSubmit: (data: CollectionDialogSubmitData) => void
-  initialData?: CollectionDialogInitialData | null
+  onSubmit: (data: ProjectDialogSubmitData) => void
+  initialData?: ProjectDialogInitialData | null
 }
 
-export default function CollectionDialog({ open, onClose, onSubmit, initialData }: CollectionDialogProps) {
+export default function ProjectDialog({ open, onClose, onSubmit, initialData }: ProjectDialogProps) {
   const isEditing = Boolean(initialData)
   const [name, setName] = useState(initialData?.name ?? '')
   const [description, setDescription] = useState(initialData?.description ?? '')
@@ -51,7 +51,7 @@ export default function CollectionDialog({ open, onClose, onSubmit, initialData 
     <Dialog
       open={open}
       onOpenChange={next => { if (!next) onClose() }}
-      title={isEditing ? 'Edit collection' : 'New collection'}
+      title={isEditing ? 'Edit project' : 'New project'}
     >
       <div className="flex flex-col gap-4 px-6 py-5">
         <Field label="Name" error={nameError}>
@@ -77,7 +77,7 @@ export default function CollectionDialog({ open, onClose, onSubmit, initialData 
 
         <div className="flex flex-col gap-3 pt-1 sm:flex-row">
           <Button variant="primary" onClick={handleSubmit} className="w-full sm:w-auto">
-            {isEditing ? 'Save changes' : 'Create collection'}
+            {isEditing ? 'Save changes' : 'Create project'}
           </Button>
           <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">
             Cancel

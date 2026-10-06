@@ -6,6 +6,7 @@ backend/node_modules/
 frontend/dist/
 backend/build/
 *.tsbuildinfo
+!docs/agents/
 
 .env
 frontend/.env

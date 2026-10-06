@@ -12,7 +12,6 @@ export interface UpdateProfileData {
     username?: string;
     display_name?: string;
     bio?: string;
-    avatar_url?: string;
 }
 
 export interface ChangePasswordData {
@@ -40,6 +39,26 @@ export async function updateProfile(data: UpdateProfileData): Promise<ProfileRes
         silent: true,
         body: JSON.stringify(data),
     });
+}
+
+export async function uploadProfileAvatar(file: File): Promise<ProfileResponse> {
+    return apiFetch<ProfileResponse>(`${BASE_URL}/avatar`, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+        silent: true,
+    });
+}
+
+export async function removeProfileAvatar(): Promise<ProfileResponse> {
+    return apiFetch<ProfileResponse>(`${BASE_URL}/avatar`, {
+        method: 'DELETE',
+        silent: true,
+    });
+}
+
+export function getProfileAvatarUrl(version: number): string {
+    return `${BASE_URL}/avatar?v=${version}`;
 }
 
 export async function changeEmail(data: ChangeEmailData): Promise<{ status: boolean }> {

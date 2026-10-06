@@ -1,31 +1,34 @@
 import { JSON_HEADERS, apiFetch } from './utils';
 import type { Snippet, SnippetVersion } from './types';
 
-const BASE_URL = `${import.meta.env.VITE_API_URL}/snippets`;
+const API_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = `${API_URL}/snippets`;
+const workspaceSnippetsUrl = (workspaceId: number) => `${API_URL}/workspaces/${workspaceId}/snippets`;
 
 export interface SnippetInput {
     title: string;
     description?: string | null;
     code: string;
     language: string;
-    collection_id?: number | null;
+    project_id?: number | null;
     visibility?: string;
     tags?: string[];
 }
 
-export async function getAllSnippets(): Promise<Snippet[]> {
-    return apiFetch<Snippet[]>(BASE_URL, { silent: true });
+export async function getAllSnippets(workspaceId: number): Promise<Snippet[]> {
+    return apiFetch<Snippet[]>(workspaceSnippetsUrl(workspaceId), { silent: true });
 }
 
 export async function getSnippetById(id: number | string): Promise<Snippet> {
     return apiFetch<Snippet>(`${BASE_URL}/${id}`);
 }
 
-export async function createSnippet(data: SnippetInput): Promise<Snippet> {
-    return apiFetch<Snippet>(BASE_URL, {
+export async function createSnippet(workspaceId: number, data: SnippetInput, silent = false): Promise<Snippet> {
+    return apiFetch<Snippet>(workspaceSnippetsUrl(workspaceId), {
         method: 'POST',
         headers: JSON_HEADERS,
         body: JSON.stringify(data),
+        silent,
     });
 }
 
@@ -35,11 +38,12 @@ export async function deleteSnippet(id: number | string): Promise<Snippet | null
     });
 }
 
-export async function updateSnippet(id: number | string, data: Partial<SnippetInput>): Promise<Snippet> {
+export async function updateSnippet(id: number | string, data: Partial<SnippetInput>, silent = false): Promise<Snippet> {
     return apiFetch<Snippet>(`${BASE_URL}/${id}`, {
         method: 'PATCH',
         headers: JSON_HEADERS,
         body: JSON.stringify(data),
+        silent,
     });
 }
 

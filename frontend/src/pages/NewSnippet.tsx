@@ -7,10 +7,10 @@ import Textarea from '../components/ui/Textarea'
 import Select from '../components/ui/Select'
 import Field from '../components/ui/Field'
 import { createSnippet, updateSnippet, type SnippetInput } from '../api/snippets'
+import { ApiError } from '../api/utils'
 import { getOrCreateTag, assignTagToSnippet, removeTagFromSnippet, getAllTags } from '../api/tags'
 import { useToast } from '../hooks/useToast'
-import { useCollections } from '../hooks/useCollections'
-import type { Snippet } from '../api/types'
+import type { Project, Snippet } from '../api/types'
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
 
 const LANGUAGE_OPTIONS = SUPPORTED_LANGUAGES.map(l => ({ value: l, label: l }))
@@ -20,16 +20,17 @@ const VISIBILITY_OPTIONS = [
 ]
 
 interface NewSnippetProps {
+  workspaceId: number
+  projects: Project[]
   snippet?: Snippet | null
   onCancel: () => void
   onSaved: (snippet: Snippet) => void
   onMenuClick?: () => void
 }
 
-export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: NewSnippetProps) {
+export default function NewSnippet({ workspaceId, projects, snippet, onCancel, onSaved, onMenuClick }: NewSnippetProps) {
   const isEditing = Boolean(snippet)
   const toast = useToast()
-  const { collections } = useCollections()
 
   const [title, setTitle] = useState(snippet?.title ?? '')
   const [description, setDescription] = useState(snippet?.description ?? '')
@@ -39,7 +40,7 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
   )
   const [tags, setTags] = useState<string[]>(snippet?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
-  const [collectionId, setCollectionId] = useState<number | ''>(snippet?.collection_id ?? '')
+  const [projectId, setProjectId] = useState<number | ''>(snippet?.project_id ?? '')
   const [code, setCode] = useState(snippet?.code ?? '')
   const [changeNote, setChangeNote] = useState('')
   const [saving, setSaving] = useState(false)
@@ -70,13 +71,15 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
       code,
       language,
       visibility: visibility.toLowerCase(),
-      collection_id: collectionId || null,
+      project_id: projectId || null,
       ...(isEditing && changeNote.trim() ? { change_note: changeNote.trim() } : {}),
     }
     setSaving(true)
+    let snippetSaved = false
     try {
       if (isEditing && snippet) {
-        const updated = await updateSnippet(snippet.id, payload)
+        const updated = await updateSnippet(snippet.id, payload, true)
+        snippetSaved = true
         console.log('share_token:', updated.share_token)
         const existingTags = snippet.tags || []
         const toAdd = finalTags.filter(t => !existingTags.includes(t))
@@ -95,7 +98,8 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
         toast.success('Snippet updated.')
         onSaved({ ...updated, tags: finalTags })
       } else {
-        const created = await createSnippet(payload)
+        const created = await createSnippet(workspaceId, payload, true)
+        snippetSaved = true
         console.log('share_token:', created.share_token)
         for (const name of finalTags) {
           const tag = await getOrCreateTag(name)
@@ -104,8 +108,12 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
         toast.success('Snippet created.')
         onSaved({ ...created, tags: finalTags })
       }
-    } catch {
-      return
+    } catch (err) {
+      if ((!snippetSaved || !(err instanceof ApiError)) && !(err instanceof ApiError && err.status === 401)) {
+        toast.error(err instanceof ApiError && err.status === 403
+          ? "You don't have permission to save these changes. Project viewers are read-only."
+          : err instanceof Error ? err.message : 'Could not save the snippet. Please try again.')
+      }
     } finally {
       setSaving(false)
     }
@@ -203,11 +211,11 @@ export default function NewSnippet({ snippet, onCancel, onSaved, onMenuClick }: 
             </div>
           </div>
 
-          <Field label="Collection">
+          <Field label="Project">
             <Select
-              value={collectionId}
-              onValueChange={setCollectionId}
-              options={[{ value: '' as number | '', label: 'No collection' }, ...collections.map(c => ({ value: c.id, label: c.name }))]}
+              value={projectId}
+              onValueChange={setProjectId}
+              options={[{ value: '' as number | '', label: 'No project' }, ...projects.map(project => ({ value: project.id, label: project.name }))]}
             />
           </Field>
 

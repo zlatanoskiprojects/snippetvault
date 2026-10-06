@@ -5,24 +5,52 @@ export interface User {
     role: string;
     display_name: string | null;
     bio: string | null;
-    avatar_url: string | null;
+    has_custom_avatar: boolean;
+    custom_avatar_version: number | null;
     registered_at: string;
     has_password: boolean;
     oauth_providers: Array<'google' | 'github'>;
 }
 
-export interface Collection {
+export type WorkspaceRole = 'owner' | 'editor' | 'viewer';
+
+export interface Workspace {
     id: number;
+    name: string;
+    created_at: string;
+    role: WorkspaceRole;
+}
+
+export interface WorkspaceMember {
     user_id: number;
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    role: WorkspaceRole;
+    joined_at: string;
+}
+
+export interface WorkspaceInvitation {
+    id: number;
+    email: string;
+    role: Exclude<WorkspaceRole, 'owner'>;
+    created_at: string;
+    expires_at: string;
+}
+
+export interface Project {
+    id: number;
+    workspace_id: number;
     name: string;
     description: string | null;
-    created_at: string;
+    role: WorkspaceRole;
 }
 
 export interface Snippet {
     id: number;
     user_id: number;
-    collection_id: number | null;
+    workspace_id: number;
+    project_id: number | null;
     title: string;
     description: string | null;
     code: string;

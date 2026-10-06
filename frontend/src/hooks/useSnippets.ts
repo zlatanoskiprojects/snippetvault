@@ -11,30 +11,42 @@ export interface UseSnippetsResult {
   error: string | null
 }
 
-export function useSnippets(): UseSnippetsResult {
+export function useSnippets(workspaceId: number | null): UseSnippetsResult {
   const [snippets, setSnippets] = useState<Snippet[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
+    let current = true
+
     async function load() {
+      if (workspaceId === null) {
+        setSnippets([])
+        setLoading(false)
+        return
+      }
+      setLoading(true)
+      setError(null)
+      setSnippets([])
       try {
-        const data = await getAllSnippets()
-        setSnippets(data)
+        const data = await getAllSnippets(workspaceId)
+        if (current) setSnippets(data)
       } catch (err) {
+        if (!current) return
         if (err instanceof ApiError && err.status === 401) {
           navigate('/login')
         } else if (err instanceof Error) {
           setError(err.message)
         }
       } finally {
-        setLoading(false)
+        if (current) setLoading(false)
       }
     }
 
     load()
-  }, [navigate])
+    return () => { current = false }
+  }, [navigate, workspaceId])
 
   return { snippets, setSnippets, loading, error }
 }

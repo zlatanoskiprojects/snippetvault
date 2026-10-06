@@ -19,16 +19,16 @@ export async function createComment(snippetId: number | string, data: CommentInp
     });
 }
 
-export async function updateComment(id: number | string, data: CommentInput): Promise<Comment> {
-    return apiFetch<Comment>(`${BASE_URL}/comments/${id}`, {
+export async function updateComment(snippetId: number | string, id: number | string, data: CommentInput): Promise<Comment> {
+    return apiFetch<Comment>(`${BASE_URL}/snippets/${snippetId}/comments/${id}`, {
         method: 'PATCH',
         headers: JSON_HEADERS,
         body: JSON.stringify(data),
     });
 }
 
-export async function deleteComment(id: number | string): Promise<Comment | null> {
-    return apiFetch<Comment | null>(`${BASE_URL}/comments/${id}`, {
+export async function deleteComment(snippetId: number | string, id: number | string): Promise<Comment | null> {
+    return apiFetch<Comment | null>(`${BASE_URL}/snippets/${snippetId}/comments/${id}`, {
         method: 'DELETE',
     });
 }

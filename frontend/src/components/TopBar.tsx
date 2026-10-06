@@ -2,7 +2,6 @@ import { ArrowLeft, Menu, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import Button from './ui/Button'
 
 interface TopBarProps {
-  snippetCount: number
   onMenuClick?: () => void
   onNewSnippet?: () => void
   onSearch?: () => void
@@ -10,7 +9,7 @@ interface TopBarProps {
   onBack?: () => void
 }
 
-export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSearch, title = 'All snippets', onBack }: TopBarProps) {
+export default function TopBar({ onMenuClick, onNewSnippet, onSearch, title = 'All snippets', onBack }: TopBarProps) {
   return (
     <header className="flex items-end justify-between px-6 py-3 border-b border-border-default">
       <div className="flex items-center gap-2 min-w-0">
@@ -25,7 +24,6 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
         )}
         <div className="min-w-0">
           <h1 className="text-lg font-semibold text-primary leading-tight truncate">{title}</h1>
-          <p className="text-xs text-muted mt-0.5">{snippetCount} snippets</p>
         </div>
       </div>
 
@@ -53,10 +51,12 @@ export default function TopBar({ snippetCount, onMenuClick, onNewSnippet, onSear
           <span className="hidden sm:inline">Filter</span>
         </Button>
 
-        <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs min-w-[40px] sm:min-w-0">
-          <span className="hidden sm:inline-flex items-center gap-1"><Plus size={14} /> New snippet</span>
-          <span className="sm:hidden flex items-center justify-center"><Plus size={14} /></span>
-        </Button>
+        {onNewSnippet && (
+          <Button variant="primary" size="sm" onClick={onNewSnippet} className="text-xs min-w-[40px] sm:min-w-0">
+            <span className="hidden sm:inline-flex items-center gap-1"><Plus size={14} /> New snippet</span>
+            <span className="sm:hidden flex items-center justify-center"><Plus size={14} /></span>
+          </Button>
+        )}
       </div>
     </header>
   )

@@ -5,7 +5,9 @@ import helmet from 'helmet';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
 import snippetRoutes from './routes/snippets';
-import collectionRoutes from './routes/collections';
+import projectRoutes from './routes/projects';
+import workspaceRoutes from './routes/workspace';
+import invitationRoutes from './routes/invitations';
 import tagRoutes from './routes/tags';
 import commentRoutes from './routes/comments';
 import aiSettingsRoutes from './routes/aiSettings';
@@ -52,17 +54,23 @@ app.use(express.json());
 
 app.use('/api', apiLimiter);
 
-app.use('/api/snippets', snippetRoutes);
-app.use('/api/collections', collectionRoutes);
-app.use('/api/tags', tagRoutes);
+app.use('/api', snippetRoutes);
+app.use('/api', projectRoutes);
+app.use('/api/workspaces', workspaceRoutes);
+app.use('/api/invitations', invitationRoutes);
+app.use('/api', tagRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api', commentRoutes);
-app.use('/api', aiSettingsRoutes);
+app.use('/api/ai-settings', aiSettingsRoutes);
 app.use('/api/share', shareLimiter, shareRoutes);
 
 app.use('/api', notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export { app };

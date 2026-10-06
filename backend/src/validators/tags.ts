@@ -1,7 +1,7 @@
 import { body, param, ValidationChain } from 'express-validator';
 
 const tagIdValidation: ValidationChain[] = [
-    param('id')
+    param('tagId')
         .isInt({ min: 1 })
         .withMessage('Invalid tag id'),
 ];
@@ -14,7 +14,7 @@ const createTagValidation: ValidationChain[] = [
 ];
 
 const tagSnippetValidation: ValidationChain[] = [
-    param('id')
+    param('tagId')
         .isInt({ min: 1 })
         .withMessage('Invalid tag id'),
 

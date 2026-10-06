@@ -24,9 +24,10 @@ interface VersionHistoryPanelProps {
   onBack: () => void
   onRestore: (updated: Snippet) => void
   language: string
+  canMutate?: boolean
 }
 
-export default function VersionHistoryPanel({ snippet, onBack, onRestore, language }: VersionHistoryPanelProps) {
+export default function VersionHistoryPanel({ snippet, onBack, onRestore, language, canMutate = true }: VersionHistoryPanelProps) {
   const [versions, setVersions] = useState<SnippetVersion[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedVersion, setSelectedVersion] = useState<SnippetVersion | null>(null)
@@ -174,7 +175,7 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
         <Button variant="secondary" size="md" onClick={onBack} className="px-4 text-[13px]">
           Back
         </Button>
-        {selectedVersion && (
+        {selectedVersion && canMutate && (
           <div className="flex items-center gap-2">
             <Button
               variant="danger"
@@ -197,16 +198,18 @@ export default function VersionHistoryPanel({ snippet, onBack, onRestore, langua
           </div>
         )}
 
-        <ConfirmDialog
-          open={deleteConfirmOpen}
-          onOpenChange={setDeleteConfirmOpen}
-          title="Delete version"
-          description={selectedVersion ? `Delete v${selectedVersion.version_number}? This action cannot be undone.` : undefined}
-          confirmLabel="Delete"
-          danger
-          confirming={deleting}
-          onConfirm={handleDelete}
-        />
+        {canMutate && (
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+            title="Delete version"
+            description={selectedVersion ? `Delete v${selectedVersion.version_number}? This action cannot be undone.` : undefined}
+            confirmLabel="Delete"
+            danger
+            confirming={deleting}
+            onConfirm={handleDelete}
+          />
+        )}
       </div>
     </div>
   )

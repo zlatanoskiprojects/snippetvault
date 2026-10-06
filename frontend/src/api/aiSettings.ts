@@ -1,7 +1,7 @@
 import { JSON_HEADERS, apiFetch } from './utils';
 import type { AiSettings } from './types';
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = `${import.meta.env.VITE_API_URL}/ai-settings`;
 
 export interface SaveAiSettingsData {
     provider_type: string;
@@ -16,7 +16,7 @@ export async function getAiSettings(): Promise<AiSettings | null> {
 
 export async function saveAiSettings(data: SaveAiSettingsData): Promise<AiSettings> {
     return apiFetch<AiSettings>(BASE_URL, {
-        method: 'POST',
+        method: 'PUT',
         headers: JSON_HEADERS,
         body: JSON.stringify(data),
     });

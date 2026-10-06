@@ -3,7 +3,7 @@ import { ComingSoon } from './DocBlocks'
 import Introduction, { INTRODUCTION_HEADINGS } from './content/Introduction'
 import QuickStart, { QUICK_START_HEADINGS } from './content/QuickStart'
 import Snippets, { SNIPPETS_HEADINGS } from './content/Snippets'
-import Collections, { COLLECTIONS_HEADINGS } from './content/Collections'
+import Projects, { PROJECTS_HEADINGS } from './content/Projects'
 import Tags, { TAGS_HEADINGS } from './content/Tags'
 import VersionHistory, { VERSION_HISTORY_HEADINGS } from './content/VersionHistory'
 import PublicSharing, { PUBLIC_SHARING_HEADINGS } from './content/PublicSharing'
@@ -54,7 +54,7 @@ export const DOCS_SECTIONS: DocSection[] = [
     label: 'Core Features',
     pages: [
       { slug: 'snippets', title: 'Snippets', description: 'Creating, editing, and organizing code snippets.', component: Snippets, headings: SNIPPETS_HEADINGS },
-      { slug: 'collections', title: 'Collections', description: 'Grouping snippets into collections.', component: Collections, headings: COLLECTIONS_HEADINGS },
+      { slug: 'projects', title: 'Projects', description: 'Grouping snippets into projects.', component: Projects, headings: PROJECTS_HEADINGS },
       { slug: 'tags', title: 'Tags', description: 'Labeling snippets with global tags.', component: Tags, headings: TAGS_HEADINGS },
       { slug: 'version-history', title: 'Version History', description: 'Tracking and restoring snippet versions.', component: VersionHistory, headings: VERSION_HISTORY_HEADINGS },
       { slug: 'public-sharing', title: 'Public Sharing', description: 'Sharing a snippet publicly via a share link.', component: PublicSharing, headings: PUBLIC_SHARING_HEADINGS },

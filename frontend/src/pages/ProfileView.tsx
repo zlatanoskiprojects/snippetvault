@@ -10,10 +10,10 @@ import ConfirmDialog from '../components/ui/AlertDialog'
 import { TabsRoot, TabsList, Tab, Panel } from '../components/ui/Tabs'
 import Spinner from '../components/ui/Spinner'
 import Alert from '../components/ui/Alert'
+import UserAvatar from '../components/UserAvatar'
 import { useUser } from '../hooks/useUser'
 import { useToast } from '../hooks/useToast'
-import { useCollections } from '../hooks/useCollections'
-import type { Snippet } from '../api/types'
+import type { Project, Snippet } from '../api/types'
 import { socialLogin } from '../api/auth'
 
 const TABS = [
@@ -44,22 +44,22 @@ const PASSWORD_SETUP_REAUTH_MAX_AGE = 10 * 60 * 1000
 
 interface ProfileViewProps {
   snippets?: Snippet[]
+  projects?: Project[]
   onBack?: () => void
   onMenuClick?: () => void
 }
 
-export default function ProfileView({ snippets = [], onBack, onMenuClick }: ProfileViewProps) {
-  const { user, loading, error, saveProfile, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
+export default function ProfileView({ snippets = [], projects = [], onBack, onMenuClick }: ProfileViewProps) {
+  const { user, loading, error, saveProfile, uploadAvatar, removeAvatar, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
   const toast = useToast()
-  const { collections } = useCollections()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const stats = useMemo(() => [
     { value: snippets.length,                                                    label: 'Total snippets',  accentColor: 'var(--color-category-blue)' },
     { value: snippets.filter(s => s.visibility === 'public').length,             label: 'Public snippets', accentColor: 'var(--color-category-green)' },
-    { value: collections.length,                                                  label: 'Collections',     accentColor: 'var(--color-category-purple)' },
+    { value: projects.length,                                                  label: 'Projects',     accentColor: 'var(--color-category-purple)' },
     { value: new Set(snippets.flatMap(s => s.tags || [])).size,                  label: 'Tags used',       accentColor: 'var(--color-category-orange)' },
-  ], [snippets, collections])
+  ], [snippets, projects])
 
   const [activeTab, setActiveTab] = useState(
     searchParams.get('reauth') === 'password-setup' ||
@@ -77,6 +77,9 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
   const [passwordOauthReauthing, setPasswordOauthReauthing] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const [avatarBusy, setAvatarBusy] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+  const avatarInput = useRef<HTMLInputElement>(null)
   const emailRetryStarted = useRef(false)
   const passwordRetryStarted = useRef(false)
 
@@ -334,7 +337,43 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
     }
   }
 
-  const avatarLetter = user ? (user.display_name || user.username || '?')[0].toUpperCase() : '?'
+  const handleAvatarFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setAvatarError('Choose a PNG, JPEG, or WebP image.')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setAvatarError('Choose an image under 10 MB.')
+      return
+    }
+
+    setAvatarError(null)
+    setAvatarBusy(true)
+    try {
+      await uploadAvatar(file)
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : 'Could not upload the photo.')
+    } finally {
+      setAvatarBusy(false)
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    setAvatarError(null)
+    setAvatarBusy(true)
+    try {
+      await removeAvatar()
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : 'Could not remove the photo.')
+    } finally {
+      setAvatarBusy(false)
+    }
+  }
+
   const pwReady = Boolean(
     (!user?.has_password || pwForm.currentPassword) &&
     pwForm.newPassword &&
@@ -390,22 +429,43 @@ export default function ProfileView({ snippets = [], onBack, onMenuClick }: Prof
           <aside className="min-w-0 lg:sticky lg:top-0 lg:self-start">
             <div className="flex min-w-0 items-center gap-3 py-2 lg:px-2 lg:py-4">
               <div className="relative shrink-0">
-                <div className="flex size-14 items-center justify-center rounded-full bg-avatar">
-                  <span className="text-lg font-bold text-accent">{avatarLetter}</span>
-                </div>
+                <UserAvatar user={user} className="size-14" />
+                <input
+                  ref={avatarInput}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleAvatarFile}
+                  aria-label="Choose profile photo"
+                  className="sr-only"
+                  tabIndex={-1}
+                />
                 <Button
                   variant="secondary"
                   aria-label="Edit profile picture"
+                  disabled={avatarBusy || !user}
+                  onClick={() => avatarInput.current?.click()}
                   className="absolute -bottom-1 -right-1 size-7 rounded-full p-0"
                 >
-                  <Pencil size={11} />
+                  {avatarBusy ? <Spinner className="text-secondary" size="sm" /> : <Pencil size={11} />}
                 </Button>
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-primary">@{user?.username}</div>
                 <div className="mt-0.5 truncate text-xs text-muted">{user?.email}</div>
+                {user?.has_custom_avatar && (
+                  <Button
+                    variant="ghost"
+                    size="unstyled"
+                    disabled={avatarBusy}
+                    onClick={handleRemoveAvatar}
+                    className="mt-1 h-7 px-1 text-xs text-muted hover:text-primary"
+                  >
+                    Remove photo
+                  </Button>
+                )}
               </div>
             </div>
+            {avatarError && <p role="alert" className="px-2 text-xs text-danger">{avatarError}</p>}
 
             <TabsList className="mt-3 flex items-stretch gap-1 overflow-x-auto border-0 pb-1 lg:mt-4 lg:flex-col lg:overflow-visible lg:pb-0 [&_[data-slot=tabs-indicator]]:hidden">
               {TABS.map(({ key, label, icon: Icon }) => (

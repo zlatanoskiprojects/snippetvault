@@ -1,14 +1,17 @@
 import { body, param, ValidationChain } from 'express-validator';
 
 const commentIdValidation: ValidationChain[] = [
-    param('id')
+    param('commentId')
         .isInt({ min: 1 }).withMessage('Invalid comment id'),
 ];
 
-const createCommentValidation: ValidationChain[] = [
+const snippetIdValidation: ValidationChain[] = [
     param('snippetId')
         .isInt({ min: 1 }).withMessage('Invalid snippet id'),
+];
 
+const createCommentValidation: ValidationChain[] = [
+    ...snippetIdValidation,
     body('content')
         .isString().withMessage('Content must be a string')
         .trim()
@@ -17,7 +20,7 @@ const createCommentValidation: ValidationChain[] = [
 ];
 
 const updateCommentValidation: ValidationChain[] = [
-    param('id')
+    param('commentId')
         .isInt({ min: 1 }).withMessage('Invalid comment id'),
 
     body('content')
@@ -28,4 +31,4 @@ const updateCommentValidation: ValidationChain[] = [
         .isLength({ max: 2000 }).withMessage('Content cannot exceed 2000 characters'),
 ];
 
-export { commentIdValidation, createCommentValidation, updateCommentValidation };
+export { snippetIdValidation, commentIdValidation, createCommentValidation, updateCommentValidation };

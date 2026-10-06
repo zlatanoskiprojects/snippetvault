@@ -16,7 +16,7 @@ export default function Snippets() {
       <DocParagraph>
         A snippet is the core unit in SnippetVault: a title, an optional description, a language,
         and a block of code. Every snippet belongs to you and can optionally live inside a
-        collection.
+        project.
       </DocParagraph>
 
       <DocHeading id="creating-a-snippet">Creating a snippet</DocHeading>
@@ -29,8 +29,8 @@ export default function Snippets() {
           <><InlineCode>description</InlineCode> — optional, up to 5,000 characters.</>,
           <><InlineCode>language</InlineCode> — required, picked from the supported language list below.</>,
           <><InlineCode>code</InlineCode> — required, up to 65,000 characters.</>,
-          <><InlineCode>collection</InlineCode> — optional. Snippets don't need a collection; see{' '}
-            <Link to="/docs/collections" className="text-accent hover:text-accent-text-hover transition-colors duration-150">Collections</Link>.
+          <><InlineCode>project</InlineCode> — optional. Snippets don't need a project; see{' '}
+            <Link to="/docs/projects" className="text-accent hover:text-accent-text-hover transition-colors duration-150">Projects</Link>.
           </>,
           <>tags — optional at creation time; see <Link to="/docs/tags" className="text-accent hover:text-accent-text-hover transition-colors duration-150">Tags</Link>.</>,
         ]}
@@ -75,7 +75,7 @@ export default function Snippets() {
       </DocParagraph>
 
       <DocCallout variant="info" title="No favorites yet">
-        There's currently no "favorite" or "star" concept on snippets — organize with collections
+        There's currently no "favorite" or "star" concept on snippets — organize with projects
         and tags instead.
       </DocCallout>
     </div>

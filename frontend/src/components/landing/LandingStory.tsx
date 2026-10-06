@@ -33,7 +33,7 @@ export default function LandingStory() {
             I&apos;m <span className="text-primary">David</span>, and I built SnippetVault because I was tired of finding myself searching for code I knew I&apos;d already written before. A useful function buried in an old project, a configuration I had to recreate, or a snippet I remembered using but couldn&apos;t remember <span className="text-primary">where I saved it</span>.
           </motion.p>
           <motion.p {...revealProps(0.24)}>
-            The problem wasn&apos;t writing the code again — it was wasting time <span className="text-primary">finding and organizing the code I already had</span>. That&apos;s why I created SnippetVault: one place to save your reusable code, organize it with collections and tags, search through it instantly, and come back to it whenever you need it.
+            The problem wasn&apos;t writing the code again — it was wasting time <span className="text-primary">finding and organizing the code I already had</span>. That&apos;s why I created SnippetVault: one place to save your reusable code, organize it with projects and tags, search through it instantly, and come back to it whenever you need it.
           </motion.p>
           <motion.p {...revealProps(0.32)}>
             I believe useful code shouldn&apos;t disappear the moment a project is finished. <span className="text-primary">Write it once, keep it organized, and reuse it when it matters.</span> SnippetVault is built to make your personal code library simple, fast, and actually useful — so you can spend less time searching through old projects and more time <span className="text-primary">building new ones</span>.

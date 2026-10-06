@@ -24,6 +24,7 @@ interface SnippetDetailPanelProps {
   onDelete: (id: number) => void
   onRestore: (updated: Snippet) => void
   onUpdate?: (updated: Snippet) => void
+  canMutate?: boolean
 }
 
 export default function SnippetDetailPanel({
@@ -33,6 +34,7 @@ export default function SnippetDetailPanel({
   onDelete,
   onRestore,
   onUpdate,
+  canMutate = true,
 }: SnippetDetailPanelProps) {
   const [copied, setCopied] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -63,6 +65,7 @@ export default function SnippetDetailPanel({
           setShowHistory(false)
           onRestore(updated)
         }}
+        canMutate={canMutate}
       />
     )
   }
@@ -123,13 +126,15 @@ export default function SnippetDetailPanel({
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-t border-border-default shrink-0 bg-panel sm:h-[56px] sm:flex-nowrap sm:py-0">
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="primary"
-            className="px-4 text-[13px]"
-            onClick={() => onEdit(snippet)}
-          >
-            <Pencil size={14} /> Edit
-          </Button>
+          {canMutate && (
+            <Button
+              variant="primary"
+              className="px-4 text-[13px]"
+              onClick={() => onEdit(snippet)}
+            >
+              <Pencil size={14} /> Edit
+            </Button>
+          )}
           <Button
             variant="secondary"
             className="px-4 text-[13px]"
@@ -137,20 +142,24 @@ export default function SnippetDetailPanel({
           >
             <History size={14} /> History
           </Button>
-          <Button
-            variant="danger"
-            className="px-4 text-[13px]"
-            onClick={() => setDeleteConfirmOpen(true)}
-          >
-            <Trash2 size={14} /> Delete
-          </Button>
-          <Button
-            variant="secondary"
-            className="px-4 text-[13px]"
-            onClick={() => setShareDialogOpen(true)}
-          >
-            <Share2 size={14} /> Share
-          </Button>
+          {canMutate && (
+            <>
+              <Button
+                variant="danger"
+                className="px-4 text-[13px]"
+                onClick={() => setDeleteConfirmOpen(true)}
+              >
+                <Trash2 size={14} /> Delete
+              </Button>
+              <Button
+                variant="secondary"
+                className="px-4 text-[13px]"
+                onClick={() => setShareDialogOpen(true)}
+              >
+                <Share2 size={14} /> Share
+              </Button>
+            </>
+          )}
         </div>
 
         <ConfirmDialog
