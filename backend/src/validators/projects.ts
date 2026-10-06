@@ -25,6 +25,7 @@ const createProjectValidation: ValidationChain[] = [
     body('description')
         .optional({ nullable: true })
         .isString().withMessage('Description must be a string').bail()
+        .trim()
         .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
 ];
 
@@ -45,6 +46,7 @@ const updateProjectValidation: ValidationChain[] = [
     body('description')
         .optional({ nullable: true })
         .isString().withMessage('Description must be a string').bail()
+        .trim()
         .isLength({ max: 1000 }).withMessage('Description cannot exceed 1000 characters'),
 ];
 

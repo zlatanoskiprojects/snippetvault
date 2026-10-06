@@ -112,13 +112,13 @@ router.post('/workspaces/:workspaceId/snippets', authMiddleware, [...workspaceId
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     const workspaceId = Number(req.params.workspaceId);
     const projectId = req.body.project_id ?? null;
-    if (projectId !== null) {
-        const [destination] = await db.select({ id: project.id }).from(project)
-            .where(and(eq(project.id, projectId), eq(project.workspaceId, workspaceId))).limit(1);
-        if (!destination) return res.status(400).json({ error: 'Project must belong to the snippet workspace' });
-    }
     const isPublic = req.body.visibility === 'public';
     const created = await db.transaction(async (tx) => {
+        if (projectId !== null) {
+            const [destination] = await tx.select({ id: project.id }).from(project)
+                .where(and(eq(project.id, projectId), eq(project.workspaceId, workspaceId))).limit(1).for('share');
+            if (!destination) return null;
+        }
         const [newSnippet] = await tx.insert(snippet).values({
             userId: req.userId as number,
             workspaceId,
@@ -132,6 +132,7 @@ router.post('/workspaces/:workspaceId/snippets', authMiddleware, [...workspaceId
         if (projectId !== null) await tx.insert(snippetProject).values({ snippetId: newSnippet.id, projectId });
         return newSnippet;
     });
+    if (!created) return res.status(400).json({ error: 'Project must belong to the snippet workspace' });
     return res.status(201).json(mapSnippet({ ...created, projectId }));
 }));
 
@@ -166,11 +167,6 @@ router.patch('/snippets/:snippetId', authMiddleware, updateSnippetValidation, va
         if (!membership || !hasWorkspacePermission(membership.role, 'assignSnippetToProject')) {
             return res.status(403).json({ error: 'Forbidden' });
         }
-        if (nextProjectId !== null) {
-            const [destination] = await db.select({ id: project.id }).from(project)
-                .where(and(eq(project.id, nextProjectId), eq(project.workspaceId, current.workspaceId))).limit(1);
-            if (!destination) return res.status(400).json({ error: 'Project must belong to the snippet workspace' });
-        }
     }
 
     const updates: Partial<typeof snippet.$inferInsert> = {};
@@ -186,6 +182,11 @@ router.patch('/snippets/:snippetId', authMiddleware, updateSnippetValidation, va
     if (Object.keys(updates).length === 0 && !assignmentChanged) return res.status(400).json({ error: 'No valid fields provided' });
 
     const updated = await db.transaction(async (tx) => {
+        if (assignmentChanged && nextProjectId !== null) {
+            const [destination] = await tx.select({ id: project.id }).from(project)
+                .where(and(eq(project.id, nextProjectId), eq(project.workspaceId, current.workspaceId))).limit(1).for('share');
+            if (!destination) return 'invalid-project' as const;
+        }
         let updatedSnippet = await tx.select().from(snippet).where(eq(snippet.id, snippetId)).limit(1).then((rows) => rows[0]);
         if (Object.keys(updates).length > 0) {
             [updatedSnippet] = await tx.update(snippet).set(updates).where(and(
@@ -213,6 +214,7 @@ router.patch('/snippets/:snippetId', authMiddleware, updateSnippetValidation, va
         }
         return updatedSnippet;
     });
+    if (updated === 'invalid-project') return res.status(400).json({ error: 'Project must belong to the snippet workspace' });
     if (!updated) return res.status(404).json({ error: 'Snippet not found' });
     return res.status(200).json(mapSnippet({ ...updated, projectId: nextProjectId }));
 }));
