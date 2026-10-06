@@ -24,9 +24,8 @@ export default function LandingFooter() {
             <h2 className="text-sm font-medium text-primary">Product</h2>
             <ul className="mt-4 space-y-3">
               <li><Link to="/login" className={linkClass}>Cloud</Link></li>
-              <li><Link to="/docs/quick-start" className={linkClass}>Getting started</Link></li>
-              <li><Link to="/docs/snippets" className={linkClass}>Snippets</Link></li>
-              <li><Link to="/docs/api-reference" className={linkClass}>API reference</Link></li>
+              <li><a href={`${import.meta.env.VITE_DOCS_URL}/first-workspace`} target="_blank" rel="noopener noreferrer" className={linkClass}>Getting started</a></li>
+              <li><a href={`${import.meta.env.VITE_DOCS_URL}/snippets`} target="_blank" rel="noopener noreferrer" className={linkClass}>Snippets</a></li>
             </ul>
           </nav>
 
@@ -36,7 +35,7 @@ export default function LandingFooter() {
               <li>
                 <a href="https://github.com/Zlatanoski/snippetvault" target="_blank" rel="noopener noreferrer" className={linkClass}>GitHub</a>
               </li>
-              <li><Link to="/docs" className={linkClass}>Documentation</Link></li>
+              <li><a href={import.meta.env.VITE_DOCS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>Documentation</a></li>
               <li>
                 <a href="https://github.com/Zlatanoski/snippetvault/blob/stable/LICENSE" target="_blank" rel="noopener noreferrer" className={linkClass}>MIT License</a>
               </li>

@@ -1,6 +1,5 @@
 import Button from '../ui/Button'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '../ui/Sheet'
 import { ChevronDown, Code2, Menu, X } from 'lucide-react'
 
@@ -26,12 +25,14 @@ export default function LandingNavbar({ onGetStarted, showNavLinks = true }: Lan
           <span className="flex items-center gap-1 text-[13px] text-secondary hover:text-primary transition-colors duration-150 cursor-pointer">
             Product <ChevronDown size={14} />
           </span>
-          <Link
-            to="/docs"
+          <a
+            href={import.meta.env.VITE_DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-[13px] text-secondary hover:text-primary transition-colors duration-150 cursor-pointer"
           >
             Docs
-          </Link>
+          </a>
           <span className="flex items-center gap-1 text-[13px] text-secondary hover:text-primary transition-colors duration-150 cursor-pointer">
             About <ChevronDown size={14} />
           </span>
@@ -89,13 +90,15 @@ export default function LandingNavbar({ onGetStarted, showNavLinks = true }: Lan
             <span className="flex items-center gap-1 h-[44px] px-2 text-sm text-secondary hover:text-primary transition-colors duration-150 cursor-pointer">
               Product <ChevronDown size={14} />
             </span>
-            <Link
-              to="/docs"
+            <a
+              href={import.meta.env.VITE_DOCS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setDrawerOpen(false)}
               className="flex items-center h-[44px] px-2 text-sm text-secondary hover:text-primary transition-colors duration-150 rounded-md hover:bg-interactive-overlay/5"
             >
               Docs
-            </Link>
+            </a>
             <span className="flex items-center gap-1 h-[44px] px-2 text-sm text-secondary hover:text-primary transition-colors duration-150 cursor-pointer">
               About <ChevronDown size={14} />
             </span>

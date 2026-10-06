@@ -42,14 +42,16 @@ export default function LandingHero() {
         >
           <Cloud size={16} /> Cloud
         </MotionLink>
-        <MotionLink
+        <motion.a
           {...revealProps(0.24)}
-          to="/docs/quick-start"
+          href={`${import.meta.env.VITE_DOCS_URL}/first-workspace`}
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Read the SnippetVault Quick Start guide"
           className="w-full sm:w-auto bg-accent hover:bg-accent-hover text-on-accent text-sm font-medium px-8 h-[44px] rounded-lg transition-colors duration-150 flex items-center justify-center"
         >
           Get Started
-        </MotionLink>
+        </motion.a>
         <motion.a
           {...revealProps(0.32)}
           href="https://github.com/Zlatanoski/snippetvault"
