@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, type ChangeEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Menu, Pencil, ShieldCheck, SlidersHorizontal, Trash2, TriangleAlert, UserRound } from 'lucide-react'
+import { ArrowLeft, Building2, Menu, Pencil, ShieldCheck, SlidersHorizontal, Trash2, TriangleAlert, UserRound } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -13,11 +13,13 @@ import Alert from '../components/ui/Alert'
 import UserAvatar from '../components/UserAvatar'
 import { useUser } from '../hooks/useUser'
 import { useToast } from '../hooks/useToast'
-import type { Project, Snippet } from '../api/types'
+import WorkspaceSettingsPanel from '../components/WorkspaceSettingsPanel'
+import type { Project, Snippet, Workspace } from '../api/types'
 import { socialLogin } from '../api/auth'
 
 const TABS = [
   { key: 'profile',     label: 'Profile',     icon: UserRound            },
+  { key: 'workspace',   label: 'Workspace settings', icon: Building2     },
   { key: 'security',    label: 'Security',    icon: ShieldCheck          },
   { key: 'preferences', label: 'Preferences', icon: SlidersHorizontal   },
 ]
@@ -47,9 +49,13 @@ interface ProfileViewProps {
   projects?: Project[]
   onBack?: () => void
   onMenuClick?: () => void
+  workspace?: Workspace | null
+  onWorkspaceRenamed: (name: string) => void
+  onWorkspaceDeleted: () => void
+  onWorkspaceOwnershipTransferred: () => void
 }
 
-export default function ProfileView({ snippets = [], projects = [], onBack, onMenuClick }: ProfileViewProps) {
+export default function ProfileView({ snippets = [], projects = [], onBack, onMenuClick, workspace, onWorkspaceRenamed, onWorkspaceDeleted, onWorkspaceOwnershipTransferred }: ProfileViewProps) {
   const { user, loading, error, saveProfile, uploadAvatar, removeAvatar, changeEmail, changePassword, setPassword, deleteAccount } = useUser()
   const toast = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -67,6 +73,8 @@ export default function ProfileView({ snippets = [], projects = [], onBack, onMe
       ? 'security'
       : 'profile'
   )
+  const isOwner = workspace?.role === 'owner'
+  const visibleTabs = TABS.filter(tab => tab.key !== 'workspace' || isOwner)
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [emailCurrentPassword, setEmailCurrentPassword] = useState('')
@@ -82,6 +90,12 @@ export default function ProfileView({ snippets = [], projects = [], onBack, onMe
   const avatarInput = useRef<HTMLInputElement>(null)
   const emailRetryStarted = useRef(false)
   const passwordRetryStarted = useRef(false)
+
+  const currentTab = !isOwner && activeTab === 'workspace' ? 'profile' : activeTab
+
+  useEffect(() => {
+    if (currentTab !== activeTab) setActiveTab(currentTab)
+  }, [currentTab, activeTab])
 
   useEffect(() => {
     if (user) {
@@ -421,7 +435,7 @@ export default function ProfileView({ snippets = [], projects = [], onBack, onMe
       </header>
 
       <TabsRoot
-        value={activeTab}
+        value={currentTab}
         onValueChange={value => setActiveTab(value as string)}
         className="min-h-0 flex-1 overflow-y-auto"
       >
@@ -468,7 +482,7 @@ export default function ProfileView({ snippets = [], projects = [], onBack, onMe
             {avatarError && <p role="alert" className="px-2 text-xs text-danger">{avatarError}</p>}
 
             <TabsList className="mt-3 flex items-stretch gap-1 overflow-x-auto border-0 pb-1 lg:mt-4 lg:flex-col lg:overflow-visible lg:pb-0 [&_[data-slot=tabs-indicator]]:hidden">
-              {TABS.map(({ key, label, icon: Icon }) => (
+              {visibleTabs.map(({ key, label, icon: Icon }) => (
                 <Tab
                   key={key}
                   value={key}
@@ -481,8 +495,8 @@ export default function ProfileView({ snippets = [], projects = [], onBack, onMe
             </TabsList>
           </aside>
 
-          <Panel value={activeTab} className="min-w-0">
-            {activeTab === 'profile' ? (
+          <Panel value={currentTab} className="min-w-0">
+            {currentTab === 'profile' ? (
               <div className="flex w-full max-w-4xl flex-col gap-8">
                 <section>
                   <h2 className="text-lg font-semibold text-primary">Personal information</h2>
@@ -634,7 +648,15 @@ export default function ProfileView({ snippets = [], projects = [], onBack, onMe
                   </div>
                 </section>
               </div>
-            ) : activeTab === 'security' ? (
+            ) : currentTab === 'workspace' && workspace && isOwner ? (
+              <WorkspaceSettingsPanel
+                key={workspace.id}
+                workspace={workspace}
+                onRenamed={onWorkspaceRenamed}
+                onDeleted={onWorkspaceDeleted}
+                onOwnershipTransferred={onWorkspaceOwnershipTransferred}
+              />
+            ) : currentTab === 'security' ? (
               <div className="flex w-full max-w-4xl flex-col">
                 <h2 className="text-lg font-semibold text-primary">Security</h2>
                 <p className="mt-1 text-sm text-muted">Manage how you sign in to your account.</p>

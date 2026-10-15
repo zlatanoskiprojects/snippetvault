@@ -41,6 +41,14 @@ export function updateWorkspaceMemberRole(workspaceId: number, userId: number, r
 
 
 
+export function transferWorkspaceOwnership(workspaceId: number, userId: number): Promise<{ previous_owner: WorkspaceMember; new_owner: WorkspaceMember }> {
+    return apiFetch<{ previous_owner: WorkspaceMember; new_owner: WorkspaceMember }>(`${BASE_URL}/${workspaceId}/transfer-ownership`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ user_id: userId }),
+    });
+}
+
 export function removeWorkspaceMember(workspaceId: number, userId: number): Promise<{ message: string }> {
     return apiFetch<{ message: string }>(`${BASE_URL}/${workspaceId}/members/${userId}`, { method: 'DELETE' });
 }

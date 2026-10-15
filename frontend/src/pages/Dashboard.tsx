@@ -41,7 +41,7 @@ export default function Dashboard() {
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const { workspaces, loading: workspacesLoading, error: workspacesError, addWorkspace, refreshWorkspaces } = useWorkspaces()
+  const { workspaces, setWorkspaces, loading: workspacesLoading, error: workspacesError, addWorkspace, refreshWorkspaces } = useWorkspaces()
   const { snippets, setSnippets, loading, error } = useSnippets(selectedWorkspaceId)
   const projectsState = useProjects(selectedWorkspaceId)
   const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null)
@@ -164,6 +164,10 @@ export default function Dashboard() {
   function handleSelectWorkspace(workspaceId: number) {
     if (workspaceId === selectedWorkspaceId) return
     setSelectedWorkspaceId(workspaceId)
+    resetWorkspaceState()
+  }
+
+  function resetWorkspaceState() {
     setSelectedSnippet(null)
     setEditingSnippet(null)
     setActiveProject(null)
@@ -245,7 +249,23 @@ export default function Dashboard() {
             onSelectSnippet={(snippet: Snippet) => { setSearchQuery(''); setIsSearching(false); onSelectSnippet(snippet) }}
           />
         ) : view === 'profile' ? (
-          <ProfileView snippets={snippets} projects={projectsState.projects} onBack={() => handleViewChange('list')} onMenuClick={() => setSidebarOpen(true)} />
+          <ProfileView
+            snippets={snippets}
+            projects={projectsState.projects}
+            onBack={() => handleViewChange('list')}
+            onMenuClick={() => setSidebarOpen(true)}
+            workspace={selectedWorkspace}
+            onWorkspaceRenamed={name => setWorkspaces(current => current.map(item => item.id === selectedWorkspaceId ? { ...item, name } : item))}
+            onWorkspaceDeleted={() => {
+              setWorkspaces(current => current.filter(item => item.id !== selectedWorkspaceId))
+              setSelectedWorkspaceId(null)
+              resetWorkspaceState()
+            }}
+            onWorkspaceOwnershipTransferred={() => {
+              setWorkspaces(current => current.map(item => item.id === selectedWorkspaceId ? { ...item, role: 'editor' } : item))
+              handleViewChange('list')
+            }}
+          />
         ) : view === 'projects' ? (
           <ProjectsView
             snippets={snippets}

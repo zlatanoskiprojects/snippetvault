@@ -19,6 +19,7 @@ const toastVariants = cva('flex items-start gap-3 border rounded-md px-4 py-3 mi
     variant: {
       success: 'bg-success-surface border-success text-success',
       error: 'bg-danger-surface border-danger text-danger',
+      info: 'bg-surface border-border-default text-primary',
     },
   },
   defaultVariants: { variant: 'error' },
@@ -63,6 +64,9 @@ function ToastBridge({ children }: { children: ReactNode }) {
       error: (message: string) => {
         add({ type: 'error', description: message, timeout: AUTO_DISMISS_MS })
       },
+      info: (message: string) => {
+        add({ type: 'info', description: message, timeout: AUTO_DISMISS_MS })
+      },
     }),
     [add]
   )
@@ -78,7 +82,7 @@ function ToastBridge({ children }: { children: ReactNode }) {
 function ToastList() {
   const { toasts } = BaseToast.useToastManager()
   return toasts.map(toast => (
-    <Toast key={toast.id} toast={toast} variant={toast.type === 'success' ? 'success' : 'error'}>
+    <Toast key={toast.id} toast={toast} variant={toast.type === 'success' || toast.type === 'info' ? toast.type : 'error'}>
       <ToastContent>
         <ToastDescription />
         <ToastClose aria-label="Dismiss notification"><X size={16} /></ToastClose>
