@@ -22,6 +22,8 @@ const ROLE_OPTIONS: Array<{ value: Exclude<WorkspaceRole, 'owner'>; label: strin
   { value: 'viewer', label: 'Viewer' },
 ]
 
+const roleLabel = (role: WorkspaceRole) => role[0].toUpperCase() + role.slice(1)
+
 export default function MembersView({ workspaceId, canManage, onMenuClick }: MembersViewProps) {
   const [members, setMembers] = useState<WorkspaceMember[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,9 +33,12 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
   const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([])
   const [cancelTarget, setCancelTarget] = useState<WorkspaceInvitation | null>(null)
   const [cancellingId, setCancellingId] = useState<number | null>(null)
+  const [roleChange, setRoleChange] = useState<{ member: WorkspaceMember; role: Exclude<WorkspaceRole, 'owner'> } | null>(null)
+  const [changingRole, setChangingRole] = useState(false)
   const toast = useToast()
 
   useEffect(() => {
+    setRoleChange(null)
     setInviteWorkspaceId(null)
     setCancelTarget(null)
     setCancellingId(null)
@@ -95,6 +100,17 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
       toast.error(err instanceof Error ? err.message : 'Could not update member role')
     } finally {
       setPendingUserId(null)
+    }
+  }
+
+  async function confirmRoleChange() {
+    if (!roleChange) return
+    setChangingRole(true)
+    try {
+      await changeRole(roleChange.member, roleChange.role)
+    } finally {
+      setChangingRole(false)
+      setRoleChange(null)
     }
   }
 
@@ -180,7 +196,7 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
                         {canManage && member.role !== 'owner' ? (
                           <Select
                             value={member.role}
-                            onValueChange={role => changeRole(member, role)}
+                            onValueChange={role => { if (role !== member.role) setRoleChange({ member, role }) }}
                             options={ROLE_OPTIONS}
                             disabled={pending}
                             aria-label={`Role for ${displayName}`}
@@ -250,6 +266,16 @@ export default function MembersView({ workspaceId, canManage, onMenuClick }: Mem
         cancelLabel="Keep invitation"
         confirming={cancellingId !== null}
         onConfirm={confirmCancel}
+      />
+      <ConfirmDialog
+        open={roleChange !== null}
+        onOpenChange={open => { if (!open && !changingRole) setRoleChange(null) }}
+        title="Change role?"
+        description={roleChange ? `Change ${roleChange.member.display_name || roleChange.member.username}'s role from ${roleLabel(roleChange.member.role)} to ${roleLabel(roleChange.role)}? Editors can create and edit snippets and projects; viewers can only read and comment.` : undefined}
+        confirmLabel={changingRole ? 'Changing…' : 'Change role'}
+        cancelLabel="Cancel"
+        confirming={changingRole}
+        onConfirm={confirmRoleChange}
       />
       {canManage && inviteWorkspaceId === workspaceId && (
         <InviteMemberDialog
