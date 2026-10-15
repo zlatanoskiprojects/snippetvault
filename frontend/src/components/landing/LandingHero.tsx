@@ -1,14 +1,12 @@
 import { Cloud } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 const MotionLink = motion.create(Link)
 
 export default function LandingHero() {
-  const shouldReduceMotion = useReducedMotion()
-
   function revealProps(delay: number) {
-    return shouldReduceMotion ? {} : {
+    return {
       initial: { opacity: 0, y: 16 },
       whileInView: { opacity: 1, y: 0 },
       viewport: { once: true, amount: 0.2 },
@@ -18,13 +16,12 @@ export default function LandingHero() {
 
   return (
     <section className="flex flex-col items-center text-center px-6 pt-20 pb-16">
-      <motion.h1
-        {...revealProps(0)}
+      <h1
         className="text-5xl md:text-6xl lg:text-[72px] font-bold leading-tight max-w-4xl mx-auto"
       >
         <span className="text-primary">Save code. Understand it. </span>
         <span className="text-accent">Reuse it faster.</span>
-      </motion.h1>
+      </h1>
 
       <motion.p
         {...revealProps(0.08)}

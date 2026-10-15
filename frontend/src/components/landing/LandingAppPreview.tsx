@@ -1,7 +1,7 @@
 import Input from '../ui/Input'
 import Button from '../ui/Button'
 import { useMemo, useState } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Code2, LayoutGrid, Lock, Plus, Search, Star } from 'lucide-react'
 import { SNIPPETS, TAGS, type DemoSnippet } from './demoData'
 
@@ -13,11 +13,10 @@ interface MiniSidebarProps {
   activeTag: string | null
   onTagToggle: (tag: string) => void
   revealDelay: number
-  shouldReduceMotion: boolean | null
 }
 
-function revealProps(shouldReduceMotion: boolean | null, delay: number) {
-  return shouldReduceMotion ? {} : {
+function revealProps(delay: number) {
+  return {
     initial: { opacity: 0, y: 16 },
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true, amount: 0.2 },
@@ -31,10 +30,10 @@ function navItemClass(active: boolean) {
     : 'flex items-center gap-1.5 px-1.5 py-0.5 w-full text-left hover:bg-interactive-overlay/5 transition-colors duration-150 rounded'
 }
 
-function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDelay, shouldReduceMotion }: MiniSidebarProps) {
+function MiniSidebar({ filter, onFilterChange, activeTag, onTagToggle, revealDelay }: MiniSidebarProps) {
   return (
     <motion.aside
-      {...revealProps(shouldReduceMotion, revealDelay)}
+      {...revealProps(revealDelay)}
       aria-label="Snippet preview filters"
       className="hidden sm:flex w-[172px] shrink-0 bg-sidebar border-r border-border-default flex-col p-3 gap-2"
     >
@@ -86,13 +85,12 @@ interface MiniTopBarProps {
   title: string
   count: number
   revealDelay: number
-  shouldReduceMotion: boolean | null
 }
 
-function MiniTopBar({ title, count, revealDelay, shouldReduceMotion }: MiniTopBarProps) {
+function MiniTopBar({ title, count, revealDelay }: MiniTopBarProps) {
   return (
     <motion.header
-      {...revealProps(shouldReduceMotion, revealDelay)}
+      {...revealProps(revealDelay)}
       className="flex items-center justify-between px-3 py-2 border-b border-border-default shrink-0"
     >
       <div>
@@ -116,13 +114,12 @@ interface MiniSnippetRowProps {
   expanded: boolean
   onToggle: () => void
   revealDelay: number
-  shouldReduceMotion: boolean | null
 }
 
-function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduceMotion }: MiniSnippetRowProps) {
+function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay }: MiniSnippetRowProps) {
   return (
     <motion.div
-      {...revealProps(shouldReduceMotion, revealDelay)}
+      {...revealProps(revealDelay)}
       className="border-b border-border-default"
     >
       <Button variant="unstyled" size="unstyled"
@@ -152,7 +149,6 @@ function MiniSnippetRow({ snippet, expanded, onToggle, revealDelay, shouldReduce
 }
 
 export default function LandingAppPreview() {
-  const shouldReduceMotion = useReducedMotion()
   const [filter, setFilter] = useState<Filter>('all')
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -194,7 +190,6 @@ export default function LandingAppPreview() {
               activeTag={activeTag}
               onTagToggle={handleTagToggle}
               revealDelay={0}
-              shouldReduceMotion={shouldReduceMotion}
             />
 
             <div className="flex-1 flex flex-col min-w-0">
@@ -202,11 +197,10 @@ export default function LandingAppPreview() {
                 title={filterLabel}
                 count={visibleSnippets.length}
                 revealDelay={0.08}
-                shouldReduceMotion={shouldReduceMotion}
               />
 
               <motion.div
-                {...revealProps(shouldReduceMotion, 0.16)}
+                {...revealProps(0.16)}
                 className="flex items-center gap-1.5 px-3 py-2 border-b border-border-default shrink-0"
               >
                 <div className="flex-1 min-w-0 flex items-center gap-1 bg-control rounded px-2 py-1">
@@ -241,7 +235,7 @@ export default function LandingAppPreview() {
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {visibleSnippets.length === 0 ? (
                   <motion.p
-                    {...revealProps(shouldReduceMotion, 0.24)}
+                    {...revealProps(0.24)}
                     className="text-[9px] text-muted text-center py-6"
                   >
                     No snippets
@@ -254,7 +248,6 @@ export default function LandingAppPreview() {
                       expanded={expandedId === s.id}
                       onToggle={() => setExpandedId(current => (current === s.id ? null : s.id))}
                       revealDelay={0.24 + index * 0.08}
-                      shouldReduceMotion={shouldReduceMotion}
                     />
                   ))
                 )}

@@ -1,10 +1,8 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 export default function LandingStory() {
-  const shouldReduceMotion = useReducedMotion()
-
   function revealProps(delay: number) {
-    return shouldReduceMotion ? {} : {
+    return {
       initial: { opacity: 0, y: 16 },
       whileInView: { opacity: 1, y: 0 },
       viewport: { once: true, amount: 0.2 },

@@ -2,7 +2,7 @@ import { JSON_HEADERS, apiFetch } from './utils';
 import type { User } from './types';
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/auth`;
-const APP_URL = window.location.origin;
+const appUrl = () => window.location.origin;
 
 export interface AuthResponse {
     user: User;
@@ -17,7 +17,7 @@ export async function register(username: string, email: string, captchaToken?: s
             name: username,
             email,
             password: '',
-            callbackURL: `${APP_URL}/dashboard?setup=password`,
+            callbackURL: `${appUrl()}/dashboard?setup=password`,
         }),
     });
 }
@@ -39,7 +39,7 @@ export async function login(email: string, password: string, captchaToken?: stri
         body: JSON.stringify({
             email,
             password,
-            callbackURL: `${APP_URL}/dashboard`,
+            callbackURL: `${appUrl()}/dashboard`,
         }),
     });
 }
@@ -53,7 +53,7 @@ export async function logout(): Promise<{ message?: string }> {
 
 export async function socialLogin(
     provider: 'google' | 'github',
-    callbackURL = `${APP_URL}/dashboard`,
+    callbackURL = `${appUrl()}/dashboard`,
 ): Promise<void> {
     const data = await apiFetch<{ url?: string }>(`${BASE_URL}/sign-in/social`, {
         method: 'POST',
@@ -62,7 +62,7 @@ export async function socialLogin(
         body: JSON.stringify({
             provider,
             callbackURL,
-            errorCallbackURL: `${APP_URL}/login`,
+            errorCallbackURL: `${appUrl()}/login`,
         }),
     });
 

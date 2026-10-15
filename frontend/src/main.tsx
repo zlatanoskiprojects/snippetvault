@@ -1,23 +1,14 @@
 import './wdyr'
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import './index.css'
-import App from './App'
-import { BrowserRouter } from "react-router-dom";
-import { ToastProvider } from './components/Toast'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import ThemeProvider from './components/providers/ThemeProvider'
+import { BrowserRouter } from 'react-router-dom'
+import Root from './Root'
 
-createRoot(document.getElementById('root') as HTMLElement).render(
-    <BrowserRouter>
-        <ToastProvider>
-            <ErrorBoundary>
-                <StrictMode>
-                    <ThemeProvider>
-                        <App />
-                    </ThemeProvider>
-                </StrictMode>
-            </ErrorBoundary>
-        </ToastProvider>
-    </BrowserRouter>
-)
+const container = document.getElementById('root') as HTMLElement
+const app = <Root router={children => <BrowserRouter>{children}</BrowserRouter>} />
+
+if (container.hasChildNodes()) {
+  hydrateRoot(container, app)
+} else {
+  createRoot(container).render(app)
+}
