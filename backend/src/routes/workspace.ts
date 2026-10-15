@@ -12,6 +12,7 @@ import { workspaceRolesWithPermission } from '../permissions/workspacePermission
 import {
     createWorkspaceInvitationValidation,
     createWorkspaceValidation,
+    transferWorkspaceOwnershipValidation,
     updateWorkspaceMemberRoleValidation,
     updateWorkspaceValidation,
     workspaceIdValidation,
@@ -24,6 +25,13 @@ import { sendWorkspaceInvitationEmail } from '../lib/emails/workspaceInvitation'
 
 
 const router = Router();
+
+const mapWorkspaceMember = (member: typeof workspaceMember.$inferSelect) => ({
+    workspace_id: member.workspaceId,
+    user_id: member.userId,
+    role: member.role,
+    joined_at: member.joinedAt,
+});
 
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     const userId = req.userId;
@@ -116,7 +124,36 @@ router.patch('/:workspaceId/members/:userId', authMiddleware, updateWorkspaceMem
         inArray(workspaceMember.role, ['editor', 'viewer']),
     )).returning();
     if (!updated) return res.status(409).json({ error: 'Workspace member role changed concurrently' });
-    return res.status(200).json({ workspace_id: updated.workspaceId, user_id: updated.userId, role: updated.role, joined_at: updated.joinedAt });
+    return res.status(200).json(mapWorkspaceMember(updated));
+}));
+
+//transfer ownership route.
+
+router.post('/:workspaceId/transfer-ownership', authMiddleware, transferWorkspaceOwnershipValidation, validateRequest, requireWorkspacePermission('transferOwnership'), asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.userId as number;
+    const workspaceId = Number(req.params.workspaceId);
+    const targetUserId: number = req.body.user_id;
+
+    const result = await db.transaction(async (tx) => {
+        const [owner] = await tx.select({ userId: workspaceMember.userId }).from(workspaceMember)
+            .where(and(eq(workspaceMember.workspaceId, workspaceId), eq(workspaceMember.userId, userId), eq(workspaceMember.role, 'owner')))
+            .limit(1).for('update');
+        if (!owner) return { status: 409, body: { error: 'Workspace ownership changed concurrently' } };
+
+        const [target] = await tx.select({ role: workspaceMember.role }).from(workspaceMember)
+            .where(and(eq(workspaceMember.workspaceId, workspaceId), eq(workspaceMember.userId, targetUserId)))
+            .limit(1).for('update');
+        if (!target) return { status: 404, body: { error: 'Workspace member not found' } };
+        if (target.role === 'owner') return { status: 409, body: { error: 'Member is already the workspace owner' } };
+
+        const [previousOwner] = await tx.update(workspaceMember).set({ role: 'editor' })
+            .where(and(eq(workspaceMember.workspaceId, workspaceId), eq(workspaceMember.userId, userId))).returning();
+        const [newOwner] = await tx.update(workspaceMember).set({ role: 'owner' })
+            .where(and(eq(workspaceMember.workspaceId, workspaceId), eq(workspaceMember.userId, targetUserId))).returning();
+        return { status: 200, body: { previous_owner: mapWorkspaceMember(previousOwner), new_owner: mapWorkspaceMember(newOwner) } };
+    });
+
+    return res.status(result.status).json(result.body);
 }));
 
 router.delete('/:workspaceId/members/:userId', authMiddleware, workspaceMemberParamsValidation, validateRequest, requireWorkspacePermission('manageMembers'), asyncHandler(async (req: Request, res: Response) => {

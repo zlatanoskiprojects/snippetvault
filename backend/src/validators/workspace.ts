@@ -62,6 +62,16 @@ const createWorkspaceInvitationValidation: ValidationChain[] = [
         .isIn(['editor', 'viewer']).withMessage('Role must be editor or viewer'),
 ];
 
+const transferWorkspaceOwnershipValidation: ValidationChain[] = [
+    ...workspaceIdValidation,
+    body().custom((value: unknown) => value !== null && typeof value === 'object'
+        && !Array.isArray(value) && Object.keys(value).every((field) => field === 'user_id'))
+        .withMessage('Only user_id is allowed'),
+    body('user_id')
+        .custom((value: unknown) => Number.isInteger(value) && (value as number) >= 1 && (value as number) <= 2147483647)
+        .withMessage('Invalid user id'),
+];
+
 export {
     workspaceIdValidation,
     workspaceMemberParamsValidation,
@@ -70,4 +80,5 @@ export {
     updateWorkspaceValidation,
     updateWorkspaceMemberRoleValidation,
     createWorkspaceInvitationValidation,
+    transferWorkspaceOwnershipValidation,
 };

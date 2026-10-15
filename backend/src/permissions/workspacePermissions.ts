@@ -8,6 +8,7 @@ export type WorkspacePermission =
     | 'delete'
     | 'createProject'
     | 'manageMembers'
+    | 'transferOwnership'
     | 'inviteMembers'
     | 'createSnippet'
     | 'updateSnippet'
@@ -24,6 +25,7 @@ export const workspacePermissions = {
         'delete',
         'createProject',
         'manageMembers',
+        'transferOwnership',
         'inviteMembers',
         'createSnippet',
         'updateSnippet',
