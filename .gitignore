@@ -23,3 +23,8 @@ Thumbs.db
 # Playwright MCP output
 .playwright-mcp/
 /*.png
+
+# Tests are written and run locally but never committed
+*.test.ts
+*.test.tsx
+*.test.mjs

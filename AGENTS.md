@@ -26,6 +26,8 @@ pnpm test                   # Vitest (jsdom + Testing Library), tests live besid
 pnpm preview                # preview production build
 ```
 
+Tests are local-only: write and run them (`*.test.ts(x)`, `backend/test/*.test.mjs`) but never commit them. `.gitignore` excludes them and they are cleared up later. `backend/test/helpers.mjs` stays tracked.
+
 There are no tests yet.
 
 ## Environment Setup
