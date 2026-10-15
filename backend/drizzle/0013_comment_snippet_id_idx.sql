@@ -1,0 +1,1 @@
+CREATE INDEX "comment_snippet_id_idx" ON "comment" USING btree ("snippet_id");

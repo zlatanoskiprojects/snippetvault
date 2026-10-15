@@ -197,7 +197,9 @@ export const comment = pgTable('comment', {
     content: text('content').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-});
+}, (table) => [
+    index('comment_snippet_id_idx').on(table.snippetId),
+]);
 
 export const userAiSettings = pgTable('user_ai_settings', {
     id: serial('id').primaryKey(),
