@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -9,5 +10,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['@welldone-software/why-did-you-render'],
+  },
+  test: {
+    environment: 'jsdom',
   },
 })
