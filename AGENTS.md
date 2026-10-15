@@ -22,6 +22,7 @@ pnpm dev                    # Vite dev server (http://localhost:5173)
 pnpm build                  # production build
 pnpm exec tsc --noEmit      # typecheck
 pnpm lint                   # ESLint
+pnpm test                   # Vitest (jsdom + Testing Library), tests live beside source as *.test.ts(x)
 pnpm preview                # preview production build
 ```
 
@@ -129,7 +130,7 @@ This project and all future changes must follow OWASP best practices (OWASP Top 
 
 - `.Codex/agents/` defines specialized subagents: `db-migrator`, `backend-ts-converter`, `frontend-ts-converter`, `ts-migration-reviewer` (the MySQL→PostgreSQL and JS→TS migrations they were built for are complete, but they remain useful for follow-up type-safety or query cleanup passes), `frontend-ui-master` for frontend UI work, `code-auditor` for OWASP/performance sweeps, and a read-only `frontend-visual-tester` that verifies `frontend-ui-master`'s output across breakpoints
 - `.Codex/hooks/block-tester-writer.sh` blocks `frontend-visual-tester` from ever using `Write`/`Edit`, even if its tool list is widened later — it must stay read-only so its review of `frontend-ui-master`'s output stays meaningful
-- **Browser testing**: use the Playwright MCP tools (`mcp__playwright__*`) — Chrome is installed and working on this machine (since 2026-07-15). Only start Playwright testing when the user explicitly asks for it; never launch browsers or visual-test runs proactively after UI changes
+- **Browser testing**: use the Playwright MCP tools (`mcp__playwright__*`) — Chrome is installed and working on this machine (since 2026-07-15). Whenever UI code is written or changed, verify responsiveness across breakpoints with Playwright (via `frontend-visual-tester`) before calling the work done
 
 ## Frontend UI migration workflow (Base UI conversion)
 
