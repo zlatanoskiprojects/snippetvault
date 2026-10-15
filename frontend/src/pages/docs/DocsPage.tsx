@@ -2,16 +2,22 @@ import { Navigate, useParams } from 'react-router-dom'
 import DocsLayout from './DocsLayout'
 import { PrevNextNav } from './DocBlocks'
 import { DOCS_FLAT } from './registry'
+import { usePageMeta } from '../../hooks/usePageMeta'
 
 export default function DocsPage() {
   const { slug } = useParams<{ slug: string }>()
-  const index = DOCS_FLAT.findIndex(page => page.slug === slug)
+  const index = DOCS_FLAT.findIndex(doc => doc.slug === slug)
+  const page = index === -1 ? null : DOCS_FLAT[index]
+  usePageMeta({
+    title: page ? `${page.title} · Docs` : 'Docs',
+    description: page?.description,
+    path: page ? `/docs/${page.slug}` : undefined,
+  })
 
-  if (index === -1) {
+  if (!page) {
     return <Navigate to="/docs/introduction" replace />
   }
 
-  const page = DOCS_FLAT[index]
   const prev = index > 0 ? DOCS_FLAT[index - 1] : null
   const next = index < DOCS_FLAT.length - 1 ? DOCS_FLAT[index + 1] : null
   const PageComponent = page.component

@@ -1,52 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Public /share/:token URLs are dynamic and require a build-time or server-generated sitemap to enumerate. -->
   <url>
     <loc>https://snippetvault.me/</loc>
-  </url>
-  <url>
-    <loc>https://snippetvault.me/login</loc>
-  </url>
-  <url>
-    <loc>https://snippetvault.me/register</loc>
+    <lastmod>2026-09-08</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/introduction</loc>
+    <lastmod>2026-09-08</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/quick-start</loc>
+    <lastmod>2026-07-17</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/snippets</loc>
+    <lastmod>2026-09-08</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/projects</loc>
+    <lastmod>2026-09-17</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/tags</loc>
+    <lastmod>2026-09-05</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/version-history</loc>
+    <lastmod>2026-07-17</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/public-sharing</loc>
+    <lastmod>2026-07-17</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/comments</loc>
+    <lastmod>2026-07-17</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/search</loc>
+    <lastmod>2026-07-17</lastmod>
   </url>
   <url>
     <loc>https://snippetvault.me/docs/api-reference</loc>
-  </url>
-  <url>
-    <loc>https://snippetvault.me/docs/ai-assistant</loc>
-  </url>
-  <url>
-    <loc>https://snippetvault.me/docs/self-hosting</loc>
-  </url>
-  <url>
-    <loc>https://snippetvault.me/docs/oauth-providers</loc>
+    <lastmod>2026-10-01</lastmod>
   </url>
 </urlset>

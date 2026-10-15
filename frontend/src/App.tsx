@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import LandingPage from './pages/LandingPage'
 import SharedSnippetView from './pages/SharedSnippetView'
 import InvitationView from './pages/InvitationView'
+import NotFound from './pages/NotFound'
 import DocsPage from './pages/docs/DocsPage'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<LandingPage onGetStarted={() => navigate('/login')} />} />
       <Route path="/login" element={<LogIn />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
@@ -19,7 +21,7 @@ function App() {
       <Route path="/invitations/:token" element={<InvitationView />} />
       <Route path="/docs" element={<Navigate to="/docs/introduction" replace />} />
       <Route path="/docs/:slug" element={<DocsPage />} />
-      <Route path="*" element={<LandingPage onGetStarted={() => navigate('/login')} />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }

@@ -6,8 +6,10 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Field from '../components/ui/Field'
 import Turnstile from '../components/Turnstile'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 function LogIn() {
+  usePageMeta({ title: 'Log in', noindex: true })
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [captchaToken, setCaptchaToken] = useState('')

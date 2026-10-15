@@ -23,10 +23,12 @@ import Alert from '../components/ui/Alert'
 import Button from '../components/ui/Button'
 import type { Snippet } from '../api/types'
 import type { Project } from '../api/types'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 type View = 'list' | 'new' | 'search' | 'projects' | 'members' | 'invitations' | 'profile'
 
 export default function Dashboard() {
+  usePageMeta({ title: 'Dashboard', noindex: true })
   const [searchParams, setSearchParams] = useSearchParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null)

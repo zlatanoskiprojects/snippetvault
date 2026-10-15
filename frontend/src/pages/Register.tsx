@@ -6,10 +6,12 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Field from '../components/ui/Field'
 import Turnstile from '../components/Turnstile'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 const RESEND_COOLDOWN_SECONDS = 60
 
 function Register() {
+  usePageMeta({ title: 'Create account', noindex: true })
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [captchaToken, setCaptchaToken] = useState('')

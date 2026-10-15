@@ -11,6 +11,7 @@ import Button, { buttonVariants } from '../components/ui/Button'
 import { Card, CardContent, CardFooter } from '../components/ui/Card'
 import Spinner from '../components/ui/Spinner'
 import { cn } from '../lib/utils'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 type InvitationState =
   | { status: 'loading' }
@@ -211,6 +212,7 @@ function InvitationPage({ token }: { token: string }) {
 }
 
 export default function InvitationView() {
+  usePageMeta({ title: 'Workspace invitation', noindex: true })
   const { token = '' } = useParams<{ token: string }>()
   return <InvitationPage key={token} token={token} />
 }

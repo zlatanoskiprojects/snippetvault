@@ -8,6 +8,7 @@ import Spinner from '../components/ui/Spinner'
 import Button from '../components/ui/Button'
 import { getSharedSnippet } from '../api/share'
 import type { SharedSnippet } from '../api/types'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-US', {
@@ -23,6 +24,13 @@ export default function SharedSnippetView() {
   const [snippet, setSnippet] = useState<SharedSnippet | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+
+  usePageMeta({
+    title: snippet?.title ?? 'Shared snippet',
+    description: snippet ? (snippet.description || `A ${snippet.language} snippet shared on SnippetVault.`) : undefined,
+    path: token ? `/share/${token}` : undefined,
+    noindex: error,
+  })
 
   useEffect(() => {
     if (!token) {
